@@ -13,7 +13,10 @@ import exception.RevisionExtractionException;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 import java.text.DateFormat;
@@ -27,11 +30,13 @@ import java.util.logging.Logger;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -598,7 +603,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                         childChanged = new TreeNodeWithState("O Documento não foi alterado desde que esta assinatura foi aplicada", TreeNodeWithState.State.VALID);
                     }
                 } else {
-                    childChanged = new TreeNodeWithState("A revisão do Documento que é coberto pela assinatura não foi alterado. No entanto, ocorreram alterações posteriores ao Documento.", TreeNodeWithState.State.WARNING);
+                    childChanged = new TreeNodeWithState("A revisão do Documento que é coberto pela assinatura não foi alterado. No entanto, ocorreram alterações posteriores ao Documento", TreeNodeWithState.State.WARNING);
                 }
             }
 
@@ -685,12 +690,169 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_lblRevisionMouseClicked
 
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+        String toWrite = "";
+        String newLine = System.getProperty("line.separator");
         if (hmValidation.size() > 0) {
             for (Map.Entry<ValidationFileListEntry, ArrayList<SignatureValidation>> entry : hmValidation.entrySet()) {
-                // TODO
+                toWrite += "Ficheiro: " + entry.getKey().getFilename() + " (";
+                int numSigs = entry.getKey().getNumSignatures();
+                if (numSigs == 0) {
+                    toWrite += "Sem assinaturas";
+                } else if (numSigs == 1) {
+                    toWrite += "1 assinatura";
+                } else {
+                    toWrite += numSigs + " assinaturas";
+                }
+                toWrite += ")" + newLine;
+
+                for (SignatureValidation sv : entry.getValue()) {
+                    toWrite += "\t" + sv.getName() + " - ";
+                    toWrite += (sv.isCertified() ? "Certificado" : "Assinado") + " por " + sv.getSignerName();
+                    toWrite += newLine + "\t\t";
+                    if (sv.isChanged()) {
+                        toWrite += "O Documento foi alterado ou corrompido desde que foi certificado";
+                    } else {
+                        if (sv.isCoversEntireDocument()) {
+                            if (sv.isCertified()) {
+                                toWrite += "O Documento está certificado e não foi modificado";
+                            } else {
+                                toWrite += "O Documento não foi alterado desde que esta assinatura foi aplicada";
+                            }
+                        } else {
+                            toWrite += "A revisão do Documento que é coberto pela assinatura não foi alterado. No entanto, ocorreram alterações posteriores ao Documento";
+                        }
+                    }
+                    toWrite += newLine + "\t\t";
+                    if (sv.getOcspCertificateStatus().equals(CertificateStatus.OK) || sv.getCrlCertificateStatus().equals(CertificateStatus.OK)) {
+                        toWrite += "O Certificado inerente a esta assinatura foi verificado e é válido";
+                    } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
+                        toWrite += "O Certificado inerente a esta assinatura foi revogado";
+                    } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHECKED) && sv.getCrlCertificateStatus().equals(CertificateStatus.UNCHECKED)) {
+                        toWrite += "Não foi feita a verificação da revogação de certificados durante a assinatura";
+                    } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHAINED)) {
+                        toWrite += "O Certificado não está encadeado a um certificado designado como âncora confiável";
+                    } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.EXPIRED)) {
+                        toWrite += "O Certificado expirou";
+                    } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.CHAINED_LOCALLY)) {
+                        toWrite += "A assinatura não contém a âncora completa nem verificações de revogação. No entanto, o certificado do assinante foi emitido por um certificado na âncora confiável";
+                    }
+                    toWrite += newLine + "\t\t";
+                    if (sv.isValidTimeStamp()) {
+                        toWrite += "A Assinatura inclui um carimbo de Data e Hora válido";
+                    } else {
+                        toWrite += "A Data e Hora da assinatura são do relógio do computador do signatário";
+                    }
+                    toWrite += newLine + "\t\t";
+
+                    toWrite += "Revisão: " + sv.getRevision() + " de " + sv.getNumRevisions();
+                    toWrite += newLine + "\t\t";
+                    final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    if (sv.getSignature().getTimeStampToken() == null) {
+                        Calendar cal = sv.getSignature().getSignDate();
+                        String date = df.format(cal.getTime());
+                        toWrite += (date + " (hora do computador do signatário)");
+                    } else {
+                        Calendar ts = sv.getSignature().getTimeStampDate();
+                        String date = df.format(ts.getTime());
+                        toWrite += "Data: " + (date + " +" + (ts.getTimeZone().getRawOffset() < 10 ? "0" : "") + ts.getTimeZone().getRawOffset());
+                    }
+                    toWrite += newLine + "\t\t";
+                    boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);
+                    toWrite += "Habilitada para validação a longo termo: " + (ltv ? "Sim" : "Não");
+                    String reason = sv.getSignature().getReason();
+                    toWrite += newLine + "\t\t";
+                    toWrite += "Razão: ";
+                    if (reason == null) {
+                        toWrite += "Não definida";
+                    } else if (reason.equals("")) {
+                        toWrite += "Não definida";
+                    } else {
+                        toWrite += reason;
+                    }
+                    String location = sv.getSignature().getLocation();
+                    toWrite += newLine + "\t\t";
+                    toWrite += "Localização: : ";
+                    if (location == null) {
+                        toWrite += "Não definido";
+                    } else if (location.equals("")) {
+                        toWrite += "Não definido";
+                    } else {
+                        toWrite += location;
+                    }
+                    toWrite += newLine + "\t\t";
+                    toWrite += "Permite alterações: ";
+                    try {
+                        int certLevel = CCInstance.getInstance().getCertificationLevel(sv.getFilename());
+                        if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING) {
+                            toWrite += "Apenas anotações";
+                        } else if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS) {
+                            toWrite += "Preenchimento de formulário e anotações";
+                        } else if (certLevel == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
+                            toWrite += "Não";
+                        } else {
+                            toWrite += "Sim";
+                        }
+                    } catch (IOException ex) {
+                        controller.Logger.getLogger().addEntry(ex);
+                    }
+                    toWrite += newLine + "\t\t";
+                    if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
+                        toWrite += ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
+                                + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                                + (sv.getSignature().getTimeStampToken() != null ? "O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                    } else if (sv.getSignature().getTimeStampToken() != null) {
+                        toWrite += ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                    }
+                    toWrite += newLine;
+                }
+            }
+            writeToFile(toWrite);
+        }
+        System.out.println(toWrite);
+    }//GEN-LAST:event_btnGuardarActionPerformed
+
+    private void writeToFile(String str) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar como");
+        boolean validPath = false;
+        FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter("Ficheiro de texto (*.txt)", "txt");
+        fileChooser.setFileFilter(pdfFilter);
+        File preferedFile = new File("relatorioValidacao.txt");
+        fileChooser.setSelectedFile(preferedFile);
+
+        while (!validPath) {
+            int userSelection = fileChooser.showSaveDialog(this);
+            if (userSelection == JFileChooser.CANCEL_OPTION) {
+                return;
+            }
+            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                String dest = fileChooser.getSelectedFile().getAbsolutePath();
+                if (new File(dest).exists()) {
+                    String msg = "Já existe um ficheiro na directoria seleccionada com o mesmo nome.\nPretende substituí-lo ou escolher um destino novo?";
+                    Object[] options = {"Substituir", "Escolher destino novo", "Cancelar"};
+                    int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                    if (opt == JOptionPane.YES_OPTION) {
+                        validPath = true;
+                    } else if (opt == JOptionPane.CANCEL_OPTION) {
+                        return;
+                    }
+                } else {
+                    validPath = true;
+                }
+
+                if (validPath) {
+                    try (PrintStream out = new PrintStream(new FileOutputStream(dest))) {
+                        out.print(str);
+                        JOptionPane.showMessageDialog(null, "Relatório de validação guardado com sucesso!", "", JOptionPane.INFORMATION_MESSAGE);
+                    } catch (FileNotFoundException ex) {
+                        controller.Logger.getLogger().addEntry(ex);
+                        JOptionPane.showMessageDialog(null, "Erro ao guardar o relatório de validação!\nVer log para mais informação", "", JOptionPane.ERROR_MESSAGE);
+                    }
+                    break;
+                }
             }
         }
-    }//GEN-LAST:event_btnGuardarActionPerformed
+    }
 
     /**
      * @param args the command line arguments
@@ -714,7 +876,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     .getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        
+
         //</editor-fold>
 
         /* Create and display the dialog */

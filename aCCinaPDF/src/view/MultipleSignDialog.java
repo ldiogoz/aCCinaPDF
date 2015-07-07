@@ -41,18 +41,23 @@ public class MultipleSignDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
+        jProgressBar1.setMinimum(0);
+        jProgressBar1.setMaximum(alFiles.size());
+        jProgressBar1.setString("Assinados: 0 de " + alFiles.size());
+
         final DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
         final SignatureListener sl = new SignatureListener() {
 
             @Override
             public void onSignatureComplete(String filename, boolean valid, String message) {
-                dtm.addRow(new Object[]{filename, valid + " - " + message});
+                dtm.addRow(new Object[]{filename, (valid ? "Assinatura aplicada com sucesso" : "Assinatura falhou") + (message.isEmpty() ? "" : " - " + message)});
             }
         };
 
         Runnable r = new Runnable() {
             @Override
             public void run() {
+                int numSigned = 0;
                 btnFechar.setEnabled(false);
                 for (File file : alFiles) {
                     String destinationPath = "";
@@ -76,13 +81,27 @@ public class MultipleSignDialog extends javax.swing.JDialog {
                     } else {
                         if (file.getName().endsWith(".pdf")) {
                             destinationPath = dest + File.separator + file.getName().substring(0, file.getName().length() - 4).concat("(aCCinado).pdf");
+                            if (new File(destinationPath).exists()) {
+                                int num = 1;
+                                while (!validPath) {
+                                    destinationPath = dest + File.separator + file.getName().substring(0, file.getName().length() - 4).concat("(aCCinado" + num + ").pdf");
+                                    if (new File(destinationPath).exists()) {
+                                        destinationPath = dest + File.separator + file.getName().substring(0, file.getName().length() - 4).concat("(aCCinado).pdf");
+                                        num++;
+                                    } else {
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
 
                     try {
                         // Aplicar
                         if (CCInstance.getInstance().signPdf(file.getAbsolutePath(), destinationPath, settings, sl)) {
-
+                            numSigned++;
+                            jProgressBar1.setValue(numSigned);
+                            jProgressBar1.setString("Assinados: " + numSigned + " de " + alFiles.size());
                         } else {
                             //JOptionPane.showMessageDialog(this, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
                         }
@@ -90,8 +109,12 @@ public class MultipleSignDialog extends javax.swing.JDialog {
                         Logger.getLogger(MultipleSignDialog.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (SignatureFailedException ex) {
                         if (ex.getLocalizedMessage().equals("Acção cancelada pelo utilizador!")) {
-                            int selectedOption = JOptionPane.showConfirmDialog(null, "Deseja cancelar a assinatura dos restantes documentos?", "Assinatura cancelada", JOptionPane.YES_NO_OPTION);
-                            if (selectedOption == JOptionPane.YES_OPTION) {
+                            String msg = "Deseja cancelar a assinatura dos restantes documentos?";
+                            Object[] options = {"Sim", "Não"};
+                            int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                            if (opt == JOptionPane.YES_OPTION) {
+                                jProgressBar1.setValue(jProgressBar1.getMaximum());
+                                jProgressBar1.setString("A assinatura dos restantes documentos foi cancelada");
                                 break;
                             }
                         }
@@ -119,6 +142,8 @@ public class MultipleSignDialog extends javax.swing.JDialog {
         jTable1 = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+
+        jProgressBar1.setStringPainted(true);
 
         btnFechar.setText("Fechar");
         btnFechar.addActionListener(new java.awt.event.ActionListener() {
@@ -199,7 +224,7 @@ public class MultipleSignDialog extends javax.swing.JDialog {
         }
         //</editor-fold>
         //</editor-fold>
-        
+
         //</editor-fold>
         //</editor-fold>
 

@@ -770,7 +770,8 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 } else {
                     msg = "Tem a certeza que quer fechar todos os documentos seleccionados do lote?";
                 }
-                opt = JOptionPane.showConfirmDialog(MainWindow.this, msg, "", JOptionPane.YES_NO_OPTION);
+                Object[] options = {"Sim", "Não"};
+                opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             }
             boolean closedOpenedDocument = false;
             if (!showCloseDialog || opt == JOptionPane.YES_OPTION) {
@@ -831,7 +832,8 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                     msg = "Tem a certeza que quer fechar todos os documentos seleccionados do lote?";
                 }
 
-                opt = JOptionPane.showConfirmDialog(MainWindow.this, msg, "", JOptionPane.YES_NO_OPTION);
+                Object[] options = {"Sim", "Não"};
+                opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             }
             if (!showCloseDialog || opt == JOptionPane.YES_OPTION) {
                 // Apagar da lista de documentos abertos
@@ -1045,7 +1047,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
             controller.Logger.getLogger().addEntry(ex);
         }
         //</editor-fold>
-        
+
         //</editor-fold>
 
         /* Create and display the form */
@@ -1136,7 +1138,9 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                                 jtOpenedDocuments.setSelectionRow(1);
                                 jtOpenedDocuments.scrollRowToVisible(1);
                                 if (showOpenDialog) {
-                                    int opt = JOptionPane.showConfirmDialog(this, "Deseja abrir o documento carregado ou apenas adicioná-lo à lista de assinatura em lote e manter o que está actualmente aberto?", "", JOptionPane.YES_NO_OPTION);
+                                    String msg = "Deseja abrir o documento carregado ou apenas adicioná-lo ao lote e manter o que está actualmente aberto?";
+                                    Object[] options = {"Sim", "Apenas adicionar ao lote"};
+                                    int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                                     if (opt == JOptionPane.YES_OPTION) {
                                         jtOpenedDocuments.setSelectionRow(0);
                                         ctrl.openDocument(selectedFile.getAbsolutePath());
@@ -1290,7 +1294,9 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 jtOpenedDocuments.scrollRowToVisible(0);
             } else {
                 if (tempCount != dmtn.getChildCount()) {
-                    int opt = JOptionPane.showConfirmDialog(this, "Deseja abrir o primeiro dos documentos carregados ou apenas adicioná-los à lista de assinatura em lote e manter o que está actualmente aberto?", "", JOptionPane.YES_NO_OPTION);
+                    String msg = "Deseja abrir o primeiro dos documentos carregados ou apenas adicioná-los ao lote e manter o que está actualmente aberto?";
+                    Object[] options = {"Sim", "Apenas adicionar ao lote"};
+                    int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                     if (opt == JOptionPane.YES_OPTION) {
                         ctrl.openDocument(last.getAbsolutePath());
                         workspacePanel.setDocument(ctrl.getDocument());

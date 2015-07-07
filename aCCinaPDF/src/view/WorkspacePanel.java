@@ -7,7 +7,6 @@ package view;
 
 import model.ImagePanel;
 import com.itextpdf.text.DocumentException;
-import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
@@ -40,7 +39,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +64,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import listener.SignatureClickListener;
 import listener.ValidationListener;
-import model.AppearanceSettings;
 import model.CCAlias;
 import model.CCSignatureSettings;
 import model.CertificateStatus;
@@ -147,10 +144,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             hideRightPanel();
         } else {
             if (status.equals(Status.SIGNING)) {
-                String message = "Ainda não aplicou a assinatura\nDeseja abrir outro documento?";
+                String msg = "Ainda não aplicou a assinatura\nDeseja abrir outro documento?";
 
-                int selectedOption = JOptionPane.showConfirmDialog(mainWindow, message, "Choose", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
-                if (selectedOption == JOptionPane.NO_OPTION) {
+                Object[] options = {"Sim", "Não"};
+                int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                if (opt == JOptionPane.NO_OPTION) {
                     return;
                 }
             }
@@ -210,6 +208,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                             jtValidation.clearSelection();
                         }
                         signatureSettings = new CCSignatureSettings();
+                        btnImage.setText("Carregar Imagem");
                     } else {
                         JOptionPane.showMessageDialog(mainWindow, "Este Documento não pode ser assinado porque foi certificado com um nível\nde certificação que não permite quaisquer alterações ao mesmo.", "Erro", JOptionPane.ERROR_MESSAGE);
                     }
@@ -527,8 +526,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             jSplitPane1.setDividerSize(5);
             jSplitPane1.setDividerLocation(0.6);
         } else if (this.status == Status.SIGNING) {
-            int selectedOption = JOptionPane.showConfirmDialog(mainWindow, "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?", "Choose", JOptionPane.YES_NO_OPTION);
-            if (selectedOption == JOptionPane.YES_OPTION) {
+            String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
+            Object[] options = {"Sim", "Não"};
+            int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            if (opt == JOptionPane.YES_OPTION) {
                 removeTempSignature();
                 cl.show(this.rightPanel, String.valueOf(CardEnum.VALIDATE_PANEL));
             } else {
@@ -1372,8 +1373,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                         changeCard(CardEnum.VALIDATE_PANEL, true);
                         startValidationThread();
                     } else if (WorkspacePanel.this.status == WorkspacePanel.Status.SIGNING) {
-                        int selectedOption = JOptionPane.showConfirmDialog(mainWindow, "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?", "Choose", JOptionPane.YES_NO_OPTION);
-                        if (selectedOption == JOptionPane.YES_OPTION) {
+                        String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
+                        Object[] options = {"Sim", "Não"};
+                        int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                        if (opt == JOptionPane.YES_OPTION) {
                             status = Status.READY;
                             changeCard(CardEnum.VALIDATE_PANEL, true);
                             startValidationThread();
@@ -1422,8 +1425,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 changeCard(CardEnum.VALIDATE_PANEL, true);
                 startValidationThread();
             } else if (WorkspacePanel.this.status == WorkspacePanel.Status.SIGNING) {
-                int selectedOption = JOptionPane.showConfirmDialog(mainWindow, "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?", "Choose", JOptionPane.YES_NO_OPTION);
-                if (selectedOption == JOptionPane.YES_OPTION) {
+                String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
+                Object[] options = {"Sim", "Não"};
+                int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                if (opt == JOptionPane.YES_OPTION) {
                     status = Status.READY;
                     changeCard(CardEnum.VALIDATE_PANEL, true);
                     startValidationThread();
@@ -1438,56 +1443,6 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private void assinarDocumento(Document documento, boolean ocsp, boolean timestamp) {
         try {
             if (tempCCAlias.getCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getCertificate().getPublicKey())) {
-                // Aplicar
-                signatureSettings.setPageNumber(imagePanel.getPageNumber());
-                signatureSettings.setAlias(tempCCAlias.getAlias());
-                signatureSettings.setReason(tfReason.getText());
-                signatureSettings.setLocation(tfLocation.getText());
-                if (jRadioButton1.isSelected()) {
-                    signatureSettings.setCertificationLevel(PdfSignatureAppearance.NOT_CERTIFIED);
-                } else if (jRadioButton2.isSelected()) {
-                    signatureSettings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED);
-                } else if (jRadioButton3.isSelected()) {
-                    signatureSettings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_FORM_FILLING);
-                } else if (jRadioButton4.isSelected()) {
-                    signatureSettings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS);
-                }
-                signatureSettings.setOcspClient(ocsp);
-                if (timestamp && cbTimestamp.isSelected()) {
-                    signatureSettings.setTimestamp(true);
-                    signatureSettings.setTimestampServer(tfTimestamp.getText());
-                } else {
-                    signatureSettings.setTimestamp(false);
-                    cbTimestamp.setSelected(false);
-                    tfTimestamp.setVisible(false);
-                }
-                signatureSettings.setVisibleSignature(cbVisibleSignature.isSelected());
-
-                if (cbVisibleSignature.isSelected()) {
-                    Point p = tempSignature.getScaledPositionOnDocument();
-                    Dimension d = tempSignature.getScaledSizeOnDocument();
-                    float p1 = (float) p.getX();
-                    float p3 = (float) d.getWidth() + p1;
-                    float p2 = (float) ((documento.getPageDimension(imagePanel.getPageNumber(), 0).getHeight()) - (p.getY() + d.getHeight()));
-                    float p4 = (float) d.getHeight() + p2;
-
-                    signatureSettings.setVisibleSignature(true);
-                    if (tempSignature.getImageLocation() != null) {
-                        signatureSettings.getAppearance().setImageLocation(tempSignature.getImageLocation());
-                    }
-                    Rectangle rect = new Rectangle(p1, p2, p3, p4);
-                    signatureSettings.setSignaturePositionOnDocument(rect);
-                    signatureSettings.setText(tfText.getText());
-                    Set<String> fonts = FontFactory.getRegisteredFonts();
-                    for (String fnt : fonts) {
-                        System.out.println(fnt);
-                    }
-                    //com.itextpdf.text.Font font = FontFactory.getFont("albany", BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 22, Font.BOLD, BaseColor.RED);
-                    //settings.getAppearance().setFont(font);
-                } else {
-                    signatureSettings.setVisibleSignature(false);
-                }
-
                 try {
                     String path1 = documento.getDocumentLocation();
                     String path2 = null;
@@ -1499,26 +1454,49 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     JFileChooser fileChooser = new JFileChooser();
                     fileChooser.setDialogTitle("Guardar como");
                     if (null != path2) {
+                        boolean validPath = false;
                         FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter("Documento PDF (*.pdf)", "pdf");
                         fileChooser.setFileFilter(pdfFilter);
                         File preferedFile = new File(path2);
                         fileChooser.setCurrentDirectory(preferedFile);
                         fileChooser.setSelectedFile(preferedFile);
-                    }
-                    int userSelection = fileChooser.showSaveDialog(this);
-                    if (userSelection == JFileChooser.APPROVE_OPTION) {
-                        String dest = fileChooser.getSelectedFile().getAbsolutePath();
-                        if (!CCInstance.getInstance().signPdf(documento.getDocumentLocation(), dest, signatureSettings, null)) {
-                            JOptionPane.showMessageDialog(mainWindow, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
-                            return;
+
+                        while (!validPath) {
+                            int userSelection = fileChooser.showSaveDialog(this);
+                            if (userSelection == JFileChooser.CANCEL_OPTION) {
+                                return;
+                            }
+                            if (userSelection == JFileChooser.APPROVE_OPTION) {
+                                String dest = fileChooser.getSelectedFile().getAbsolutePath();
+                                if (new File(dest).exists()) {
+                                    String msg = "Já existe um ficheiro na directoria seleccionada com o mesmo nome.\nPretende substituí-lo ou escolher um destino novo?";
+                                    Object[] options = {"Substituir", "Escolher destino novo", "Cancelar"};
+                                    int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                                    if (opt == JOptionPane.YES_OPTION) {
+                                        validPath = true;
+                                    } else if (opt == JOptionPane.CANCEL_OPTION) {
+                                        return;
+                                    }
+                                } else {
+                                    validPath = true;
+                                }
+
+                                if (validPath) {
+                                    if (!CCInstance.getInstance().signPdf(documento.getDocumentLocation(), dest, signatureSettings, null)) {
+                                        JOptionPane.showMessageDialog(mainWindow, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
+                                        return;
+                                    }
+                                    status = Status.READY;
+                                    ArrayList<File> list = new ArrayList<>();
+                                    list.add(new File(document.getDocumentLocation()));
+                                    mainWindow.closeDocuments(list, false);
+                                    mainWindow.loadPdf(new File(dest), false);
+                                    hideRightPanel();
+                                    JOptionPane.showMessageDialog(mainWindow, "Assinatura aplicada com sucesso!", "", JOptionPane.INFORMATION_MESSAGE);
+                                    break;
+                                }
+                            }
                         }
-                        status = Status.READY;
-                        ArrayList<File> list = new ArrayList<>();
-                        list.add(new File(document.getDocumentLocation()));
-                        mainWindow.closeDocuments(list, false);
-                        mainWindow.loadPdf(new File(dest), false);
-                        hideRightPanel();
-                        JOptionPane.showMessageDialog(mainWindow, "Assinatura aplicada com sucesso!", "", JOptionPane.INFORMATION_MESSAGE);
                     }
                     return;
                 } catch (IOException ex) {
@@ -1540,8 +1518,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 } catch (SignatureFailedException ex) {
                     if (ex.getLocalizedMessage().equals("TimeStamp falhou: Não tem ligação à Internet ou o URL de Servidor de TimeStamp é inválido!")) {
                         //JOptionPane.showMessageDialog(mainWindow, "Não tem ligação à Internet ou\no URL de Servidor de TimeStamp é inválido!", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
-                        int selectedOption = JOptionPane.showConfirmDialog(mainWindow, "Não aparenta ter uma ligação válida à Internet\nDeseja assinar o documento mesmo assim?\nAtenção: A validação a longo termo não será possível.", "Choose", JOptionPane.YES_NO_OPTION);
-                        if (selectedOption == JOptionPane.YES_OPTION) {
+                        String msg = "Não aparenta ter uma ligação válida à Internet\nDeseja assinar o documento mesmo assim?\nAtenção: A validação a longo termo não será possível.";
+                        Object[] options = {"Sim", "Não"};
+                        int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                        if (opt == JOptionPane.YES_OPTION) {
                             assinarDocumento(documento, false, false);
                         }
                     } else {
@@ -1559,53 +1539,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     }
 
-    public void assinarLote() {
+    public void assinarLote(CCSignatureSettings settings) {
         ArrayList<File> lista = mainWindow.getOpenedFiles();
         try {
             if (tempCCAlias.getCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getCertificate().getPublicKey())) {
-                // Aplicar
-                CCSignatureSettings settings = new CCSignatureSettings();
-                settings.setPageNumber(imagePanel.getPageNumber());
-                settings.setAlias(tempCCAlias.getAlias());
-                settings.setReason(tfReason.getText());
-                settings.setLocation(tfLocation.getText());
-                if (jRadioButton1.isSelected()) {
-                    settings.setCertificationLevel(PdfSignatureAppearance.NOT_CERTIFIED);
-                } else if (jRadioButton2.isSelected()) {
-                    settings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED);
-                } else if (jRadioButton3.isSelected()) {
-                    settings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_FORM_FILLING);
-                } else if (jRadioButton4.isSelected()) {
-                    settings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS);
-                }
-                settings.setOcspClient(true);
-                if (cbTimestamp.isSelected()) {
-                    settings.setTimestamp(true);
-                    settings.setTimestampServer(tfTimestamp.getText());
-                } else {
-                    settings.setTimestamp(false);
-                    cbTimestamp.setSelected(false);
-                    tfTimestamp.setVisible(false);
-                }
-                settings.setVisibleSignature(cbVisibleSignature.isSelected());
-
-                if (cbVisibleSignature.isSelected()) {
-                    Point p = tempSignature.getScaledPositionOnDocument();
-                    Dimension d = tempSignature.getScaledSizeOnDocument();
-                    float p1 = (float) p.getX();
-                    float p3 = (float) d.getWidth() + p1;
-                    float p2 = (float) ((document.getPageDimension(imagePanel.getPageNumber(), 0).getHeight()) - (p.getY() + d.getHeight()));
-                    float p4 = (float) d.getHeight() + p2;
-
-                    settings.setVisibleSignature(true);
-                    settings.setAppearance(new AppearanceSettings());
-                    Rectangle rect = new Rectangle(p1, p2, p3, p4);
-                    settings.setSignaturePositionOnDocument(rect);
-                    settings.setText(tfText.getText());
-                } else {
-                    settings.setVisibleSignature(false);
-                }
-
                 String dest = null;
                 Object[] options = {"Guardar nas directorias dos documentos originais", "Escolher pasta destino", "Cancelar"};
                 int i = JOptionPane.showOptionDialog(null, "Escolha o destino dos ficheiros assinados", "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
@@ -1783,7 +1720,6 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             int ret = jfc.showOpenDialog(this);
             if (ret == JFileChooser.APPROVE_OPTION) {
                 String file = jfc.getSelectedFile().getAbsolutePath();
-                System.out.println(file);
                 try {
                     tempSignature.setImageLocation(file);
                     btnImage.setText("Remover Imagem");
@@ -1798,8 +1734,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     }//GEN-LAST:event_btnImageActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        int selectedOption = JOptionPane.showConfirmDialog(mainWindow, "Deseja realmente cancelar a assinatura?", "Choose", JOptionPane.YES_NO_OPTION);
-        if (selectedOption == JOptionPane.YES_OPTION) {
+        String msg = "Deseja realmente cancelar a assinatura?";
+        Object[] options = {"Sim", "Não"};
+        int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        if (opt == JOptionPane.YES_OPTION) {
             // Cancelar Assinatura
             if (null != exec) {
                 if (!exec.isShutdown()) {
@@ -1816,11 +1754,53 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     private void btnApplySignatureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApplySignatureActionPerformed
         if (tempCCAlias != null) {
+            signatureSettings.setPageNumber(imagePanel.getPageNumber());
+            signatureSettings.setAlias(tempCCAlias.getAlias());
+            signatureSettings.setReason(tfReason.getText());
+            signatureSettings.setLocation(tfLocation.getText());
+            if (jRadioButton1.isSelected()) {
+                signatureSettings.setCertificationLevel(PdfSignatureAppearance.NOT_CERTIFIED);
+            } else if (jRadioButton2.isSelected()) {
+                signatureSettings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED);
+            } else if (jRadioButton3.isSelected()) {
+                signatureSettings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_FORM_FILLING);
+            } else if (jRadioButton4.isSelected()) {
+                signatureSettings.setCertificationLevel(PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS);
+            }
+            signatureSettings.setOcspClient(true);
+            if (cbTimestamp.isSelected()) {
+                signatureSettings.setTimestamp(true);
+                signatureSettings.setTimestampServer(tfTimestamp.getText());
+            } else {
+                signatureSettings.setTimestamp(false);
+                cbTimestamp.setSelected(false);
+                tfTimestamp.setVisible(false);
+            }
+            signatureSettings.setVisibleSignature(cbVisibleSignature.isSelected());
+
+            if (cbVisibleSignature.isSelected()) {
+                Point p = tempSignature.getScaledPositionOnDocument();
+                Dimension d = tempSignature.getScaledSizeOnDocument();
+                float p1 = (float) p.getX();
+                float p3 = (float) d.getWidth() + p1;
+                float p2 = (float) ((document.getPageDimension(imagePanel.getPageNumber(), 0).getHeight()) - (p.getY() + d.getHeight()));
+                float p4 = (float) d.getHeight() + p2;
+
+                signatureSettings.setVisibleSignature(true);
+                if (tempSignature.getImageLocation() != null) {
+                    signatureSettings.getAppearance().setImageLocation(tempSignature.getImageLocation());
+                }
+                Rectangle rect = new Rectangle(p1, p2, p3, p4);
+                signatureSettings.setSignaturePositionOnDocument(rect);
+                signatureSettings.setText(tfText.getText());
+            } else {
+                signatureSettings.setVisibleSignature(false);
+            }
             if (mainWindow.getOpenedFiles().size() > 1) {
                 Object[] options = {"Todos os documentos no lote", "Apenas este documento", "Cancelar"};
                 int i = JOptionPane.showOptionDialog(null, "Existem múltiplos documentos no lote\nPretende assinar todos os documentos no lote ou apenas o documento actualmente aberto?", "Múltiplos documentos no lote", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 if (i == 0) {
-                    assinarLote();
+                    assinarLote(signatureSettings);
                 } else if (i == 1) {
                     assinarDocumento(document, true, true);
                 }

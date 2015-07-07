@@ -119,8 +119,8 @@ import sun.security.pkcs11.SunPKCS11;
 public class CCInstance {
 
     private static final String SIGNATURE_CREATOR = "aCCinaPDF";
-    private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
-    //private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
+    //private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
+    private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
 
     private static CCInstance instance;
 
@@ -393,7 +393,6 @@ public class CCInstance {
         // TimeStamp
         TSAClient tsaClient = null;
         if (settings.isTimestamp()) {
-            System.out.println("is timestamped");
             tsaClient = new TSAClientBouncyCastle(settings.getTimestampServer(), null, null);
         }
 

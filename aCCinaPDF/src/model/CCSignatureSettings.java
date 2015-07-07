@@ -38,7 +38,6 @@ public final class CCSignatureSettings {
     private AppearanceSettings appearance;
 
     public CCSignatureSettings() {
-        appearance = new AppearanceSettings();
         File fsettings = new File("aCCinaPDF.cfg");
         if (!fsettings.exists()) {
             Properties propertiesWrite = new Properties();
@@ -65,6 +64,7 @@ public final class CCSignatureSettings {
                 Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        appearance = new AppearanceSettings();
         appearance.setBold(Boolean.valueOf(getConfigParameter("bold")));
         appearance.setItalic(Boolean.valueOf(getConfigParameter("italic")));
         appearance.setFontLocation(getConfigParameter("fontLocation"));
