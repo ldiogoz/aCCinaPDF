@@ -95,7 +95,7 @@ public class AboutDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel12.setText("0.13");
+        jLabel12.setText("0.14");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -176,7 +176,7 @@ public class AboutDialog extends javax.swing.JDialog {
 
     private void jLabel4MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel4MouseClicked
         try {
-            java.awt.Desktop.getDesktop().browse(new URI("www.google.pt"));
+            java.awt.Desktop.getDesktop().browse(new URI("https://github.com/ldiogoz/aCCinaPDF"));
         } catch (URISyntaxException | IOException ex) {
             Logger.getLogger(AboutDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
