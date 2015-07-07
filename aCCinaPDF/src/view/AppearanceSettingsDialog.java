@@ -40,6 +40,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
     /**
      * Creates new form NewJDialog
+     *
      * @param parent
      * @param modal
      * @param signatureSettings
@@ -48,7 +49,6 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.signatureSettings = signatureSettings;
-        previewPanel1.setAliasName(signatureSettings.getAlias());
 
         // Pastas conforme o SO
         ArrayList<String> dirs = new ArrayList<>();
@@ -129,16 +129,16 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         model.addChangeListener(changeListener);
 
         if (italic && bold) {
-            lblSignature.setFont(new Font(fontLocation, Font.ITALIC + Font.BOLD, 25));
+            lblSignature.setFont(new Font(fontLocation, Font.ITALIC + Font.BOLD, 36));
         } else if (italic && !bold) {
-            lblSignature.setFont(new Font(fontLocation, Font.ITALIC, 25));
+            lblSignature.setFont(new Font(fontLocation, Font.ITALIC, 36));
         } else if (!italic && bold) {
-            lblSignature.setFont(new Font(fontLocation, Font.BOLD, 25));
+            lblSignature.setFont(new Font(fontLocation, Font.BOLD, 36));
         } else {
-            lblSignature.setFont(new Font(fontLocation, Font.PLAIN, 25));
+            lblSignature.setFont(new Font(fontLocation, Font.PLAIN, 36));
         }
 
-        updateSettings(fontLocation, 25, bold, italic);
+        updateSettings(fontLocation, bold, italic);
 
         previewPanel1.repaint();
     }
@@ -180,7 +180,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         }
     }
 
-    private void updateSettings(String font, int size, boolean bold, boolean italic) {
+    private void updateSettings(String font, boolean bold, boolean italic) {
         ComboBoxModel model2 = (ComboBoxModel) cbFontType.getModel();
         for (int i = 0; i < model2.getSize(); i++) {
             if (cbFontType.getItemAt(i).toString().equalsIgnoreCase(FontFactory.getFont(font).getFamilyname())) {
@@ -487,25 +487,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         return null;
     }
 
-    private String getConfigParameter(String parameter) {
-        Properties propertiesRead = new Properties();
-        String value = "";
-        try {
-            propertiesRead.load(new FileInputStream("aCCinaPDF.cfg"));
-            value = propertiesRead.getProperty(parameter);
-        } catch (FileNotFoundException ex) {
-            controller.Logger.getLogger().addEntry(ex);
-            return "Not Found";
-
-        } catch (IOException ex) {
-            controller.Logger.getLogger().addEntry(ex);
-            return "Not Found";
-        }
-        return value;
-    }
-
     private void writeFile() {
-
         Properties propertiesWrite = new Properties();
         File file = new File("aCCinaPDF.cfg");
         FileOutputStream fileOut;
@@ -527,20 +509,18 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         } catch (IOException ex) {
             Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
-
     }
 
     private void changeLabel() {
         String font = getFontCbBox();
-
         if (checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(font, Font.BOLD + Font.ITALIC, 25));
+            lblSignature.setFont(new Font(font, Font.BOLD + Font.ITALIC, 36));
         } else if (checkBoxBold.isSelected() && !checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(font, Font.BOLD, 25));
+            lblSignature.setFont(new Font(font, Font.BOLD, 36));
         } else if (!checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(font, Font.ITALIC, (Integer) 25));
+            lblSignature.setFont(new Font(font, Font.ITALIC, (Integer) 36));
         } else {
-            lblSignature.setFont(new Font(cbFontType.getSelectedItem().toString(), Font.PLAIN, (Integer) 25));
+            lblSignature.setFont(new Font(cbFontType.getSelectedItem().toString(), Font.PLAIN, (Integer) 36));
         }
     }
 
@@ -569,7 +549,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         }
         //</editor-fold>
         //</editor-fold>
-        
+
         //</editor-fold>
         //</editor-fold>
 
