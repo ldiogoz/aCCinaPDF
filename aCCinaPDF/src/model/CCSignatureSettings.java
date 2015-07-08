@@ -45,7 +45,6 @@ public final class CCSignatureSettings {
             FileOutputStream fileOut;
             try {
                 propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
-                propertiesWrite.setProperty("fontSize", "25");
                 propertiesWrite.setProperty("fontItalic", "true");
                 propertiesWrite.setProperty("fontBold", "false");
                 propertiesWrite.setProperty("showName", "true");

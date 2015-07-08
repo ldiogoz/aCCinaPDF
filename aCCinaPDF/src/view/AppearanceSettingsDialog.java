@@ -147,6 +147,9 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         } else {
             lblSignature.setFont(new Font(fontLocation, Font.PLAIN, 36));
         }
+        
+        checkBoxBold.setSelected(bold);
+        checkBoxItalic.setSelected(italic);
 
         updateSettings(fontLocation, bold, italic);
 
