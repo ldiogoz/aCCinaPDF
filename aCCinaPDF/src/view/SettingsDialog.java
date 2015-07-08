@@ -6,6 +6,7 @@
 package view;
 
 import com.itextpdf.text.pdf.PdfWriter;
+import controller.Logger;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -61,6 +62,12 @@ public class SettingsDialog extends javax.swing.JDialog {
             default:
                 jComboBox1.setSelectedIndex(5);
         }
+        
+        //preenchimento da largura e altura da assinatura
+        int signatureWidth = Integer.parseInt(getConfigParameter("signatureWidth"));
+        int signatureHeight = Integer.parseInt(getConfigParameter("signatureHeight"));
+        txtHeight.setText(String.valueOf(signatureHeight));
+        txtWidth.setText(String.valueOf(signatureWidth));
     }
 
     private String getConfigParameter(String parameter) {
@@ -96,8 +103,8 @@ public class SettingsDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jSpinner1 = new javax.swing.JSpinner();
-        jSpinner2 = new javax.swing.JSpinner();
+        txtHeight = new javax.swing.JTextField();
+        txtWidth = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -133,11 +140,11 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel3)
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jSpinner1)
-                    .addComponent(jSpinner2))
-                .addGap(10, 10, 10))
+                    .addComponent(txtHeight)
+                    .addComponent(txtWidth))
+                .addContainerGap())
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -145,12 +152,12 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
-                    .addComponent(jSpinner1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(txtHeight, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jSpinner2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(41, Short.MAX_VALUE))
+                    .addComponent(txtWidth, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(44, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -181,7 +188,7 @@ public class SettingsDialog extends javax.swing.JDialog {
                     .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 79, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 31, Short.MAX_VALUE)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jButton1)
                     .addComponent(jButton2))
@@ -196,6 +203,24 @@ public class SettingsDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        int signatureHeight = 0;
+        int signatureWidth = 0;
+        try{
+            signatureHeight = Integer.parseInt(txtHeight.getText());
+            signatureWidth = Integer.parseInt(txtWidth.getText());
+            
+        }catch(NumberFormatException ex){
+            Logger.getLogger().addEntry(ex);
+        }
+        if(signatureHeight < 1){
+            JOptionPane.showMessageDialog(this, "Altura de assinatura inválida, insira um número maior que 0", "Altura inválida", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if(signatureWidth < 1){
+            JOptionPane.showMessageDialog(this, "Largura de assinatura inválida, insira um número maior que 0", "Largura inválida", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        
         try {
             Properties propertiesWrite;
             try (FileInputStream in = new FileInputStream("aCCinaPDF.cfg")) {
@@ -206,6 +231,8 @@ public class SettingsDialog extends javax.swing.JDialog {
             FileOutputStream fileOut;
             
             propertiesWrite.setProperty("pdfversion", String.valueOf(jComboBox1.getSelectedItem()));
+            propertiesWrite.setProperty("signatureWidth", txtWidth.getText());
+            propertiesWrite.setProperty("signatureHeight", txtHeight.getText());
             fileOut = new FileOutputStream(file);
             propertiesWrite.store(fileOut, "Settings");
             fileOut.close();
@@ -266,7 +293,7 @@ public class SettingsDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JSpinner jSpinner1;
-    private javax.swing.JSpinner jSpinner2;
+    private javax.swing.JTextField txtHeight;
+    private javax.swing.JTextField txtWidth;
     // End of variables declaration//GEN-END:variables
 }

@@ -26,6 +26,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -39,6 +40,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -245,6 +247,23 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             JOptionPane.showMessageDialog(mainWindow, "O Ficheiro extraído está corrompido e não pôde ser aberto", "Erro", JOptionPane.ERROR_MESSAGE);
             controller.Logger.getLogger().addEntry("O Ficheiro está corrompido");
         }
+    }
+    
+    private String getConfigParameter(String parameter) {
+        Properties propertiesRead = new Properties();
+        String value = "";
+        try {
+            propertiesRead.load(new FileInputStream("aCCinaPDF.cfg"));
+            value = propertiesRead.getProperty(parameter);
+        } catch (FileNotFoundException ex) {
+            controller.Logger.getLogger().addEntry(ex);
+            return "Not Found";
+
+        } catch (IOException ex) {
+            controller.Logger.getLogger().addEntry(ex);
+            return "Not Found";
+        }
+        return value;
     }
 
     private boolean testPdf(File toTest) {
@@ -465,8 +484,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     public void createTempSignature() {
         if (null == tempSignature) {
-            int sizeX = 403;
-            int sizeY = 35; //(int) document.getPageDimension(imagePanel.getPageNumber(), 0).getHeight() / 10;
+            int sizeX = Integer.parseInt(getConfigParameter("signatureWidth"));
+            int sizeY = Integer.parseInt(getConfigParameter("signatureHeight")); //(int) document.getPageDimension(imagePanel.getPageNumber(), 0).getHeight() / 10;
             tempSignature = new Signature(document, imagePanel.getPageNumber(), imagePanel, new Dimension(sizeX, sizeY));
             int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
             int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);

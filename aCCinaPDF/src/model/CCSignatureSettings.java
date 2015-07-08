@@ -53,6 +53,8 @@ public final class CCSignatureSettings {
                 propertiesWrite.setProperty("showLocation", "true");
                 propertiesWrite.setProperty("showDate", "true");
                 propertiesWrite.setProperty("fontColor", "0");
+                propertiesWrite.setProperty("signatureWidth", "403");
+                propertiesWrite.setProperty("signatureHeight", "25");
                 propertiesWrite.setProperty("pdfversion", String.valueOf(PdfWriter.PDF_VERSION_1_7));
                 fileOut = new FileOutputStream(file);
                 propertiesWrite.store(fileOut, "Settings");
