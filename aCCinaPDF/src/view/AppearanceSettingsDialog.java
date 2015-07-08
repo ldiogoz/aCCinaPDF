@@ -91,7 +91,12 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
         previewPanel1.setReason(signatureSettings.getReason());
         previewPanel1.setShowDate(showDate);
-        previewPanel1.setAliasName(signatureSettings.getCCAlias().getName());
+        
+        if(signatureSettings.getCCAlias() != null){
+            previewPanel1.setAliasName(signatureSettings.getCCAlias().getName());
+        }else{
+            previewPanel1.setAliasName("Nome");
+        }
 
         if (!signatureSettings.getLocation().isEmpty()) {
             previewPanel1.setLocation(signatureSettings.getLocation());
