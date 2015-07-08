@@ -91,7 +91,7 @@ public class ImagePanel extends JPanel {
 
     final private ArrayList<JPanel> panelList = new ArrayList<>();
 
-    public void refreshSignatureValidationListPanels() {
+    public synchronized void refreshSignatureValidationListPanels() {
         for (JPanel jp : panelList) {
             remove(jp);
         }

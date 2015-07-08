@@ -8,6 +8,7 @@ package model;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -31,18 +32,18 @@ public class FileSystemModel implements TreeModel {
                 ff = new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
-                          return name.toLowerCase().contains(match.toLowerCase());
-                        
+                        return name.toLowerCase().contains(match.toLowerCase());
+
                         /* SO FICHEIROS
                         
-                        if ((new File(dir.getAbsolutePath() + System.getProperty("file.separator") + name)).isFile()) {
-                            if (name.contains(match)) {
-                                return name.toLowerCase().contains(match.toLowerCase());
-                            }
-                        } else {
-                            return true;
-                        }
-                        return false;*/
+                         if ((new File(dir.getAbsolutePath() + System.getProperty("file.separator") + name)).isFile()) {
+                         if (name.contains(match)) {
+                         return name.toLowerCase().contains(match.toLowerCase());
+                         }
+                         } else {
+                         return true;
+                         }
+                         return false;*/
                     }
                 };
             } else {
@@ -91,6 +92,16 @@ public class FileSystemModel implements TreeModel {
             }
         }
 
+        Comparator<String> strCompare = new Comparator<String>() {
+            @Override
+            public int compare(String str1, String str2) {
+                return str1.compareTo(str2);
+            }
+        };
+
+        folders.sort(strCompare);
+        files.sort(strCompare);
+        
         int len = folders.size() + files.size();
         String[] children2 = new String[len];
 

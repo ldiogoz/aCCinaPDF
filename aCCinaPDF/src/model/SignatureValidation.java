@@ -8,6 +8,8 @@ package model;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.security.PdfPKCS7;
+import com.itextpdf.text.pdf.security.SignaturePermissions;
+import controller.CCInstance;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;
@@ -41,8 +43,10 @@ public class SignatureValidation {
     private final List<AcroFields.FieldPosition> posList;
     private final JPanel panel;
     private SignatureClickListener listener;
+    private final SignaturePermissions signaturePermissions;
+    private final boolean valid;
 
-    public SignatureValidation(String filename, String name, PdfPKCS7 pdfPkcs7, boolean changed, boolean coversEntireDocument, int revision, int numRevisions, int certificationLevel, CertificateStatus ocspCertificateStatus, CertificateStatus crlCertificateStatus, boolean validTimeStamp, List<AcroFields.FieldPosition> posList) {
+    public SignatureValidation(String filename, String name, PdfPKCS7 pdfPkcs7, boolean changed, boolean coversEntireDocument, int revision, int numRevisions, int documentCertificationLevel, CertificateStatus ocspCertificateStatus, CertificateStatus crlCertificateStatus, boolean validTimeStamp, List<AcroFields.FieldPosition> posList, SignaturePermissions signaturePermissions, boolean valid) {
         this.filename = filename;
         this.name = name;
         this.pdfPkcs7 = pdfPkcs7;
@@ -50,7 +54,9 @@ public class SignatureValidation {
         this.coversEntireDocument = coversEntireDocument;
         this.revision = revision;
         this.numRevisions = numRevisions;
-        this.certificationLevel = certificationLevel;
+        this.certificationLevel = documentCertificationLevel;
+        this.signaturePermissions = signaturePermissions;
+        this.valid = valid;
         this.ocspCertificateStatus = ocspCertificateStatus;
         this.crlCertificateStatus = crlCertificateStatus;
         this.validTimeStamp = validTimeStamp;
@@ -70,6 +76,14 @@ public class SignatureValidation {
                 }
             }
         });
+    }
+
+    public boolean isValid() {
+        return valid;
+    }
+
+    public SignaturePermissions getSignaturePermissions() {
+        return signaturePermissions;
     }
 
     public int getNumRevisions() {
@@ -124,16 +138,8 @@ public class SignatureValidation {
         return revision;
     }
 
-    public boolean isValid() {
-        //TODO
-        return !changed;
-    }
-
-    public boolean isCertified() {
-        return (coversEntireDocument
-                && certificationLevel == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED
-                || certificationLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING
-                || certificationLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS);
+    public boolean isCertification() {
+        return (signaturePermissions.isCertification());
     }
 
     public boolean isWarning() {

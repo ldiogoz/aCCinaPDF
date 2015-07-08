@@ -10,6 +10,8 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import controller.CCInstance;
 import exception.RevisionExtractionException;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -46,6 +48,7 @@ import model.SignatureValidation;
 import model.TreeNodeWithState;
 import model.ValidationFileListEntry;
 import model.FileListTreeCellRenderer;
+import model.SignatureStatus;
 import model.ValidationTreeCellRenderer;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.icepdf.ri.common.ComponentKeyBinding;
@@ -96,11 +99,11 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     }
                     if (!(tempEntry.getKey().getValidationStatus().equals(ValidationFileListEntry.ValidationStatus.WARNING)
                             || tempEntry.getKey().getValidationStatus().equals(ValidationFileListEntry.ValidationStatus.INVALID))) {
-                        if (sv.isChanged()) {
+                        /* if (sv.isChanged() || sv.getSignatureStatus() == SignatureStatus.INVALID_CERTIFICATED) {
+                         tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
+                         } else*/ if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
                             tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
-                        } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
-                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
-                        } else if (sv.isCoversEntireDocument() && sv.isCertified()) {
+                        } else if (sv.isCoversEntireDocument() && sv.isCertification()) {
                             tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.CERTIFIED);
                         } else {
                             tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.ALL_OK);
@@ -146,7 +149,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         jtValidation.setVisible(
                 true);
 
-        FileListTreeCellRenderer renderer1 = new FileListTreeCellRenderer(jtFiles);
+        FileListTreeCellRenderer renderer1 = new FileListTreeCellRenderer();
         jtFiles.setCellRenderer(renderer1);
         ToolTipManager.sharedInstance().registerComponent(jtFiles);
         ValidationTreeCellRenderer renderer = new ValidationTreeCellRenderer();
@@ -203,13 +206,33 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             }
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                lblAdvanced.setText("<html>" + "O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: <u>" + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + "</u>" + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                        + (sv.getSignature().getTimeStampToken() != null ? "<br>O carimbo de data e hora é válido e foi assinado por: <u>" + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") + "</u>" : "") + "</html>");
+                final String msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
+                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
+                lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent evt) {
+                        if (SwingUtilities.isLeftMouseButton(evt)) {
+                            JOptionPane.showMessageDialog(null, msg);
+                        }
+                    }
+                });
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                lblAdvanced.setText("<html>O carimbo de data e hora é válido e foi assinado por: <u>" + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") + "</u></html>");
-            } else {
-                lblAdvanced.setText("");
+                final String msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
+                lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent evt) {
+                        if (SwingUtilities.isLeftMouseButton(evt)) {
+                            JOptionPane.showMessageDialog(null, msg);
+                        }
+                    }
+                });
             }
 
             panelSignatureDetails.setVisible(true);
@@ -297,13 +320,14 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         lblRevision = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         lblLTV = new javax.swing.JLabel();
-        lblAdvanced = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         lblReason = new javax.swing.JLabel();
         lblLocation = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         lblAllowsChanges = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        lblAdditionalInfo = new javax.swing.JLabel();
         btnFechar = new javax.swing.JButton();
         progressBar = new javax.swing.JProgressBar();
         btnGuardar = new javax.swing.JButton();
@@ -372,8 +396,6 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
 
         lblLTV.setText(" ");
 
-        lblAdvanced.setText(" ");
-
         jLabel3.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel3.setText("Razão:");
 
@@ -389,6 +411,11 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
 
         lblAllowsChanges.setText(" ");
 
+        jLabel7.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel7.setText("Informação adicional:");
+
+        lblAdditionalInfo.setText("Nenhuma");
+
         javax.swing.GroupLayout panelSignatureDetailsLayout = new javax.swing.GroupLayout(panelSignatureDetails);
         panelSignatureDetails.setLayout(panelSignatureDetailsLayout);
         panelSignatureDetailsLayout.setHorizontalGroup(
@@ -396,41 +423,40 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
                         .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                .addComponent(jLabel2)
+                                .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblLTV))
+                                .addComponent(lblRevision))
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                .addComponent(jLabel6)
+                                .addComponent(jLabel4)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(lblAllowsChanges)))
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelSignatureDetailsLayout.createSequentialGroup()
-                        .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(lblAdvanced, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelSignatureDetailsLayout.createSequentialGroup()
-                                .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                        .addComponent(jLabel1)
+                                .addComponent(lblDate))
+                            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblReason))
+                            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                                .addComponent(jLabel5)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblLocation))
+                            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                                .addComponent(jLabel7)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblAdditionalInfo))
+                            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                                .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelSignatureDetailsLayout.createSequentialGroup()
+                                        .addComponent(jLabel6)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(lblRevision))
-                                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                        .addComponent(jLabel4)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(lblDate))
-                                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                        .addComponent(jLabel3)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(lblReason))
-                                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                        .addComponent(jLabel5)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(lblLocation)))
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())))
+                                        .addComponent(lblAllowsChanges, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                    .addComponent(jLabel2))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblLTV)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         panelSignatureDetailsLayout.setVerticalGroup(
             panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -460,8 +486,10 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel6)
                     .addComponent(lblAllowsChanges))
-                .addGap(10, 10, 10)
-                .addComponent(lblAdvanced, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel7)
+                    .addComponent(lblAdditionalInfo))
                 .addContainerGap())
         );
 
@@ -475,9 +503,9 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
-                .addComponent(jsp2, javax.swing.GroupLayout.DEFAULT_SIZE, 407, Short.MAX_VALUE)
+                .addComponent(jsp2, javax.swing.GroupLayout.DEFAULT_SIZE, 469, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelSignatureDetails, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(panelSignatureDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jSplitPane1.setRightComponent(jPanel1);
@@ -593,17 +621,25 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             DefaultMutableTreeNode sig = new DefaultMutableTreeNode(sv);
 
             TreeNodeWithState childChanged = null;
-            if (sv.isChanged()) {
-                childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi certificado", TreeNodeWithState.State.INVALID);
-            } else {
-                if (sv.isCoversEntireDocument()) {
-                    if (sv.isCertified()) {
-                        childChanged = new TreeNodeWithState("O Documento está certificado e não foi modificado", TreeNodeWithState.State.CERTIFIED);
+            if (sv.isCertification()) {
+                if (sv.isValid()) {
+                    if (sv.isChanged() || !sv.isCoversEntireDocument()) {
+                        childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela certificação não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.CERTIFIED_WARNING);
                     } else {
-                        childChanged = new TreeNodeWithState("O Documento não foi alterado desde que esta assinatura foi aplicada", TreeNodeWithState.State.VALID);
+                        childChanged = new TreeNodeWithState("O Documento está certificado e não foi modificado", TreeNodeWithState.State.CERTIFIED);
                     }
                 } else {
-                    childChanged = new TreeNodeWithState("A revisão do Documento que é coberto pela assinatura não foi alterado. No entanto, ocorreram alterações posteriores ao Documento", TreeNodeWithState.State.WARNING);
+                    childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta certificação", TreeNodeWithState.State.INVALID);
+                }
+            } else {
+                if (sv.isValid()) {
+                    if (sv.isChanged()) {
+                        childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela assinatura não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.VALID_WARNING);
+                    } else {
+                        childChanged = new TreeNodeWithState("O Documento está assinado e não foi modificado", TreeNodeWithState.State.VALID);
+                    }
+                } else {
+                    childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta assinatura", TreeNodeWithState.State.INVALID);
                 }
             }
 
@@ -707,19 +743,31 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
 
                 for (SignatureValidation sv : entry.getValue()) {
                     toWrite += "\t" + sv.getName() + " - ";
-                    toWrite += (sv.isCertified() ? "Certificado" : "Assinado") + " por " + sv.getSignerName();
+                    toWrite += (sv.isCertification() ? "Certificado" : "Assinado") + " por " + sv.getSignerName();
                     toWrite += newLine + "\t\t";
                     if (sv.isChanged()) {
                         toWrite += "O Documento foi alterado ou corrompido desde que foi certificado";
                     } else {
-                        if (sv.isCoversEntireDocument()) {
-                            if (sv.isCertified()) {
-                                toWrite += "O Documento está certificado e não foi modificado";
+                        if (sv.isCertification()) {
+                            if (sv.isValid()) {
+                                if (sv.isChanged() || !sv.isCoversEntireDocument()) {
+                                    toWrite += "A revisão do documento que é coberto pela certificação não foi alterada. No entanto, ocorreram alterações posteriores ao documento";
+                                } else {
+                                    toWrite += "O Documento está certificado e não foi modificado";
+                                }
                             } else {
-                                toWrite += "O Documento não foi alterado desde que esta assinatura foi aplicada";
+                                toWrite += "O Documento foi alterado ou corrompido desde que foi aplicada esta certificação";
                             }
                         } else {
-                            toWrite += "A revisão do Documento que é coberto pela assinatura não foi alterado. No entanto, ocorreram alterações posteriores ao Documento";
+                            if (sv.isValid()) {
+                                if (sv.isChanged()) {
+                                    toWrite += "A revisão do documento que é coberto pela assinatura não foi alterada. No entanto, ocorreram alterações posteriores ao documento";
+                                } else {
+                                    toWrite += "O Documento está assinado e não foi modificado";
+                                }
+                            } else {
+                                toWrite += "O Documento foi alterado ou corrompido desde que foi aplicada esta assinatura";
+                            }
                         }
                     }
                     toWrite += newLine + "\t\t";
@@ -905,13 +953,14 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JScrollPane jsp1;
     private javax.swing.JScrollPane jsp2;
     private javax.swing.JTree jtFiles;
     private javax.swing.JTree jtValidation;
-    private javax.swing.JLabel lblAdvanced;
+    private javax.swing.JLabel lblAdditionalInfo;
     private javax.swing.JLabel lblAllowsChanges;
     private javax.swing.JLabel lblDate;
     private javax.swing.JLabel lblLTV;

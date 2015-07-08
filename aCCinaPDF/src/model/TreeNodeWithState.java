@@ -20,6 +20,7 @@ public class TreeNodeWithState extends DefaultMutableTreeNode {
         CERTIFIED,
         VALID,
         VALID_WARNING,
+        CERTIFIED_WARNING,
         WARNING,
         INVALID,
         NOT_SIGNED

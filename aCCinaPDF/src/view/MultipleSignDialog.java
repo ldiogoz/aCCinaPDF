@@ -28,6 +28,8 @@ import model.CCSignatureSettings;
  */
 public class MultipleSignDialog extends javax.swing.JDialog {
 
+    private final ArrayList<File> signedDocsList = new ArrayList<>();
+
     /**
      * Creates new form MultipleSignStatusDialog
      *
@@ -99,9 +101,11 @@ public class MultipleSignDialog extends javax.swing.JDialog {
                     try {
                         // Aplicar
                         if (CCInstance.getInstance().signPdf(file.getAbsolutePath(), destinationPath, settings, sl)) {
+                            signedDocsList.add(new File(destinationPath));
                             numSigned++;
                             jProgressBar1.setValue(numSigned);
                             jProgressBar1.setString("Assinados: " + numSigned + " de " + alFiles.size());
+
                         } else {
                             //JOptionPane.showMessageDialog(this, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
                         }
@@ -125,6 +129,10 @@ public class MultipleSignDialog extends javax.swing.JDialog {
         };
         Thread t = new Thread(r);
         t.start();
+    }
+
+    public ArrayList<File> getSignedDocsList() {
+        return signedDocsList;
     }
 
     /**

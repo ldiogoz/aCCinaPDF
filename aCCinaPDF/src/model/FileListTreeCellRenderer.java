@@ -7,9 +7,10 @@ package model;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.font.TextAttribute;
 import java.io.File;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JTree;
@@ -25,15 +26,12 @@ public class FileListTreeCellRenderer extends DefaultTreeCellRenderer {
 
     private static final Icon icon = new ImageIcon(FileListTreeCellRenderer.class.getResource("/image/pdf_ico.jpg"));
     private MainWindow mainWindow;
-    private final JTree tree;
 
-    public FileListTreeCellRenderer(JTree tree) {
-        this.tree = tree;
+    public FileListTreeCellRenderer() {
     }
 
-    public FileListTreeCellRenderer(MainWindow mainWindow, JTree tree) {
+    public FileListTreeCellRenderer(MainWindow mainWindow) {
         this.mainWindow = mainWindow;
-        this.tree = tree;
     }
 
     @Override
@@ -68,21 +66,23 @@ public class FileListTreeCellRenderer extends DefaultTreeCellRenderer {
             if (openedFile != null) {
                 setIcon(icon);
                 File file = (File) (node.getUserObject());
+                Font font = getFont();
+                Map attributes = font.getAttributes();
                 if (file.equals(openedFile)) {
-                    setFont(new Font(Font.SANS_SERIF, Font.BOLD, 15));
+                    setForeground(Color.BLACK);
+                    attributes.put(TextAttribute.UNDERLINE, TextAttribute.UNDERLINE_ON);
+                    setFont(font.deriveFont(attributes));
                 } else {
-                    setFont(new Font(Font.SANS_SERIF, 0, 15));
+                    setForeground(Color.GRAY);
+                    attributes.put(TextAttribute.UNDERLINE, false);
+                    setFont(font.deriveFont(attributes));
                 }
+                tree.repaint();
             }
         }
 
         this.setToolTipText(getText());
 
         return this;
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return tree.getSize();
     }
 }

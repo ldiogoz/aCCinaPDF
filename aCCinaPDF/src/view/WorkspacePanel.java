@@ -25,6 +25,8 @@ import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -70,6 +72,7 @@ import model.CCAlias;
 import model.CCSignatureSettings;
 import model.CertificateStatus;
 import model.Signature;
+import model.SignatureStatus;
 import model.SignatureValidation;
 import model.TreeNodeWithState;
 import model.ValidationTreeCellRenderer;
@@ -176,7 +179,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             try {
                 boolean permiteAlteracoes = CCInstance.getInstance().getCertificationLevel(document.getDocumentLocation()) != PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED;
                 btnSign.setEnabled(permiteAlteracoes);
-                btnSign.setText((permiteAlteracoes ? "Assinar" : "Documento Assinado e não permite alterações "));
+                btnSign.setText((permiteAlteracoes ? "Assinar" : "O Documento não permite alterações"));
             } catch (IOException ex) {
                 controller.Logger.getLogger().addEntry(ex);
             }
@@ -248,7 +251,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             controller.Logger.getLogger().addEntry("O Ficheiro está corrompido");
         }
     }
-    
+
     private String getConfigParameter(String parameter) {
         Properties propertiesRead = new Properties();
         String value = "";
@@ -314,17 +317,25 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                                     DefaultMutableTreeNode sig = new DefaultMutableTreeNode(sv);
 
                                     TreeNodeWithState childChanged = null;
-                                    if (sv.isChanged()) {
-                                        childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi certificado", TreeNodeWithState.State.INVALID);
-                                    } else {
-                                        if (sv.isCoversEntireDocument()) {
-                                            if (sv.isCertified()) {
-                                                childChanged = new TreeNodeWithState("O Documento está certificado e não foi modificado", TreeNodeWithState.State.CERTIFIED);
+                                    if (sv.isCertification()) {
+                                        if (sv.isValid()) {
+                                            if (sv.isChanged() || !sv.isCoversEntireDocument()) {
+                                                childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela certificação não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.CERTIFIED_WARNING);
                                             } else {
-                                                childChanged = new TreeNodeWithState("O Documento não foi alterado desde que esta assinatura foi aplicada", TreeNodeWithState.State.VALID);
+                                                childChanged = new TreeNodeWithState("O Documento está certificado e não foi modificado", TreeNodeWithState.State.CERTIFIED);
                                             }
                                         } else {
-                                            childChanged = new TreeNodeWithState("<html>A revisão do Documento que é coberto pela assinatura não foi alterado.<br>No entanto, ocorreram alterações posteriores ao Documento</html>", TreeNodeWithState.State.VALID_WARNING);
+                                            childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta certificação", TreeNodeWithState.State.INVALID);
+                                        }
+                                    } else {
+                                        if (sv.isValid()) {
+                                            if (sv.isChanged()) {
+                                                childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela assinatura não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.VALID_WARNING);
+                                            } else {
+                                                childChanged = new TreeNodeWithState("O Documento está assinado e não foi modificado", TreeNodeWithState.State.VALID);
+                                            }
+                                        } else {
+                                            childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta assinatura", TreeNodeWithState.State.INVALID);
                                         }
                                     }
 
@@ -485,7 +496,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     public void createTempSignature() {
         if (null == tempSignature) {
             int sizeX = Integer.parseInt(getConfigParameter("signatureWidth"));
-            int sizeY = Integer.parseInt(getConfigParameter("signatureHeight")); //(int) document.getPageDimension(imagePanel.getPageNumber(), 0).getHeight() / 10;
+            int sizeY = Integer.parseInt(getConfigParameter("signatureHeight"));
             tempSignature = new Signature(document, imagePanel.getPageNumber(), imagePanel, new Dimension(sizeX, sizeY));
             int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
             int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
@@ -642,7 +653,6 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         jLabel9 = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        lblAdvanced = new javax.swing.JLabel();
         lblRevision = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         lblReason = new javax.swing.JLabel();
@@ -650,6 +660,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         lblLTV = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
         lblAllowsChanges = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        lblAdditionalInfo = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
@@ -949,7 +961,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addComponent(lbTimestamp)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tfTimestamp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(345, Short.MAX_VALUE))
+                .addContainerGap(357, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Geral", tabGeneral);
@@ -1009,7 +1021,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -1135,8 +1147,6 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         jLabel11.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel11.setText("Habilitada para Validação a longo termo:");
 
-        lblAdvanced.setText(" ");
-
         lblRevision.setForeground(new java.awt.Color(0, 0, 255));
         lblRevision.setText(" ");
         lblRevision.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1158,11 +1168,15 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         lblAllowsChanges.setText(" ");
 
+        jLabel13.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        jLabel13.setText("Informação adicional:");
+
+        lblAdditionalInfo.setText("Nenhuma");
+
         javax.swing.GroupLayout panelSignatureDetailsLayout = new javax.swing.GroupLayout(panelSignatureDetails);
         panelSignatureDetails.setLayout(panelSignatureDetailsLayout);
         panelSignatureDetailsLayout.setHorizontalGroup(
             panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(lblAdvanced, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(btnCheckCertificate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1189,7 +1203,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
                         .addComponent(jLabel12)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblAllowsChanges)))
+                        .addComponent(lblAllowsChanges))
+                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                        .addComponent(jLabel13)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblAdditionalInfo)))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         panelSignatureDetailsLayout.setVerticalGroup(
@@ -1221,7 +1239,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     .addComponent(jLabel12)
                     .addComponent(lblAllowsChanges))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblAdvanced, javax.swing.GroupLayout.PREFERRED_SIZE, 74, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel13)
+                    .addComponent(lblAdditionalInfo))
+                .addGap(58, 58, 58))
         );
 
         javax.swing.GroupLayout panelValidationResultLayout = new javax.swing.GroupLayout(panelValidationResult);
@@ -1234,9 +1255,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         panelValidationResultLayout.setVerticalGroup(
             panelValidationResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelValidationResultLayout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 482, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(panelSignatureDetails, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(panelSignatureDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         progressBar.setStringPainted(true);
@@ -1584,6 +1605,20 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 MultipleSignDialog msd = new MultipleSignDialog(mainWindow, true, lista, settings, dest);
                 msd.setLocationRelativeTo(null);
                 msd.setVisible(true);
+
+                ArrayList<File> signedDocsList = msd.getSignedDocsList();
+                if (!signedDocsList.isEmpty()) {
+                    removeTempSignature();
+                    clearSignatureFields();
+                    hideRightPanel();
+                    status = Status.READY;
+                    mainWindow.closeDocuments(mainWindow.getOpenedFiles(), false);
+
+                    for (File f : signedDocsList) {
+                        mainWindow.loadPdf(f, false);
+                    }
+                }
+
                 return;
             } else {
                 JOptionPane.showMessageDialog(mainWindow, "SmartCard foi retirado ou alterado!", "Erro", JOptionPane.ERROR_MESSAGE);
@@ -1683,13 +1718,33 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                lblAdvanced.setText("<html>" + "O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: <u>" + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + "</u>" + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                        + (sv.getSignature().getTimeStampToken() != null ? "<br>O carimbo de data e hora é válido e foi assinado por: <u>" + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") + "</u>" : "") + "</html>");
+                final String msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
+                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
+                lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent evt) {
+                        if (SwingUtilities.isLeftMouseButton(evt)) {
+                            JOptionPane.showMessageDialog(null, msg);
+                        }
+                    }
+                });
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                lblAdvanced.setText("<html>O carimbo de data e hora é válido e foi assinado por: <u>" + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") + "</u></html>");
-            } else {
-                lblAdvanced.setText("");
+                final String msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
+                lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
+                    @Override
+                    public void mouseClicked(MouseEvent evt) {
+                        if (SwingUtilities.isLeftMouseButton(evt)) {
+                            JOptionPane.showMessageDialog(null, msg);
+                        }
+                    }
+                });
             }
             panelSignatureDetails.setVisible(true);
         }
@@ -1941,6 +1996,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1964,7 +2020,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private javax.swing.JSpinner jsPageNumber;
     private javax.swing.JTree jtValidation;
     private javax.swing.JLabel lbTimestamp;
-    private javax.swing.JLabel lblAdvanced;
+    private javax.swing.JLabel lblAdditionalInfo;
     private javax.swing.JLabel lblAllowsChanges;
     private javax.swing.JLabel lblDate;
     private javax.swing.JLabel lblLTV;

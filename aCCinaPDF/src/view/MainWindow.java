@@ -338,7 +338,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jtExplorer.setCellRenderer(new TooltipTreeCellRenderer());
         ToolTipManager.sharedInstance().registerComponent(jtExplorer);
 
-        FileListTreeCellRenderer renderer1 = new FileListTreeCellRenderer((MainWindow) this, jtOpenedDocuments);
+        FileListTreeCellRenderer renderer1 = new FileListTreeCellRenderer((MainWindow) this);
         jtOpenedDocuments.setCellRenderer(renderer1);
         ToolTipManager.sharedInstance().registerComponent(jtOpenedDocuments);
     }
@@ -539,11 +539,6 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jtOpenedDocuments.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
                 jtOpenedDocumentsMousePressed(evt);
-            }
-        });
-        jtOpenedDocuments.addComponentListener(new java.awt.event.ComponentAdapter() {
-            public void componentResized(java.awt.event.ComponentEvent evt) {
-                jtOpenedDocumentsComponentResized(evt);
             }
         });
         jtOpenedDocuments.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
@@ -785,7 +780,6 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                     // }
                     if (null != openedFile) {
                         if (openedFile.equals(new File(path))) {
-                            System.err.println("yeees");
                             closedOpenedDocument = true;
                             clearOpenedDocument();
                             setTitle(null);
@@ -951,10 +945,6 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         ad.setLocationRelativeTo(null);
         ad.setVisible(true);
     }//GEN-LAST:event_jMenuItem8ActionPerformed
-
-    private void jtOpenedDocumentsComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_jtOpenedDocumentsComponentResized
-        jtOpenedDocuments.updateUI();
-    }//GEN-LAST:event_jtOpenedDocumentsComponentResized
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
         SettingsDialog sd = new SettingsDialog(this, true);

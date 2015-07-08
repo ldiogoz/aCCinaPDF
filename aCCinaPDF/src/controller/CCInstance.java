@@ -17,6 +17,7 @@ import com.itextpdf.text.error_messages.MessageLocalization;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfEncryption;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
@@ -34,6 +35,7 @@ import com.itextpdf.text.pdf.security.OcspClientBouncyCastle;
 import com.itextpdf.text.pdf.security.PdfPKCS7;
 import com.itextpdf.text.pdf.security.PrivateKeySignature;
 import com.itextpdf.text.pdf.security.ProviderDigest;
+import com.itextpdf.text.pdf.security.SignaturePermissions;
 import com.itextpdf.text.pdf.security.TSAClient;
 import com.itextpdf.text.pdf.security.TSAClientBouncyCastle;
 import exception.AliasException;
@@ -57,7 +59,6 @@ import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.AuthProvider;
 import java.security.CodeSource;
 import java.security.GeneralSecurityException;
 import java.security.InvalidAlgorithmParameterException;
@@ -281,10 +282,18 @@ public class CCInstance {
     }
 
     public final boolean signPdf(final String pdfPath, final String destination, final CCSignatureSettings settings, final SignatureListener sl) throws CertificateException, IOException, DocumentException, KeyStoreException, SignatureFailedException, FileNotFoundException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-        PrivateKey pk = null;
+        PrivateKey pk;
 
         final PdfReader reader = new PdfReader(pdfPath);
         pk = getPrivateKeyFromAlias(settings.getCCAlias().getAlias());
+
+        if (getCertificationLevel(pdfPath) == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
+            String message = "O ficheiro não permite alterações!";
+            if (sl != null) {
+                sl.onSignatureComplete(pdfPath, false, message);
+            }
+            throw new SignatureFailedException(message);
+        }
 
         if (null == pk) {
             String message = "Erro! Não foi encontrado nenhum SmartCard!";
@@ -387,6 +396,7 @@ public class CCInstance {
             }
 
             appearance.setLayer2Text(text);
+            //appearance.getCryptoDictionary().put(PdfName.P, new PdfNumber(settings.getCertificationLevel()));
         }
 
         // CRL <- Pesado!
@@ -466,6 +476,8 @@ public class CCInstance {
         Security.setProperty("ocsp.enable", "true");
         System.setProperty("com.sun.security.enableCRLDP", "true");
 
+        boolean nextValid = true;
+
         for (Object o : names) {
             if (!validating) {
                 return null;
@@ -473,8 +485,6 @@ public class CCInstance {
 
             final String name = (String) o;
             final PdfPKCS7 pk = af.verifySignature(name);
-            final Calendar cal = pk.getSignDate();
-            final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             final Certificate pkc[] = pk.getCertificates();
             x509c = (X509Certificate) pkc[pkc.length - 1];
 
@@ -530,19 +540,29 @@ public class CCInstance {
             final TimeStampToken tst = pk.getTimeStampToken();
             boolean validTimestamp = false;
             if (null != tst) {
-                final Calendar ts = pk.getTimeStampDate();
                 final boolean hasTimestamp = pk.verifyTimestampImprint();
                 validTimestamp = hasTimestamp && CertificateVerification.verifyTimestampCertificates(tst, keystore, null);
             }
 
-            boolean ltv = (ocspCertificateStatus == CertificateStatus.OK || crlCertificateStatus == CertificateStatus.OK) && validTimestamp;
+            PdfDictionary pdfDic = reader.getAcroFields().getSignatureDictionary(name);
+            SignaturePermissions sp = new SignaturePermissions(pdfDic, null);
+
+            boolean isValid;
+            if (nextValid) {
+                isValid = pk.verify();
+            } else {
+                isValid = false;
+            }
 
             List<AcroFields.FieldPosition> posList = af.getFieldPositions(name);
-            final SignatureValidation signature = new SignatureValidation(file, name, pk, !pk.verify(), af.signatureCoversWholeDocument(name), af.getRevision(name), af.getTotalRevisions(), reader.getCertificationLevel(), ocspCertificateStatus, crlCertificateStatus, validTimestamp, posList);
+            final SignatureValidation signature = new SignatureValidation(file, name, pk, !pk.verify(), af.signatureCoversWholeDocument(name), af.getRevision(name), af.getTotalRevisions(), reader.getCertificationLevel(), ocspCertificateStatus, crlCertificateStatus, validTimestamp, posList, sp, isValid);
             validateList.add(signature);
 
             if (null != vl) {
                 vl.onValidationComplete(signature);
+            }
+            if (!sp.isFillInAllowed()) {
+                nextValid = false;
             }
         }
         return validateList;
@@ -645,25 +665,6 @@ public class CCInstance {
         }
 
         return sigAlgName;
-    }
-
-    private ArrayList<String> signMultiple(final ArrayList<String> listaFicheiros, String pastaDest, final CCSignatureSettings settings) throws CertificateException, KeyStoreException, SignatureFailedException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-        final ArrayList<String> listaErros = new ArrayList<>();
-        AuthProvider p = (SunPKCS11) Security.getProvider("SunPKCS11-AuthProvider");
-        for (String str : listaFicheiros) {
-            try {
-                if (null == pastaDest) {
-                    pastaDest = str.substring(0, str.length() - 4).concat("(assinado).pdf");
-                }
-                signPdf(str, pastaDest, settings, null);
-            } catch (CertificateException | KeyStoreException | SignatureFailedException | NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
-                listaErros.add(str);
-                throw ex;
-            } catch (IOException | DocumentException ex) {
-                listaErros.add(str);
-            }
-        }
-        return listaErros;
     }
 
     public final int getCertificationLevel(final String filename) throws IOException {

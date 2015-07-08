@@ -21,6 +21,7 @@ public class ValidationTreeCellRenderer extends DefaultTreeCellRenderer {
 
     private static final Icon iconValid = new ImageIcon(ValidationTreeCellRenderer.class.getResource("/image/success.png"));
     private static final Icon iconValidWarning = new ImageIcon(ValidationTreeCellRenderer.class.getResource("/image/valid_warning.png"));
+    private static final Icon iconCertifiedWarning = new ImageIcon(ValidationTreeCellRenderer.class.getResource("/image/certified_warning.png"));
     private static final Icon iconInvalid = new ImageIcon(ValidationTreeCellRenderer.class.getResource("/image/fail.png"));
     private static final Icon iconCertified = new ImageIcon(ValidationTreeCellRenderer.class.getResource("/image/certified.png"));
     private static final Icon iconWarning = new ImageIcon(ValidationTreeCellRenderer.class.getResource("/image/warning.png"));
@@ -34,35 +35,44 @@ public class ValidationTreeCellRenderer extends DefaultTreeCellRenderer {
         if (!leaf) {
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
             if (node.getUserObject() instanceof SignatureValidation) {
-                SignatureValidation sigVal = (SignatureValidation) (node.getUserObject());
-                if (sigVal.isValid()) {
-                    if (sigVal.isWarning()) {
-                        setIcon(iconWarning);
-                        if (!sel) {
-                            setForeground(new Color(215, 180, 0));
-                        }
-                        setText(getText() + " - " + (sigVal.isCertified() ? "Certificado" : "Assinado") + " por " + sigVal.getSignerName());
-                    } else {
-                        if (sigVal.isCertified()) {
-                            setIcon(iconCertified);
-                            if (!sel) {
-                                setForeground(Color.BLUE);
-                            }
-                            setText(getText() + " - Certificado por " + sigVal.getSignerName());
+                SignatureValidation sv = (SignatureValidation) (node.getUserObject());
+
+                if (sv.isCertification()) {
+                    if (sv.isValid()) {
+                        if (sv.isChanged() || !sv.isCoversEntireDocument()) {
+                            setIcon(iconCertifiedWarning);
                         } else {
-                            setIcon(iconValid);
-                            if (!sel) {
-                                setForeground(new Color(0, 170, 20));
-                            }
-                            setText(getText() + " - Assinado por " + sigVal.getSignerName());
+                            setIcon(iconCertified);
+                        }
+                        setText(getText() + " - Certificado por " + sv.getSignerName());
+                        if (!sel) {
+                            setForeground(Color.BLUE);
+                        }
+                    } else {
+                        setIcon(iconInvalid);
+                        setText(getText() + " - Certificação inválida por " + sv.getSignerName());
+                        if (!sel) {
+                            setForeground(Color.RED);
                         }
                     }
                 } else {
-                    setIcon(iconInvalid);
-                    if (!sel) {
-                        setForeground(Color.RED);
+                    if (sv.isValid()) {
+                        if (sv.isChanged() || !sv.isCoversEntireDocument()) {
+                            setIcon(iconValidWarning);
+                        } else {
+                            setIcon(iconValid);
+                        }
+                        if (!sel) {
+                            setForeground(new Color(0, 170, 20));
+                        }
+                        setText(getText() + " - Assinado por " + sv.getSignerName());
+                    } else {
+                        setIcon(iconInvalid);
+                        if (!sel) {
+                            setForeground(Color.RED);
+                        }
+                        setText(getText() + " - Assinatura inválida por " + sv.getSignerName());
                     }
-                    setText(getText() + " - Assinatura Inválida por " + sigVal.getSignerName());
                 }
             }
         } else {
