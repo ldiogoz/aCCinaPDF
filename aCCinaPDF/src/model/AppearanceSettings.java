@@ -17,7 +17,15 @@ public class AppearanceSettings {
     private String fontLocation;
     private Color fontColor;
     private boolean italic, bold;
-    private boolean showReason, showLocation, showDate;
+    private boolean showReason, showLocation, showDate, showName;
+
+    public boolean isShowName() {
+        return showName;
+    }
+
+    public void setShowName(boolean showName) {
+        this.showName = showName;
+    }
 
     public boolean isShowReason() {
         return showReason;

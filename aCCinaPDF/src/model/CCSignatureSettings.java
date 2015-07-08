@@ -24,7 +24,7 @@ import view.AppearanceSettingsDialog;
  */
 public final class CCSignatureSettings {
 
-    private String alias;
+    private CCAlias ccAlias;
     private boolean visibleSignature;
     private boolean timestamp;
     private String timestampServer;
@@ -68,6 +68,7 @@ public final class CCSignatureSettings {
         appearance.setBold(Boolean.valueOf(getConfigParameter("bold")));
         appearance.setItalic(Boolean.valueOf(getConfigParameter("italic")));
         appearance.setFontLocation(getConfigParameter("fontLocation"));
+        appearance.setShowName(Boolean.valueOf(getConfigParameter("showName")));
         appearance.setShowDate(Boolean.valueOf(getConfigParameter("showDate")));
         appearance.setShowReason(Boolean.valueOf(getConfigParameter("showReason")));
         appearance.setShowLocation(Boolean.valueOf(getConfigParameter("showLocation")));
@@ -139,12 +140,12 @@ public final class CCSignatureSettings {
         this.timestampServer = timestampServer;
     }
 
-    public String getAlias() {
-        return alias;
+    public CCAlias getCCAlias() {
+        return ccAlias;
     }
 
-    public void setAlias(String alias) {
-        this.alias = alias;
+    public void setCCAlias(CCAlias ccAlias) {
+        this.ccAlias = ccAlias;
     }
 
     public String getReason() {

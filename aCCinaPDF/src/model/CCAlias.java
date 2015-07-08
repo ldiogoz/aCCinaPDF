@@ -8,6 +8,7 @@ package model;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -45,15 +46,19 @@ public class CCAlias {
         return IETFUtils.valueToString(rdn.getFirst().getValue());
     }
 
-    @Override
-    public String toString() {
+    public String getName() {
         try {
             String cn = getCN();
-            return cn + ", " + alias;
+            return WordUtils.capitalize(cn.toLowerCase());
         } catch (CertificateEncodingException ex) {
             controller.Logger.getLogger().addEntry(ex);
         }
         return null;
+    }
+
+    @Override
+    public String toString() {
+        return getName() + ", " + alias;
     }
 
 }

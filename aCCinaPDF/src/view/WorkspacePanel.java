@@ -1694,7 +1694,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     private void btnAlterarAparenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterarAparenciaActionPerformed
         if (tempCCAlias != null) {
-            signatureSettings.setAlias(tempCCAlias.getAlias());
+            signatureSettings.setCCAlias(tempCCAlias);
         }
         signatureSettings.setReason(tfReason.getText());
         signatureSettings.setLocation(tfLocation.getText());
@@ -1755,7 +1755,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private void btnApplySignatureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApplySignatureActionPerformed
         if (tempCCAlias != null) {
             signatureSettings.setPageNumber(imagePanel.getPageNumber());
-            signatureSettings.setAlias(tempCCAlias.getAlias());
+            signatureSettings.setCCAlias(tempCCAlias);
             signatureSettings.setReason(tfReason.getText());
             signatureSettings.setLocation(tfLocation.getText());
             if (jRadioButton1.isSelected()) {

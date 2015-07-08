@@ -84,12 +84,14 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         String fontLocation = signatureSettings.getAppearance().getFontLocation();
         boolean italic = signatureSettings.getAppearance().isItalic();
         boolean bold = signatureSettings.getAppearance().isBold();
+        boolean showName = signatureSettings.getAppearance().isShowName();
         boolean showLocation = signatureSettings.getAppearance().isShowLocation();
         boolean showReason = signatureSettings.getAppearance().isShowReason();
         boolean showDate = signatureSettings.getAppearance().isShowDate();
 
         previewPanel1.setReason(signatureSettings.getReason());
         previewPanel1.setShowDate(showDate);
+        previewPanel1.setAliasName(signatureSettings.getCCAlias().getName());
 
         if (!signatureSettings.getLocation().isEmpty()) {
             previewPanel1.setLocation(signatureSettings.getLocation());
@@ -100,6 +102,9 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             checkBoxLocalizacao.setEnabled(false);
             checkBoxLocalizacao.setSelected(false);
         }
+        
+        checkBoxNome.setSelected(showName);
+        previewPanel1.setShowName(showName);
 
         if (!signatureSettings.getReason().isEmpty()) {
             previewPanel1.setReason(signatureSettings.getReason());
@@ -116,7 +121,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         lblSignature.setForeground(color);
         checkBoxRazao.setSelected(showReason);
         checkBoxLocalizacao.setSelected(showLocation);
-        checkBoxTimestamp.setSelected(showDate);
+        checkBoxDate.setSelected(showDate);
 
         ColorSelectionModel model = colorChooser.getSelectionModel();
         ChangeListener changeListener = new ChangeListener() {
@@ -215,8 +220,9 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         checkBoxRazao = new javax.swing.JCheckBox();
         checkBoxLocalizacao = new javax.swing.JCheckBox();
         previewPanel1 = new model.PreviewPanel();
-        checkBoxTimestamp = new javax.swing.JCheckBox();
+        checkBoxDate = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        checkBoxNome = new javax.swing.JCheckBox();
         checkBoxGuardar = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -337,15 +343,23 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             .addGap(0, 127, Short.MAX_VALUE)
         );
 
-        checkBoxTimestamp.setSelected(true);
-        checkBoxTimestamp.setText("Data e Hora");
-        checkBoxTimestamp.addItemListener(new java.awt.event.ItemListener() {
+        checkBoxDate.setSelected(true);
+        checkBoxDate.setText("Data e Hora");
+        checkBoxDate.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                checkBoxTimestampItemStateChanged(evt);
+                checkBoxDateItemStateChanged(evt);
             }
         });
 
         jLabel1.setText("Mostrar:");
+
+        checkBoxNome.setSelected(true);
+        checkBoxNome.setText("Nome");
+        checkBoxNome.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                checkBoxNomeItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -358,11 +372,13 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(checkBoxNome)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(checkBoxRazao)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(checkBoxLocalizacao)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(checkBoxTimestamp)
+                        .addComponent(checkBoxDate)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -375,10 +391,11 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(checkBoxRazao)
-                        .addComponent(jLabel1))
+                        .addComponent(jLabel1)
+                        .addComponent(checkBoxNome))
                     .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(checkBoxLocalizacao)
-                        .addComponent(checkBoxTimestamp)))
+                        .addComponent(checkBoxDate)))
                 .addContainerGap())
         );
 
@@ -436,32 +453,20 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_checkBoxItalicItemStateChanged
 
     private void checkBoxRazaoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkBoxRazaoItemStateChanged
-        if (checkBoxRazao.isSelected()) {
-            previewPanel1.setShowReason(true);
-        } else {
-            previewPanel1.setShowReason(false);
-        }
+        previewPanel1.setShowReason(checkBoxRazao.isSelected());
     }//GEN-LAST:event_checkBoxRazaoItemStateChanged
 
     private void checkBoxLocalizacaoItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkBoxLocalizacaoItemStateChanged
-        if (checkBoxLocalizacao.isSelected()) {
-            previewPanel1.setShowLocation(true);
-        } else {
-            previewPanel1.setShowLocation(false);
-        }
+        previewPanel1.setShowLocation(checkBoxLocalizacao.isSelected());
     }//GEN-LAST:event_checkBoxLocalizacaoItemStateChanged
 
     private void colorChooserMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_colorChooserMousePressed
 
     }//GEN-LAST:event_colorChooserMousePressed
 
-    private void checkBoxTimestampItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkBoxTimestampItemStateChanged
-        if (checkBoxTimestamp.isSelected()) {
-            previewPanel1.setShowDate(true);
-        } else {
-            previewPanel1.setShowDate(false);
-        }
-    }//GEN-LAST:event_checkBoxTimestampItemStateChanged
+    private void checkBoxDateItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkBoxDateItemStateChanged
+        previewPanel1.setShowDate(checkBoxDate.isSelected());
+    }//GEN-LAST:event_checkBoxDateItemStateChanged
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         if (checkBoxGuardar.isSelected()) {
@@ -476,6 +481,10 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
         this.dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void checkBoxNomeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkBoxNomeItemStateChanged
+        previewPanel1.setShowName(checkBoxNome.isSelected());
+    }//GEN-LAST:event_checkBoxNomeItemStateChanged
 
     private String getFontLocationByName(String name) {
         Set<Map.Entry<com.itextpdf.text.Font, String>> entries = fontList.entrySet();
@@ -496,9 +505,10 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             propertiesWrite.setProperty("fontColor", String.valueOf(colorChooser.getColor().getRGB()));
             propertiesWrite.setProperty("fontItalic", String.valueOf(checkBoxItalic.isSelected()));
             propertiesWrite.setProperty("fontBold", String.valueOf(checkBoxBold.isSelected()));
+            propertiesWrite.setProperty("showName", String.valueOf(checkBoxNome.isSelected()));
             propertiesWrite.setProperty("showReason", String.valueOf(checkBoxRazao.isSelected()));
             propertiesWrite.setProperty("showLocation", String.valueOf(checkBoxLocalizacao.isSelected()));
-            propertiesWrite.setProperty("showDate", String.valueOf(checkBoxTimestamp.isSelected()));
+            propertiesWrite.setProperty("showDate", String.valueOf(checkBoxDate.isSelected()));
 
             fileOut = new FileOutputStream(file);
             propertiesWrite.store(fileOut, "Settings");
@@ -571,11 +581,12 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbFontType;
     private javax.swing.JCheckBox checkBoxBold;
+    private javax.swing.JCheckBox checkBoxDate;
     private javax.swing.JCheckBox checkBoxGuardar;
     private javax.swing.JCheckBox checkBoxItalic;
     private javax.swing.JCheckBox checkBoxLocalizacao;
+    private javax.swing.JCheckBox checkBoxNome;
     private javax.swing.JCheckBox checkBoxRazao;
-    private javax.swing.JCheckBox checkBoxTimestamp;
     private javax.swing.JColorChooser colorChooser;
     private javax.swing.Box.Filler filler1;
     private javax.swing.JButton jButton1;

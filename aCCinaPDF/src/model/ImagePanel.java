@@ -277,27 +277,10 @@ public class ImagePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (img != null) {
-
             Point p = getImageLocation();
             g.drawImage(img, p.x, p.y, this);
             g.setColor(Color.LIGHT_GRAY);
             g.drawRect(p.x, p.y, img.getWidth(), img.getHeight());
-
-            /*if (selectedSignature != null) {
-             for (AcroFields.FieldPosition pos : selectedSignature.getPosList()) {
-             if (this.pageNumber == pos.page - 1) {
-             int p1 = (int) (p.x + (pos.position.getLeft() * scale));
-             int p2 = (int) (p.y + Math.floor((document.getPageDimension(pageNumber, scale).getHeight() - pos.position.getTop() - scale * 10) * scale));
-             int p3 = (int) (pos.position.getWidth() * scale);
-             int p4 = (int) (pos.position.getHeight() * scale);
-
-             g.setColor(new Color(0, 0, 0, 25));
-             g.fillRect(p1, p2, p3, p4);
-             g.setColor(Color.BLACK);
-             g.drawRect(p1, p2, p3, p4);
-             }
-             }
-             }*/
         }
     }
 

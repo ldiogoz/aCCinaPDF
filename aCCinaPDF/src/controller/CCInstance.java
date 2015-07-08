@@ -284,7 +284,7 @@ public class CCInstance {
         PrivateKey pk = null;
 
         final PdfReader reader = new PdfReader(pdfPath);
-        pk = getPrivateKeyFromAlias(settings.getAlias());
+        pk = getPrivateKeyFromAlias(settings.getCCAlias().getAlias());
 
         if (null == pk) {
             String message = "Erro! Não foi encontrado nenhum SmartCard!";
@@ -295,15 +295,15 @@ public class CCInstance {
         }
 
         final Certificate[] certChain;
-        if (null == ks.getCertificateChain(settings.getAlias())) {
+        if (null == ks.getCertificateChain(settings.getCCAlias().getAlias())) {
             String message = "O Certificado contém uma cadeia nula!";
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
             }
             throw new CertificateException(message);
         }
-        final Certificate owner = ks.getCertificateChain(settings.getAlias())[0];
-        if (null == owner || 1 < ks.getCertificateChain(settings.getAlias()).length) {
+        final Certificate owner = ks.getCertificateChain(settings.getCCAlias().getAlias())[0];
+        if (null == owner || 1 < ks.getCertificateChain(settings.getCCAlias().getAlias()).length) {
             String message = "Não foi possível obter o nome do titular do certificado!";
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
@@ -345,9 +345,9 @@ public class CCInstance {
         appearance.setCertificate(owner);
 
         if (settings.isVisibleSignature()) {
-             final String fieldName = "aCCinatura " + (1 + getNumberOfSignatures(pdfPath));
+            final String fieldName = "aCCinatura " + (1 + getNumberOfSignatures(pdfPath));
             appearance.setVisibleSignature(settings.getPositionOnDocument(), settings.getPageNumber() + 1, fieldName);
-            appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.NAME_AND_DESCRIPTION);
+            appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
             if (null != settings.getAppearance().getImageLocation()) {
                 appearance.setImage(Image.getInstance(settings.getAppearance().getImageLocation()));
             }
@@ -363,6 +363,11 @@ public class CCInstance {
             }
             appearance.setLayer2Font(font);
             String text = "";
+            if (settings.getAppearance().isShowName()) {
+                if (!settings.getCCAlias().getName().isEmpty()) {
+                    text += settings.getCCAlias().getName() + "\n";
+                }
+            }
             if (settings.getAppearance().isShowReason()) {
                 if (!settings.getReason().isEmpty()) {
                     text += settings.getReason() + "\n";
@@ -375,7 +380,7 @@ public class CCInstance {
             }
             if (settings.getAppearance().isShowDate()) {
                 DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                text += df.format(now.getTime()) + "\n";
+                text += df.format(now.getTime()) + " +" + (now.getTimeZone().getRawOffset() < 10 ? "0" : "") + now.getTimeZone().getRawOffset() + "\n";
             }
             if (!settings.getText().isEmpty()) {
                 text += settings.getText();
