@@ -1041,6 +1041,9 @@
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Nenhuma"/>
                           </Properties>
+                          <Events>
+                            <EventHandler event="mouseClicked" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblAdditionalInfoMouseClicked"/>
+                          </Events>
                         </Component>
                       </SubComponents>
                     </Container>

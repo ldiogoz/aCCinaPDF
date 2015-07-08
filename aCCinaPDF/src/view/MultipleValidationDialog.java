@@ -48,7 +48,6 @@ import model.SignatureValidation;
 import model.TreeNodeWithState;
 import model.ValidationFileListEntry;
 import model.FileListTreeCellRenderer;
-import model.SignatureStatus;
 import model.ValidationTreeCellRenderer;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.icepdf.ri.common.ComponentKeyBinding;
@@ -121,14 +120,20 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                 int numParsed = 0;
                 for (File file : files) {
                     try {
-                        ArrayList<SignatureValidation> svList = new ArrayList<SignatureValidation>();
+                        ArrayList<SignatureValidation> svList = new ArrayList<>();
                         int numSigs = CCInstance.getInstance().getNumberOfSignatures(file.getAbsolutePath());
                         ValidationFileListEntry vfle = new ValidationFileListEntry(file.getAbsolutePath(), numSigs, ValidationFileListEntry.ValidationStatus.UNKNOWN);
                         hmValidation.put(vfle, svList);
                         CCInstance.getInstance().validatePDF(file.getAbsolutePath(), vl);
                         dmtn.insert(new DefaultMutableTreeNode(vfle), 0);
                     } catch (IOException | DocumentException | GeneralSecurityException ex) {
-                        Logger.getLogger(MultipleValidationDialog.class.getName()).log(Level.SEVERE, null, ex);
+                        if (ex.getLocalizedMessage().contains("keystore\\aCCinaPDF_cacerts")) {
+                            JOptionPane.showMessageDialog(MultipleValidationDialog.this, "Não foi possível encontrar o ficheiro keystore/aCCinaPDF_cacerts ", "Erro", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            JOptionPane.showMessageDialog(MultipleValidationDialog.this, "Erro desconhecido - ver log", "Erro", JOptionPane.ERROR_MESSAGE);
+                            controller.Logger.getLogger().addEntry(ex);
+                        }
+                        break;
                     }
                     numParsed++;
                     progressBar.setValue(numParsed);
@@ -138,8 +143,10 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     jtFiles.setModel(tm);
                 }
                 progressBar.setString("Validação Concluída");
-                jtFiles.setSelectionRow(0);
-                btnGuardar.setEnabled(true);
+                if (numParsed > 0) {
+                    jtFiles.setSelectionRow(0);
+                    btnGuardar.setEnabled(true);
+                }
             }
         };
 
@@ -206,38 +213,26 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             }
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                final String msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
+                msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
                         + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
                         + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent evt) {
-                        if (SwingUtilities.isLeftMouseButton(evt)) {
-                            JOptionPane.showMessageDialog(null, msg);
-                        }
-                    }
-                });
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                final String msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent evt) {
-                        if (SwingUtilities.isLeftMouseButton(evt)) {
-                            JOptionPane.showMessageDialog(null, msg);
-                        }
-                    }
-                });
+            } else {
+                msg = null;
             }
 
             panelSignatureDetails.setVisible(true);
         }
     }
+
+    private String msg = null;
 
     private String getCertificateProperty(X500Name x500name, String property) {
         String cn = "";
@@ -415,6 +410,11 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         jLabel7.setText("Informação adicional:");
 
         lblAdditionalInfo.setText("Nenhuma");
+        lblAdditionalInfo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblAdditionalInfoMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelSignatureDetailsLayout = new javax.swing.GroupLayout(panelSignatureDetails);
         panelSignatureDetails.setLayout(panelSignatureDetailsLayout);
@@ -858,6 +858,15 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         }
         System.out.println(toWrite);
     }//GEN-LAST:event_btnGuardarActionPerformed
+
+    private void lblAdditionalInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblAdditionalInfoMouseClicked
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+            if (msg != null) {
+
+                JOptionPane.showMessageDialog(null, msg);
+            }
+        }
+    }//GEN-LAST:event_lblAdditionalInfoMouseClicked
 
     private void writeToFile(String str) {
         JFileChooser fileChooser = new JFileChooser();

@@ -19,6 +19,7 @@ import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import listener.SignatureClickListener;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
@@ -127,7 +128,7 @@ public class SignatureValidation {
     }
 
     public boolean isChanged() {
-        return changed;
+        return changed || !coversEntireDocument;
     }
 
     public boolean isCoversEntireDocument() {
@@ -152,10 +153,10 @@ public class SignatureValidation {
         try {
             x500name = new JcaX509CertificateHolder(x509cert).getSubject();
         } catch (CertificateEncodingException ex) {
-            return "DESCONHECIDO";
+            return "Desconhecido";
         }
         RDN rdn = x500name.getRDNs(BCStyle.CN)[0];
-        return IETFUtils.valueToString(rdn.getFirst().getValue());
+        return WordUtils.capitalize(IETFUtils.valueToString(rdn.getFirst().getValue()).toLowerCase());
     }
 
     private boolean isVisible() {

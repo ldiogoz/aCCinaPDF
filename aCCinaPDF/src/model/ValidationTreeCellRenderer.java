@@ -88,6 +88,9 @@ public class ValidationTreeCellRenderer extends DefaultTreeCellRenderer {
                     case VALID_WARNING:
                         setIcon(iconValidWarning);
                         break;
+                    case CERTIFIED_WARNING:
+                        setIcon(iconCertifiedWarning);
+                        break;
                     case VALID:
                         setIcon(iconValid);
                         break;

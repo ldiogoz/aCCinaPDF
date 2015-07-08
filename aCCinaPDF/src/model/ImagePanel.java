@@ -54,7 +54,7 @@ public class ImagePanel extends JPanel {
         super();
         this.addComponentListener(new ComponentAdapter() {
             @Override
-            public void componentResized(ComponentEvent e) {
+            public synchronized void componentResized(ComponentEvent e) {
                 if (svList != null) {
                     refreshSignatureValidationListPanels();
                 }

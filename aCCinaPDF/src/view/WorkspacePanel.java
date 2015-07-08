@@ -1172,6 +1172,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         jLabel13.setText("Informação adicional:");
 
         lblAdditionalInfo.setText("Nenhuma");
+        lblAdditionalInfo.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblAdditionalInfoMouseClicked(evt);
+            }
+        });
 
         javax.swing.GroupLayout panelSignatureDetailsLayout = new javax.swing.GroupLayout(panelSignatureDetails);
         panelSignatureDetails.setLayout(panelSignatureDetailsLayout);
@@ -1718,33 +1723,19 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                final String msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
+                msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
                         + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
                         + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent evt) {
-                        if (SwingUtilities.isLeftMouseButton(evt)) {
-                            JOptionPane.showMessageDialog(null, msg);
-                        }
-                    }
-                });
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                final String msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
-                lblAdditionalInfo.addMouseListener(new MouseAdapter() {
-                    @Override
-                    public void mouseClicked(MouseEvent evt) {
-                        if (SwingUtilities.isLeftMouseButton(evt)) {
-                            JOptionPane.showMessageDialog(null, msg);
-                        }
-                    }
-                });
+            } else {
+                msg = null;
             }
             panelSignatureDetails.setVisible(true);
         }
@@ -1966,6 +1957,16 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
         }
     }//GEN-LAST:event_lblRevisionMouseClicked
+
+    private String msg = null;
+
+    private void lblAdditionalInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblAdditionalInfoMouseClicked
+        if (SwingUtilities.isLeftMouseButton(evt)) {
+            if (msg != null) {
+                JOptionPane.showMessageDialog(null, msg);
+            }
+        }
+    }//GEN-LAST:event_lblAdditionalInfoMouseClicked
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
