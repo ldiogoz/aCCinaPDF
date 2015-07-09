@@ -92,8 +92,8 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         previewPanel1.setReason(signatureSettings.getReason());
         previewPanel1.setShowDate(showDate);
         
-        if(signatureSettings.getCCAlias() != null){
-            previewPanel1.setAliasName(signatureSettings.getCCAlias().getName());
+        if(signatureSettings.getCcAlias()!= null){
+            previewPanel1.setAliasName(signatureSettings.getCcAlias().getName());
         }else{
             previewPanel1.setAliasName("Nome");
         }
@@ -227,7 +227,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         checkBoxRazao = new javax.swing.JCheckBox();
         checkBoxLocalizacao = new javax.swing.JCheckBox();
-        previewPanel1 = new model.PreviewPanel();
+        previewPanel1 = new view.PreviewPanel();
         checkBoxDate = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         checkBoxNome = new javax.swing.JCheckBox();
@@ -604,6 +604,6 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lblSignature;
-    private model.PreviewPanel previewPanel1;
+    private view.PreviewPanel previewPanel1;
     // End of variables declaration//GEN-END:variables
 }

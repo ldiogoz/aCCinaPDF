@@ -285,7 +285,7 @@ public class CCInstance {
         PrivateKey pk;
 
         final PdfReader reader = new PdfReader(pdfPath);
-        pk = getPrivateKeyFromAlias(settings.getCCAlias().getAlias());
+        pk = getPrivateKeyFromAlias(settings.getCcAlias().getAlias());
 
         if (getCertificationLevel(pdfPath) == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
             String message = "O ficheiro não permite alterações!";
@@ -304,15 +304,15 @@ public class CCInstance {
         }
 
         final Certificate[] certChain;
-        if (null == ks.getCertificateChain(settings.getCCAlias().getAlias())) {
+        if (null == ks.getCertificateChain(settings.getCcAlias().getAlias())) {
             String message = "O Certificado contém uma cadeia nula!";
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
             }
             throw new CertificateException(message);
         }
-        final Certificate owner = ks.getCertificateChain(settings.getCCAlias().getAlias())[0];
-        if (null == owner || 1 < ks.getCertificateChain(settings.getCCAlias().getAlias()).length) {
+        final Certificate owner = ks.getCertificateChain(settings.getCcAlias().getAlias())[0];
+        if (null == owner || 1 < ks.getCertificateChain(settings.getCcAlias().getAlias()).length) {
             String message = "Não foi possível obter o nome do titular do certificado!";
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
@@ -354,7 +354,7 @@ public class CCInstance {
         appearance.setCertificate(owner);
 
         if (settings.isVisibleSignature()) {
-            final String fieldName = "aCCinatura " + (1 + getNumberOfSignatures(pdfPath));
+            final String fieldName = settings.getPrefix() + " " + (1 + getNumberOfSignatures(pdfPath));
             appearance.setVisibleSignature(settings.getPositionOnDocument(), settings.getPageNumber() + 1, fieldName);
             appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
             if (null != settings.getAppearance().getImageLocation()) {
@@ -374,8 +374,8 @@ public class CCInstance {
             appearance.setLayer2Font(new com.itextpdf.text.Font(bf));
             String text = "";
             if (settings.getAppearance().isShowName()) {
-                if (!settings.getCCAlias().getName().isEmpty()) {
-                    text += settings.getCCAlias().getName() + "\n";
+                if (!settings.getCcAlias().getName().isEmpty()) {
+                    text += settings.getCcAlias().getName() + "\n";
                 }
             }
             if (settings.getAppearance().isShowReason()) {

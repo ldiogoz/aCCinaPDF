@@ -632,7 +632,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         lblText = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tfText = new javax.swing.JTextArea();
-        cbAlias = new model.WideDropDownComboBox();
+        cbAlias = new view.WideDropDownComboBox();
         btnCheckAliasCertificate = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
         btnApplySignature = new javax.swing.JButton();
@@ -1755,7 +1755,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     private void btnAlterarAparenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterarAparenciaActionPerformed
         if (tempCCAlias != null) {
-            signatureSettings.setCCAlias(tempCCAlias);
+            signatureSettings.setCcAlias(tempCCAlias);
         }
         signatureSettings.setReason(tfReason.getText());
         signatureSettings.setLocation(tfLocation.getText());
@@ -1816,7 +1816,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private void btnApplySignatureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApplySignatureActionPerformed
         if (tempCCAlias != null) {
             signatureSettings.setPageNumber(imagePanel.getPageNumber());
-            signatureSettings.setCCAlias(tempCCAlias);
+            signatureSettings.setCcAlias(tempCCAlias);
             signatureSettings.setReason(tfReason.getText());
             signatureSettings.setLocation(tfLocation.getText());
             if (jRadioButton1.isSelected()) {
@@ -1980,7 +1980,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private javax.swing.JButton btnZoomIn;
     private javax.swing.JButton btnZoomOut;
     private javax.swing.ButtonGroup buttonGroup1;
-    private model.WideDropDownComboBox cbAlias;
+    private view.WideDropDownComboBox cbAlias;
     private javax.swing.JCheckBox cbTimestamp;
     private javax.swing.JCheckBox cbVisibleSignature;
     private javax.swing.JPanel clSign;

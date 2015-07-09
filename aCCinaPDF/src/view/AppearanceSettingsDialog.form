@@ -265,7 +265,7 @@
             <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="checkBoxLocalizacaoItemStateChanged"/>
           </Events>
         </Component>
-        <Container class="model.PreviewPanel" name="previewPanel1">
+        <Container class="view.PreviewPanel" name="previewPanel1">
           <Properties>
             <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
               <Border info="org.netbeans.modules.form.compat2.border.EtchedBorderInfo">

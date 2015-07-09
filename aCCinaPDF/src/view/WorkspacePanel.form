@@ -698,7 +698,7 @@
                     </Container>
                   </SubComponents>
                 </Container>
-                <Component class="model.WideDropDownComboBox" name="cbAlias">
+                <Component class="view.WideDropDownComboBox" name="cbAlias">
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbAliasActionPerformed"/>
                   </Events>

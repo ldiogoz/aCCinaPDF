@@ -36,6 +36,7 @@ public final class CCSignatureSettings {
     private Rectangle positionOnDocument;
     private int pageNumber;
     private AppearanceSettings appearance;
+    private String prefix;
 
     public CCSignatureSettings() {
         File fsettings = new File("aCCinaPDF.cfg");
@@ -44,6 +45,7 @@ public final class CCSignatureSettings {
             File file = new File("aCCinaPDF.cfg");
             FileOutputStream fileOut;
             try {
+                propertiesWrite.setProperty("prefix", "aCCinatura");
                 propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
                 propertiesWrite.setProperty("fontItalic", "true");
                 propertiesWrite.setProperty("fontBold", "false");
@@ -58,13 +60,13 @@ public final class CCSignatureSettings {
                 fileOut = new FileOutputStream(file);
                 propertiesWrite.store(fileOut, "Settings");
                 fileOut.close();
-
             } catch (FileNotFoundException ex) {
                 Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
             } catch (IOException ex) {
                 Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
+        setPrefix(getConfigParameter("prefix"));
         appearance = new AppearanceSettings();
         appearance.setBold(Boolean.valueOf(getConfigParameter("bold")));
         appearance.setItalic(Boolean.valueOf(getConfigParameter("italic")));
@@ -74,6 +76,14 @@ public final class CCSignatureSettings {
         appearance.setShowReason(Boolean.valueOf(getConfigParameter("showReason")));
         appearance.setShowLocation(Boolean.valueOf(getConfigParameter("showLocation")));
         appearance.setFontColor(new Color(Integer.valueOf(getConfigParameter("fontColor"))));
+    }
+
+    public String getPrefix() {
+        return prefix;
+    }
+
+    public void setPrefix(String prefix) {
+        this.prefix = prefix;
     }
 
     private String getConfigParameter(String parameter) {
@@ -141,11 +151,11 @@ public final class CCSignatureSettings {
         this.timestampServer = timestampServer;
     }
 
-    public CCAlias getCCAlias() {
+    public CCAlias getCcAlias() {
         return ccAlias;
     }
 
-    public void setCCAlias(CCAlias ccAlias) {
+    public void setCcAlias(CCAlias ccAlias) {
         this.ccAlias = ccAlias;
     }
 

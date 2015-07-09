@@ -30,6 +30,7 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -40,6 +41,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -418,7 +420,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jtExplorer = new javax.swing.JTree();
         tfProcurar = new javax.swing.JTextField();
         jLabel1 = new javax.swing.JLabel();
-        cbVolume = new model.WideDropDownComboBox();
+        cbVolume = new view.WideDropDownComboBox();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jtOpenedDocuments = new javax.swing.JTree();
@@ -427,6 +429,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         workspacePanel = new view.WorkspacePanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
+        jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
@@ -489,7 +492,6 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jLabel1.setText("Procurar por:");
         jLabel1.setMinimumSize(new java.awt.Dimension(0, 16));
 
-        cbVolume.setMinimumSize(new java.awt.Dimension(0, 22));
         cbVolume.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbVolumeActionPerformed(evt);
@@ -610,6 +612,14 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
         jMenu1.setText("Ficheiro");
 
+        jMenuItem4.setText("Abrir");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem4);
+
         jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem2.setText("Imprimir");
         jMenu1.add(jMenuItem2);
@@ -647,6 +657,11 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jMenu4.add(jMenuItem6);
 
         jMenuItem7.setText("Teclas de Atalho");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
         jMenu4.add(jMenuItem7);
 
         jMenuItem8.setText("Sobre");
@@ -952,6 +967,45 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         sd.setVisible(true);
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
+    private File lastOpenedFilePath;
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        JFileChooser jfc = new JFileChooser();
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Documentos PDF (*.pdf)", "pdf");
+        File path;
+        if (lastOpenedFilePath == null) {
+            path = new File(System.getProperty("user.home"));
+        } else {
+            path = lastOpenedFilePath;
+        }
+        jfc.setCurrentDirectory(path);
+        jfc.setFileFilter(filter);
+        int ret = jfc.showOpenDialog(this);
+        if (ret == JFileChooser.APPROVE_OPTION) {
+            File file = jfc.getSelectedFile();
+            try {
+                if (loadPdf(file, true)) {
+                    lastOpenedFilePath = file;
+                }
+            } catch (Exception e) {
+                controller.Logger.getLogger().addEntry(e);
+            }
+        }
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+        String msg = "CTRL + W -> Fecha o documento actualmente aberto\n"
+                + "CTRL + F -> Imprimir documento aberto\n"
+                + "CTRL + ‘+’ -> Zoom in no ficheiro\n"
+                + "CTRL + ‘-’ -> Zoom out no ficheiro\n"
+                + "CTRL + seta direccional direita ou baixo -> Mostra a próxima página do documento aberto\n"
+                + "CTRL + seta direccional esquerda ou cima -> Mostra a página anterior do documento\n"
+                + "CTRL + S -> Assinar documento\n"
+                + "CTRL + V -> Validar assinaturas do documento";
+
+        JOptionPane.showMessageDialog(this, msg, "Teclas de Atalho", JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
+
     private LoadingDialog loadingDialog;
 
     public LoadingDialog getLoadingDialog() {
@@ -1051,7 +1105,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnRefreshTree;
-    private model.WideDropDownComboBox cbVolume;
+    private view.WideDropDownComboBox cbVolume;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu3;
@@ -1060,6 +1114,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItem8;

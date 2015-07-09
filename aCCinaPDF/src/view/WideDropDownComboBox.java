@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model;
+package view;
 
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,11 +16,9 @@ import javax.swing.JComboBox;
  */
 public class WideDropDownComboBox extends JComboBox {
 
-    private static final long serialVersionUID = -2694382778237570550L;
     private boolean layingOut = false;
     private int dropDownMenuWidth = 0;
 
-// Setting the JComboBox width
     public void adjustDropDownMenuWidth() {
         dropDownMenuWidth = computeMaxItemWidth();
     }
@@ -39,7 +37,7 @@ public class WideDropDownComboBox extends JComboBox {
         int numOfItems = this.getItemCount();
         Font font = this.getFont();
         FontMetrics metrics = this.getFontMetrics(font);
-        int widest = getSize().width; // The drop down menu must not be less wide than the combo box
+        int widest = getSize().width;
         for (int i = 0; i < numOfItems; i++) {
             Object item = this.getItemAt(i);
             int lineWidth = metrics.stringWidth(item.toString());
@@ -47,8 +45,7 @@ public class WideDropDownComboBox extends JComboBox {
         }
 
         if (numOfItems > 0) {
-            //int scrollbarWidth = ((Integer) UIManager.get("ScrollBar.width"));
-            return widest + 10;// + scrollbarWidth;
+            return widest + 10;
         } else {
             return 0;
         }
