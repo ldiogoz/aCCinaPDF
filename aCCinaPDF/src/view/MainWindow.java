@@ -995,13 +995,13 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
     private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
         String msg = "CTRL + W -> Fecha o documento actualmente aberto\n"
-                + "CTRL + F -> Imprimir documento aberto\n"
-                + "CTRL + ‘+’ -> Zoom in no ficheiro\n"
-                + "CTRL + ‘-’ -> Zoom out no ficheiro\n"
+                + "CTRL + ALT + SHIFT + P -> Imprimir documento aberto\n"
+                + "CTRL + ‘+’ ou CTRL + roda do rato para cima -> Zoom in no documento aberto\n"
+                + "CTRL + ‘-’ ou CTRL + roda do rato para baixo -> Zoom out no documento aberto\n"
                 + "CTRL + seta direccional direita ou baixo -> Mostra a próxima página do documento aberto\n"
                 + "CTRL + seta direccional esquerda ou cima -> Mostra a página anterior do documento\n"
-                + "CTRL + S -> Assinar documento\n"
-                + "CTRL + V -> Validar assinaturas do documento";
+                + "CTRL + SHIFT + S -> Assinar documento\n"
+                + "CTRL + SHIFT + V -> Validar assinaturas do documento";
 
         JOptionPane.showMessageDialog(this, msg, "Teclas de Atalho", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jMenuItem7ActionPerformed

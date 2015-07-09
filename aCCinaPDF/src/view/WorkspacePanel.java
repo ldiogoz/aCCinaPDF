@@ -24,6 +24,8 @@ import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -121,6 +123,21 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         cbVisibleSignature.setSelected(true);
         lblRevision.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         clearSignatureFields();
+        jsImagePanel.addMouseWheelListener(new MouseWheelListener() {
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                if (e.isControlDown()) {
+                    e.consume();
+                    if (e.getWheelRotation() < 0) {
+                        imagePanel.scaleUp();
+                    } else {
+                        imagePanel.scaleDown();
+                    }
+                    fixTempSignaturePosition(true);
+                }
+            }
+        });
     }
 
     public void setParent(MainWindow mw) {
@@ -525,16 +542,37 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     public void fixTempSignaturePosition(boolean force) {
         if (null != tempSignature) {
             if (!tempSignature.isInsideDocument()) {
-                int sizeX = 403;//(int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getWidth() / 3;
-                int sizeY = 35; //(int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight() / 10;
+                int sizeX = Integer.parseInt(getConfigParameter("signatureWidth"));
+                int sizeY = Integer.parseInt(getConfigParameter("signatureHeight"));
                 int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
                 int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
                 tempSignature.setSize(new Dimension(sizeX, sizeY));
                 tempSignature.setLocation(x, y);
                 if (!tempSignature.isInsideDocument()) {
-                    fixTempSignaturePosition(false);
+                    if (force) {
+                        forceFixTempSignaturePosition();
+                    }
+                } else {
+                    repaint();
                 }
-                repaint();
+            }
+        }
+    }
+
+    private void forceFixTempSignaturePosition() {
+        if (null != tempSignature) {
+            if (!tempSignature.isInsideDocument()) {
+                int sizeX = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getWidth() / 3;
+                int sizeY = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight() / 10;
+                int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
+                int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
+                tempSignature.setSize(new Dimension(sizeX, sizeY));
+                tempSignature.setLocation(x, y);
+                if (!tempSignature.isInsideDocument()) {
+                    forceFixTempSignaturePosition();
+                } else {
+                    repaint();
+                }
             }
         }
     }
