@@ -38,6 +38,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -150,7 +151,7 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
         Date since = x509Certificate.getNotBefore();
         Date until = x509Certificate.getNotAfter();
 
-        jTextField1.setText(IETFUtils.valueToString(subjectCN.getFirst().getValue()));
+        jTextField1.setText(WordUtils.capitalize(IETFUtils.valueToString(subjectCN.getFirst().getValue()).toLowerCase()));
         jTextField1.setCaretPosition(0);
         jTextField4.setText(IETFUtils.valueToString(subjectO.getFirst().getValue()));
         jTextField4.setCaretPosition(0);
@@ -239,9 +240,8 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
             Logger.getLogger(CertificatePropertiesDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
         RDN rdn = x500name.getRDNs(BCStyle.CN)[0];
-        String name = IETFUtils.valueToString(rdn.getFirst().getValue());
 
-        return name;
+        return WordUtils.capitalize(IETFUtils.valueToString(rdn.getFirst().getValue()).toLowerCase());
     }
 
     private void expandTree(JTree tree) {
@@ -652,7 +652,7 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
             java.util.logging.Logger.getLogger(CertificatePropertiesDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        
+
         //</editor-fold>
 
         /* Create and display the dialog */

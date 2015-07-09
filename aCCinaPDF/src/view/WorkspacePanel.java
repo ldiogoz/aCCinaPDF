@@ -45,9 +45,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenuItem;
@@ -72,7 +69,6 @@ import model.Signature;
 import model.SignatureValidation;
 import model.TreeNodeWithState;
 import model.ValidationTreeCellRenderer;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.icepdf.core.pobjects.Document;
 import org.icepdf.ri.common.ComponentKeyBinding;
 import org.icepdf.ri.common.SwingController;
@@ -1530,9 +1526,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                                     status = Status.READY;
                                     ArrayList<File> list = new ArrayList<>();
                                     list.add(new File(document.getDocumentLocation()));
+                                    int tempPage = imagePanel.getPageNumber();
                                     mainWindow.closeDocuments(list, false);
                                     mainWindow.loadPdf(new File(dest), false);
                                     hideRightPanel();
+                                    imagePanel.setPageNumber(tempPage);
                                     JOptionPane.showMessageDialog(mainWindow, "Assinatura aplicada com sucesso!", "", JOptionPane.INFORMATION_MESSAGE);
                                     break;
                                 }
@@ -1720,13 +1718,13 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
                 msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                msg = ("O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -1735,22 +1733,6 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
             panelSignatureDetails.setVisible(true);
         }
-    }
-
-    private String getCertificateProperty(X500Name x500name, String property) {
-        String cn = "";
-        LdapName ldapDN = null;
-        try {
-            ldapDN = new LdapName(x500name.toString());
-        } catch (InvalidNameException ex) {
-            Logger.getLogger(MultipleValidationDialog.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        for (Rdn rdn : ldapDN.getRdns()) {
-            if (rdn.getType().equals(property)) {
-                cn = rdn.getValue().toString();
-            }
-        }
-        return cn;
     }
 
     private void btnAlterarAparenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterarAparenciaActionPerformed

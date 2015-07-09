@@ -16,12 +16,14 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.error_messages.MessageLocalization;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.CMYKColor;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfEncryption;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.security.CertificateUtil;
 import com.itextpdf.text.pdf.security.CertificateVerification;
@@ -84,6 +86,10 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
@@ -95,6 +101,7 @@ import model.SignatureValidation;
 import org.apache.commons.lang3.SystemUtils;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
@@ -112,6 +119,7 @@ import org.bouncycastle.operator.OperatorException;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.bouncycastle.tsp.TimeStampToken;
 import sun.security.pkcs11.SunPKCS11;
+import view.MultipleValidationDialog;
 
 /**
  *
@@ -120,8 +128,8 @@ import sun.security.pkcs11.SunPKCS11;
 public class CCInstance {
 
     private static final String SIGNATURE_CREATOR = "aCCinaPDF";
-    private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
-    //private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
+    //private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
+    private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
 
     private static CCInstance instance;
 
@@ -397,7 +405,6 @@ public class CCInstance {
             }
 
             appearance.setLayer2Text(text);
-            //appearance.getCryptoDictionary().put(PdfName.P, new PdfNumber(settings.getCertificationLevel()));
         }
 
         // CRL <- Pesado!
@@ -724,5 +731,21 @@ public class CCInstance {
         Extension ext = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(new DEROctetString(PdfEncryption.createDocumentId()).getEncoded()));
         gen.setRequestExtensions(new Extensions(new Extension[]{ext}));
         return gen.build();
+    }
+
+    public String getCertificateProperty(X500Name x500name, String property) {
+        String cn = "";
+        LdapName ldapDN = null;
+        try {
+            ldapDN = new LdapName(x500name.toString());
+        } catch (InvalidNameException ex) {
+            java.util.logging.Logger.getLogger(MultipleValidationDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        for (Rdn rdn : ldapDN.getRdns()) {
+            if (rdn.getType().equals(property)) {
+                cn = rdn.getValue().toString();
+            }
+        }
+        return cn;
     }
 }

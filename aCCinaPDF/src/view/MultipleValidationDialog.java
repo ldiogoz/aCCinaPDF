@@ -10,8 +10,7 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import controller.CCInstance;
 import exception.RevisionExtractionException;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -29,9 +28,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.naming.InvalidNameException;
-import javax.naming.ldap.LdapName;
-import javax.naming.ldap.Rdn;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -49,7 +45,6 @@ import model.TreeNodeWithState;
 import model.ValidationFileListEntry;
 import model.FileListTreeCellRenderer;
 import model.ValidationTreeCellRenderer;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.icepdf.ri.common.ComponentKeyBinding;
 import org.icepdf.ri.common.SwingController;
 import org.icepdf.ri.common.SwingViewBuilder;
@@ -96,18 +91,18 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                             break;
                         }
                     }
-                    if (!(tempEntry.getKey().getValidationStatus().equals(ValidationFileListEntry.ValidationStatus.WARNING)
-                            || tempEntry.getKey().getValidationStatus().equals(ValidationFileListEntry.ValidationStatus.INVALID))) {
-                        /* if (sv.isChanged() || sv.getSignatureStatus() == SignatureStatus.INVALID_CERTIFICATED) {
-                         tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
-                         } else*/ if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
-                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
-                        } else if (sv.isCoversEntireDocument() && sv.isCertification()) {
+                    if (sv.isCertification()) {
+                        if (sv.isValid()) {
                             tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.CERTIFIED);
                         } else {
-                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.ALL_OK);
+                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
                         }
-
+                    } else {
+                        if (sv.isValid()) {
+                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.ALL_OK);
+                        } else {
+                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
+                        }
                     }
                     tempEntry.getValue().add(sv);
                 }
@@ -214,13 +209,13 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
                 msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                msg = ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                msg = ("O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
                 lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -233,22 +228,6 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
     }
 
     private String msg = null;
-
-    private String getCertificateProperty(X500Name x500name, String property) {
-        String cn = "";
-        LdapName ldapDN = null;
-        try {
-            ldapDN = new LdapName(x500name.toString());
-        } catch (InvalidNameException ex) {
-            Logger.getLogger(MultipleValidationDialog.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        for (Rdn rdn : ldapDN.getRdns()) {
-            if (rdn.getType().equals(property)) {
-                cn = rdn.getValue().toString();
-            }
-        }
-        return cn;
-    }
 
     private void openPdfReaderFromFile(File file) {
         this.hide();
@@ -846,10 +825,10 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     toWrite += newLine + "\t\t";
                     if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
                         toWrite += ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                                + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                                + (sv.getSignature().getTimeStampToken() != null ? "O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                                + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                                + (sv.getSignature().getTimeStampToken() != null ? "O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
                     } else if (sv.getSignature().getTimeStampToken() != null) {
-                        toWrite += ("O carimbo de data e hora é válido e foi assinado por: " + getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                        toWrite += ("O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
                     }
                     toWrite += newLine;
                 }
