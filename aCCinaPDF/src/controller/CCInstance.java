@@ -120,8 +120,8 @@ import sun.security.pkcs11.SunPKCS11;
 public class CCInstance {
 
     private static final String SIGNATURE_CREATOR = "aCCinaPDF";
-    //private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
-    private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
+    private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
+    //private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
 
     private static CCInstance instance;
 
@@ -370,7 +370,8 @@ public class CCInstance {
             } else {
                 font = FontFactory.getFont(settings.getAppearance().getFontLocation(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 0, Font.PLAIN, new BaseColor(settings.getAppearance().getFontColor().getRGB()));
             }
-            appearance.setLayer2Font(font);
+            BaseFont bf = font.getBaseFont();
+            appearance.setLayer2Font(new com.itextpdf.text.Font(bf));
             String text = "";
             if (settings.getAppearance().isShowName()) {
                 if (!settings.getCCAlias().getName().isEmpty()) {
@@ -553,8 +554,6 @@ public class CCInstance {
             } else {
                 isValid = false;
             }
-            
-            System.out.println("changed? " + !pk.verify());
 
             List<AcroFields.FieldPosition> posList = af.getFieldPositions(name);
             final SignatureValidation signature = new SignatureValidation(file, name, pk, !pk.verify(), af.signatureCoversWholeDocument(name), af.getRevision(name), af.getTotalRevisions(), reader.getCertificationLevel(), ocspCertificateStatus, crlCertificateStatus, validTimestamp, posList, sp, isValid);

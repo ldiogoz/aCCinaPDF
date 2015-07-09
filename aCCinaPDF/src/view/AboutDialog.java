@@ -95,7 +95,7 @@ public class AboutDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel12.setText("0.14");
+        jLabel12.setText("1.0");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

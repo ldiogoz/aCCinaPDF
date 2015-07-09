@@ -5,7 +5,6 @@
  */
 package view;
 
-import model.ImagePanel;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
@@ -25,8 +24,6 @@ import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -72,7 +69,6 @@ import model.CCAlias;
 import model.CCSignatureSettings;
 import model.CertificateStatus;
 import model.Signature;
-import model.SignatureStatus;
 import model.SignatureValidation;
 import model.TreeNodeWithState;
 import model.ValidationTreeCellRenderer;
@@ -144,8 +140,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             status = Status.READY;
             btnPageBackward.setEnabled(false);
             btnPageForward.setEnabled(false);
-            removeTempSignature();
             lblTip.setVisible(true);
+            removeTempSignature();
             hideRightPanel();
         } else {
             if (status.equals(Status.SIGNING)) {
@@ -598,7 +594,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         jSplitPane1 = new javax.swing.JSplitPane();
         leftPanel = new javax.swing.JPanel();
         jsImagePanel = new javax.swing.JScrollPane();
-        imagePanel = new model.ImagePanel();
+        imagePanel = new view.ImagePanel();
         lblTip = new javax.swing.JLabel();
         topToolbar = new javax.swing.JToolBar();
         btnPageBackward = new javax.swing.JButton();
@@ -1989,7 +1985,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private javax.swing.JCheckBox cbVisibleSignature;
     private javax.swing.JPanel clSign;
     private javax.swing.JPanel clValidate;
-    private model.ImagePanel imagePanel;
+    private view.ImagePanel imagePanel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton3;

@@ -79,8 +79,8 @@ public class FileSystemModel implements TreeModel {
 
         String[] children = directory.list(ff);
 
-        ArrayList<String> folders = new ArrayList<>();
-        ArrayList<String> files = new ArrayList<>();
+        final ArrayList<String> folders = new ArrayList<>();
+        final ArrayList<String> files = new ArrayList<>();
 
         int num = 0;
 
@@ -98,10 +98,13 @@ public class FileSystemModel implements TreeModel {
                 return str1.compareTo(str2);
             }
         };
+        if (!folders.isEmpty()) {
+            folders.sort(strCompare);
+        }
+        if (!files.isEmpty()) {
+            files.sort(strCompare);
+        }
 
-        folders.sort(strCompare);
-        files.sort(strCompare);
-        
         int len = folders.size() + files.size();
         String[] children2 = new String[len];
 

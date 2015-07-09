@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package model;
+package view;
 
 import com.itextpdf.text.pdf.AcroFields;
 import java.awt.Color;
@@ -22,10 +22,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
+import model.SignatureValidation;
 import org.icepdf.core.pobjects.Document;
 import org.icepdf.core.pobjects.Page;
 import org.icepdf.core.util.GraphicsRenderingHints;
-import view.MainWindow;
 
 public class ImagePanel extends JPanel {
 
@@ -97,8 +97,8 @@ public class ImagePanel extends JPanel {
         }
 
         if (document != null) {
-            Point p = getImageLocation();
             if (svList != null) {
+                Point p = getImageLocation();
                 for (final SignatureValidation sv : svList) {
                     int pgNumber = sv.getPosList().get(0).page - 1;
                     if (this.pageNumber == pgNumber) {

@@ -77,7 +77,7 @@ public class FileListTreeCellRenderer extends DefaultTreeCellRenderer {
                     attributes.put(TextAttribute.UNDERLINE, false);
                     setFont(font.deriveFont(attributes));
                 }
-                tree.repaint();
+                attributes.clear();
             }
         }
 

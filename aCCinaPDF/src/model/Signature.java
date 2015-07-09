@@ -5,6 +5,7 @@
  */
 package model;
 
+import view.ImagePanel;
 import controller.SignatureHandler;
 import java.awt.Color;
 import java.awt.Dimension;
