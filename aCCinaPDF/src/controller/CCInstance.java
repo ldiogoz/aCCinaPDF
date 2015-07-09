@@ -16,14 +16,12 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.error_messages.MessageLocalization;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.CMYKColor;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfEncryption;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.security.CertificateUtil;
 import com.itextpdf.text.pdf.security.CertificateVerification;
@@ -128,8 +126,8 @@ import view.MultipleValidationDialog;
 public class CCInstance {
 
     private static final String SIGNATURE_CREATOR = "aCCinaPDF";
-    //private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
-    private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
+    private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
+    //private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
 
     private static CCInstance instance;
 
