@@ -102,7 +102,6 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             previewPanel1.setLocation(signatureSettings.getLocation());
             checkBoxLocalizacao.setSelected(showLocation);
             previewPanel1.setShowLocation(showLocation);
-            System.out.println(showLocation);
         } else {
             checkBoxLocalizacao.setEnabled(false);
             checkBoxLocalizacao.setSelected(false);

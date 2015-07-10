@@ -71,6 +71,7 @@
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
         <Property name="text" type="java.lang.String" value="Vers&#xe3;o PDF:"/>
+        <Property name="toolTipText" type="java.lang.String" value="Vers&#xe3;o que os documentos ter&#xe3;o ap&#xf3;s a assinatura"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBox1">
@@ -83,6 +84,7 @@
             <StringItem index="3" value="Item 4"/>
           </StringArray>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Vers&#xe3;o PDF que os documentos ter&#xe3;o ap&#xf3;s a assinatura"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="jButton1">
@@ -200,9 +202,13 @@
         <Component class="javax.swing.JLabel" name="jLabel6">
           <Properties>
             <Property name="text" type="java.lang.String" value="Prefixo: "/>
+            <Property name="toolTipText" type="java.lang.String" value="Prefixo (Nome) que a assinatura ter&#xe1;"/>
           </Properties>
         </Component>
         <Component class="javax.swing.JTextField" name="tfPrefix">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" value="Prefixo (Nome) que a assinatura ter&#xe1;"/>
+          </Properties>
         </Component>
       </SubComponents>
     </Container>

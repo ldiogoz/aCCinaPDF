@@ -115,8 +115,10 @@ public class SettingsDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
         jLabel1.setText("Versão PDF:");
+        jLabel1.setToolTipText("Versão que os documentos terão após a assinatura");
 
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jComboBox1.setToolTipText("Versão PDF que os documentos terão após a assinatura");
 
         jButton1.setText("Cancelar");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -143,6 +145,9 @@ public class SettingsDialog extends javax.swing.JDialog {
         jLabel5.setText("pixéis");
 
         jLabel6.setText("Prefixo: ");
+        jLabel6.setToolTipText("Prefixo (Nome) que a assinatura terá");
+
+        tfPrefix.setToolTipText("Prefixo (Nome) que a assinatura terá");
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);

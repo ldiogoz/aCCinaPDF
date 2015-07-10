@@ -471,6 +471,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jSplitPane2.setMinimumSize(new java.awt.Dimension(0, 7));
 
         btnRefreshTree.setText("Actualizar");
+        btnRefreshTree.setToolTipText("Actualiza os ficheiros no explorador. Útil quando são criados, eliminados ou movidos ficheiros");
         btnRefreshTree.setMinimumSize(new java.awt.Dimension(0, 25));
         btnRefreshTree.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -479,6 +480,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         });
 
         jtExplorer.setFont(new java.awt.Font("SansSerif", 0, 15)); // NOI18N
+        jtExplorer.setToolTipText("");
         jtExplorer.setRowHeight(20);
         jtExplorer.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -487,11 +489,14 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         });
         jScrollPane2.setViewportView(jtExplorer);
 
+        tfProcurar.setToolTipText("Pesquisar por pastas ou documentos por nome");
         tfProcurar.setMinimumSize(new java.awt.Dimension(0, 22));
 
         jLabel1.setText("Procurar por:");
+        jLabel1.setToolTipText("Pesquisar por pastas ou documentos por nome");
         jLabel1.setMinimumSize(new java.awt.Dimension(0, 16));
 
+        cbVolume.setToolTipText("");
         cbVolume.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbVolumeActionPerformed(evt);
@@ -536,6 +541,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
         jtOpenedDocuments.setFont(new java.awt.Font("SansSerif", 0, 15)); // NOI18N
         jtOpenedDocuments.setModel(null);
+        jtOpenedDocuments.setToolTipText("");
         jtOpenedDocuments.setRootVisible(false);
         jtOpenedDocuments.setRowHeight(20);
         jtOpenedDocuments.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -556,6 +562,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jScrollPane1.setViewportView(jtOpenedDocuments);
 
         lblOpenedDocuments.setText("0 Documentos em lote:");
+        lblOpenedDocuments.setToolTipText("");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);

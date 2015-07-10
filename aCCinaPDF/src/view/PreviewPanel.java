@@ -190,7 +190,6 @@ public class PreviewPanel extends JPanel {
 
     public void setShowName(boolean showName) {
         this.showName = showName;
-        System.out.println(showName);
         repaint();
     }
 

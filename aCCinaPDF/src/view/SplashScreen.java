@@ -17,7 +17,7 @@ import javax.swing.ImageIcon;
  */
 public class SplashScreen extends javax.swing.JFrame {
 
-    private final long WAIT_TIME = 1500;
+    private final long WAIT_TIME = 2000;
     /**
      * Creates new form SplashScreen
      */

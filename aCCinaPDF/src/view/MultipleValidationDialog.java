@@ -343,6 +343,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         jsp2.setViewportView(jtValidation);
 
         jButton1.setText("Mostrar Certificado");
+        jButton1.setToolTipText("Abre uma janela com os detalhes dos certificado contidos nesta assinatura");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -354,6 +355,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel2.setText("Habilitada para validação a longo termo:");
+        jLabel2.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel4.setText("Data:");
@@ -369,6 +371,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         lblDate.setText(" ");
 
         lblLTV.setText(" ");
+        lblLTV.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel3.setText("Razão:");
@@ -499,6 +502,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         progressBar.setStringPainted(true);
 
         btnGuardar.setText("Guardar em ficheiro");
+        btnGuardar.setToolTipText("Guarda o resultado da validação de todos os documentos num ficheiro de texto");
         btnGuardar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnGuardarActionPerformed(evt);

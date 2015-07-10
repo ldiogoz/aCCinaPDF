@@ -188,6 +188,7 @@
                       <Image iconType="3" name="/image/arrow_left.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" P&#xe1;gina Anterior "/>
+                    <Property name="toolTipText" type="java.lang.String" value="Mostra a p&#xe1;gina anterior do documento aberto"/>
                     <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="0" name="null"/>
                     </Property>
@@ -209,6 +210,7 @@
                       <Image iconType="3" name="/image/arrow_right.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" P&#xe1;gina Seguinte "/>
+                    <Property name="toolTipText" type="java.lang.String" value="Mostra a p&#xe1;gina seguinte do documento aberto"/>
                     <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="0" name="null"/>
                     </Property>
@@ -230,6 +232,7 @@
                       <Image iconType="3" name="/image/zoomOut.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" Zoom - "/>
+                    <Property name="toolTipText" type="java.lang.String" value="Reduz o zoom do visualizador do documento"/>
                     <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="0" name="null"/>
                     </Property>
@@ -251,6 +254,7 @@
                       <Image iconType="3" name="/image/zoomIn.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" Zoom + "/>
+                    <Property name="toolTipText" type="java.lang.String" value="Aumenta o zoom do visualizador do documento"/>
                     <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="0" name="null"/>
                     </Property>
@@ -272,6 +276,7 @@
                       <Image iconType="3" name="/image/sign.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" Assinar "/>
+                    <Property name="toolTipText" type="java.lang.String" value="Assinar documento(s)"/>
                     <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="0" name="null"/>
                     </Property>
@@ -294,6 +299,7 @@
                       <Image iconType="3" name="/image/validar.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" Validar "/>
+                    <Property name="toolTipText" type="java.lang.String" value="Validar documento(s)"/>
                     <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
                       <Image iconType="0" name="null"/>
                     </Property>
@@ -529,7 +535,7 @@
                                   <Component id="lbTimestamp" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="tfTimestamp" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace pref="357" max="32767" attributes="0"/>
+                                  <EmptySpace pref="345" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                         </DimensionLayout>
@@ -541,6 +547,9 @@
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="tfLocation">
+                          <Properties>
+                            <Property name="toolTipText" type="java.lang.String" value="Localiza&#xe7;&#xe3;o"/>
+                          </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel5">
                           <Properties>
@@ -548,6 +557,9 @@
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JTextField" name="tfReason">
+                          <Properties>
+                            <Property name="toolTipText" type="java.lang.String" value="Raz&#xe3;o"/>
+                          </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel4">
                           <Properties>
@@ -557,6 +569,7 @@
                         <Component class="javax.swing.JCheckBox" name="cbTimestamp">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Incluir TimeStamp"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Incluir um timestamp na assinatura, que garante a veracidade da hora em que o documento foi assinado"/>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbTimestampActionPerformed"/>
@@ -576,6 +589,7 @@
                             </Property>
                             <Property name="selected" type="boolean" value="true"/>
                             <Property name="text" type="java.lang.String" value="Sem certifica&#xe7;&#xe3;o"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Ser&#xe1; apenas assinado o documento, sem qualquer tipo de certifica&#xe7;&#xe3;o. Apesar de n&#xe3;o ser invalidada, o documento poder&#xe1; sofrer altera&#xe7;&#xf5;es futuras"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="jRadioButton2">
@@ -584,6 +598,7 @@
                               <ComponentRef name="buttonGroup1"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value="&lt;html&gt;N&#xe3;o s&#xe3;o permitidas altera&#xe7;&#xf5;es&lt;/html&gt;"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Bloquear o documento, impedindo altera&#xe7;&#xf5;es ao mesmo"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="jRadioButton3">
@@ -592,6 +607,7 @@
                               <ComponentRef name="buttonGroup1"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value="Preenchimento de formul&#xe1;rio permitido"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Certificar o documento, permitindo no entanto novas assinaturas ou certifica&#xe7;&#xf5;es"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="jRadioButton4">
@@ -600,6 +616,7 @@
                               <ComponentRef name="buttonGroup1"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value="&lt;html&gt;Preenchimento de formul&#xe1;rio e&lt;br&gt;anota&#xe7;&#xf5;es permitidos&lt;/html&gt;"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Certificar o documento, permitindo no entanto novas anota&#xe7;&#xf5;es e assinaturas ou certifica&#xe7;&#xf5;es"/>
                           </Properties>
                         </Component>
                       </SubComponents>
@@ -641,7 +658,7 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="lblText" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jScrollPane1" pref="569" max="32767" attributes="0"/>
+                                  <Component id="jScrollPane1" pref="557" max="32767" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                               </Group>
                           </Group>
@@ -651,6 +668,7 @@
                         <Component class="javax.swing.JButton" name="btnImage">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Carregar Imagem"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Incluir uma imagem de fundo na assinatura vis&#xed;vel"/>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnImageActionPerformed"/>
@@ -660,6 +678,7 @@
                           <Properties>
                             <Property name="selected" type="boolean" value="true"/>
                             <Property name="text" type="java.lang.String" value="Assinatura Vis&#xed;vel"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Assinatura vis&#xed;vel"/>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbVisibleSignatureActionPerformed"/>
@@ -668,6 +687,7 @@
                         <Component class="javax.swing.JButton" name="btnAlterarAparencia">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Alterar Apar&#xea;ncia"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Alterar dados da apar&#xea;ncia da assinatura como os dados a apresentar, o tipo de letra, a cor da letra"/>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAlterarAparenciaActionPerformed"/>
@@ -690,6 +710,7 @@
                                 <Property name="columns" type="int" value="20"/>
                                 <Property name="lineWrap" type="boolean" value="true"/>
                                 <Property name="rows" type="int" value="5"/>
+                                <Property name="toolTipText" type="java.lang.String" value="Texto extra a mostrar no bloco da assinatura vis&#xed;vel"/>
                               </Properties>
                             </Component>
                           </SubComponents>
@@ -699,6 +720,9 @@
                   </SubComponents>
                 </Container>
                 <Component class="view.WideDropDownComboBox" name="cbAlias">
+                  <Properties>
+                    <Property name="toolTipText" type="java.lang.String" value=""/>
+                  </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbAliasActionPerformed"/>
                   </Events>
@@ -706,6 +730,7 @@
                 <Component class="javax.swing.JButton" name="btnCheckAliasCertificate">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Mostrar Certificado"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Abre uma janela com os detalhes do certificado no cart&#xe3;o de cidad&#xe3;o"/>
                     <Property name="enabled" type="boolean" value="false"/>
                   </Properties>
                   <Events>
@@ -715,6 +740,7 @@
                 <Component class="javax.swing.JButton" name="btnRefresh">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Actualizar"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Verifica altera&#xe7;&#xf5;es de cart&#xe3;o inserido no leitor"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnRefreshActionPerformed"/>
@@ -723,6 +749,7 @@
                 <Component class="javax.swing.JButton" name="btnApplySignature">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Assinar"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Aplicar a assinatura no(s) documento(s)"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnApplySignatureActionPerformed"/>
@@ -731,6 +758,7 @@
                 <Component class="javax.swing.JButton" name="jButton3">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Cancelar"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Cancela esta assinatura e fecha o painel de valida&#xe7;&#xe3;o"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton3ActionPerformed"/>
@@ -940,6 +968,7 @@
                         <Component class="javax.swing.JButton" name="btnCheckCertificate">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Mostrar Certificado"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Abre uma janela com os detalhes dos certificado contidos nesta assinatura"/>
                           </Properties>
                           <Events>
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnCheckCertificateActionPerformed"/>
@@ -983,6 +1012,7 @@
                               <Font name="Tahoma" size="13" style="1"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value="Habilitada para Valida&#xe7;&#xe3;o a longo termo:"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Referente a se a assinatura cont&#xe9;m toda a informa&#xe7;&#xe3;o necess&#xe1;ria para validar todos os certificados nela contidos"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="lblRevision">
@@ -1014,6 +1044,7 @@
                         <Component class="javax.swing.JLabel" name="lblLTV">
                           <Properties>
                             <Property name="text" type="java.lang.String" value=" "/>
+                            <Property name="toolTipText" type="java.lang.String" value="Referente a se a assinatura cont&#xe9;m toda a informa&#xe7;&#xe3;o necess&#xe1;ria para validar todos os certificados nela contidos"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="jLabel12">
@@ -1035,6 +1066,7 @@
                               <Font name="Tahoma" size="13" style="1"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value="Informa&#xe7;&#xe3;o adicional:"/>
+                            <Property name="toolTipText" type="java.lang.String" value=""/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JLabel" name="lblAdditionalInfo">
@@ -1057,6 +1089,7 @@
                 <Component class="javax.swing.JButton" name="jButton1">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Fechar"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Fecha o painel de valida&#xe7;&#xe3;o"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
@@ -1065,6 +1098,7 @@
                 <Component class="javax.swing.JButton" name="jButton2">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Revalidar"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Volta a verificar e validar todas as assinaturas neste documento"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton2ActionPerformed"/>

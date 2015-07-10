@@ -765,6 +765,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnPageBackward.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         btnPageBackward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/arrow_left.png"))); // NOI18N
         btnPageBackward.setText(" Página Anterior ");
+        btnPageBackward.setToolTipText("Mostra a página anterior do documento aberto");
         btnPageBackward.setDisabledIcon(null);
         btnPageBackward.setFocusable(false);
         btnPageBackward.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -780,6 +781,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnPageForward.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         btnPageForward.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/arrow_right.png"))); // NOI18N
         btnPageForward.setText(" Página Seguinte ");
+        btnPageForward.setToolTipText("Mostra a página seguinte do documento aberto");
         btnPageForward.setDisabledIcon(null);
         btnPageForward.setFocusable(false);
         btnPageForward.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -795,6 +797,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnZoomOut.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         btnZoomOut.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/zoomOut.png"))); // NOI18N
         btnZoomOut.setText(" Zoom - ");
+        btnZoomOut.setToolTipText("Reduz o zoom do visualizador do documento");
         btnZoomOut.setDisabledIcon(null);
         btnZoomOut.setFocusable(false);
         btnZoomOut.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -810,6 +813,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnZoomIn.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         btnZoomIn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/zoomIn.png"))); // NOI18N
         btnZoomIn.setText(" Zoom + ");
+        btnZoomIn.setToolTipText("Aumenta o zoom do visualizador do documento");
         btnZoomIn.setDisabledIcon(null);
         btnZoomIn.setFocusable(false);
         btnZoomIn.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -825,6 +829,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnSign.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         btnSign.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/sign.png"))); // NOI18N
         btnSign.setText(" Assinar ");
+        btnSign.setToolTipText("Assinar documento(s)");
         btnSign.setDisabledIcon(null);
         btnSign.setFocusable(false);
         btnSign.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -841,6 +846,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnValidate.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
         btnValidate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/validar.png"))); // NOI18N
         btnValidate.setText(" Validar ");
+        btnValidate.setToolTipText("Validar documento(s)");
         btnValidate.setDisabledIcon(null);
         btnValidate.setFocusable(false);
         btnValidate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -914,11 +920,16 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         jLabel6.setText("Tipo de Assinatura:");
 
+        tfLocation.setToolTipText("Localização");
+
         jLabel5.setText("Localização:");
+
+        tfReason.setToolTipText("Razão");
 
         jLabel4.setText("Razão:");
 
         cbTimestamp.setText("Incluir TimeStamp");
+        cbTimestamp.setToolTipText("Incluir um timestamp na assinatura, que garante a veracidade da hora em que o documento foi assinado");
         cbTimestamp.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbTimestampActionPerformed(evt);
@@ -930,15 +941,19 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         buttonGroup1.add(jRadioButton1);
         jRadioButton1.setSelected(true);
         jRadioButton1.setText("Sem certificação");
+        jRadioButton1.setToolTipText("Será apenas assinado o documento, sem qualquer tipo de certificação. Apesar de não ser invalidada, o documento poderá sofrer alterações futuras");
 
         buttonGroup1.add(jRadioButton2);
         jRadioButton2.setText("<html>Não são permitidas alterações</html>");
+        jRadioButton2.setToolTipText("Bloquear o documento, impedindo alterações ao mesmo");
 
         buttonGroup1.add(jRadioButton3);
         jRadioButton3.setText("Preenchimento de formulário permitido");
+        jRadioButton3.setToolTipText("Certificar o documento, permitindo no entanto novas assinaturas ou certificações");
 
         buttonGroup1.add(jRadioButton4);
         jRadioButton4.setText("<html>Preenchimento de formulário e<br>anotações permitidos</html>");
+        jRadioButton4.setToolTipText("Certificar o documento, permitindo no entanto novas anotações e assinaturas ou certificações");
 
         javax.swing.GroupLayout tabGeneralLayout = new javax.swing.GroupLayout(tabGeneral);
         tabGeneral.setLayout(tabGeneralLayout);
@@ -991,12 +1006,13 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addComponent(lbTimestamp)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tfTimestamp, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(357, Short.MAX_VALUE))
+                .addContainerGap(345, Short.MAX_VALUE))
         );
 
         jTabbedPane1.addTab("Geral", tabGeneral);
 
         btnImage.setText("Carregar Imagem");
+        btnImage.setToolTipText("Incluir uma imagem de fundo na assinatura visível");
         btnImage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnImageActionPerformed(evt);
@@ -1005,6 +1021,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         cbVisibleSignature.setSelected(true);
         cbVisibleSignature.setText("Assinatura Visível");
+        cbVisibleSignature.setToolTipText("Assinatura visível");
         cbVisibleSignature.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbVisibleSignatureActionPerformed(evt);
@@ -1012,6 +1029,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         });
 
         btnAlterarAparencia.setText("Alterar Aparência");
+        btnAlterarAparencia.setToolTipText("Alterar dados da aparência da assinatura como os dados a apresentar, o tipo de letra, a cor da letra");
         btnAlterarAparencia.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAlterarAparenciaActionPerformed(evt);
@@ -1023,6 +1041,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         tfText.setColumns(20);
         tfText.setLineWrap(true);
         tfText.setRows(5);
+        tfText.setToolTipText("Texto extra a mostrar no bloco da assinatura visível");
         jScrollPane1.setViewportView(tfText);
 
         javax.swing.GroupLayout tabAppearanceLayout = new javax.swing.GroupLayout(tabAppearance);
@@ -1051,12 +1070,13 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 569, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 557, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
         jTabbedPane1.addTab("Aparência", tabAppearance);
 
+        cbAlias.setToolTipText("");
         cbAlias.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbAliasActionPerformed(evt);
@@ -1064,6 +1084,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         });
 
         btnCheckAliasCertificate.setText("Mostrar Certificado");
+        btnCheckAliasCertificate.setToolTipText("Abre uma janela com os detalhes do certificado no cartão de cidadão");
         btnCheckAliasCertificate.setEnabled(false);
         btnCheckAliasCertificate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1072,6 +1093,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         });
 
         btnRefresh.setText("Actualizar");
+        btnRefresh.setToolTipText("Verifica alterações de cartão inserido no leitor");
         btnRefresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnRefreshActionPerformed(evt);
@@ -1079,6 +1101,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         });
 
         btnApplySignature.setText("Assinar");
+        btnApplySignature.setToolTipText("Aplicar a assinatura no(s) documento(s)");
         btnApplySignature.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnApplySignatureActionPerformed(evt);
@@ -1086,6 +1109,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         });
 
         jButton3.setText("Cancelar");
+        jButton3.setToolTipText("Cancela esta assinatura e fecha o painel de validação");
         jButton3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton3ActionPerformed(evt);
@@ -1156,6 +1180,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         jScrollPane2.setViewportView(jtValidation);
 
         btnCheckCertificate.setText("Mostrar Certificado");
+        btnCheckCertificate.setToolTipText("Abre uma janela com os detalhes dos certificado contidos nesta assinatura");
         btnCheckCertificate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCheckCertificateActionPerformed(evt);
@@ -1176,6 +1201,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         jLabel11.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel11.setText("Habilitada para Validação a longo termo:");
+        jLabel11.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
         lblRevision.setForeground(new java.awt.Color(0, 0, 255));
         lblRevision.setText(" ");
@@ -1192,6 +1218,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         lblLocation.setText(" ");
 
         lblLTV.setText(" ");
+        lblLTV.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
         jLabel12.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel12.setText("Permite alterações:");
@@ -1200,6 +1227,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         jLabel13.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
         jLabel13.setText("Informação adicional:");
+        jLabel13.setToolTipText("");
 
         lblAdditionalInfo.setText("Nenhuma");
         lblAdditionalInfo.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1298,6 +1326,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         progressBar.setStringPainted(true);
 
         jButton1.setText("Fechar");
+        jButton1.setToolTipText("Fecha o painel de validação");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -1305,6 +1334,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         });
 
         jButton2.setText("Revalidar");
+        jButton2.setToolTipText("Volta a verificar e validar todas as assinaturas neste documento");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton2ActionPerformed(evt);
@@ -1812,6 +1842,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             tempSignature.setImageLocation(null);
             btnImage.setText("Carregar Imagem");
         }
+        tempSignature.repaint();
     }//GEN-LAST:event_btnImageActionPerformed
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed

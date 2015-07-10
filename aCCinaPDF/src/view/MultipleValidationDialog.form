@@ -241,6 +241,7 @@
                 <Component class="javax.swing.JButton" name="jButton1">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Mostrar Certificado"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Abre uma janela com os detalhes dos certificado contidos nesta assinatura"/>
                   </Properties>
                   <Events>
                     <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
@@ -260,6 +261,7 @@
                       <Font name="Tahoma" size="13" style="1"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value="Habilitada para valida&#xe7;&#xe3;o a longo termo:"/>
+                    <Property name="toolTipText" type="java.lang.String" value="Referente a se a assinatura cont&#xe9;m toda a informa&#xe7;&#xe3;o necess&#xe1;ria para validar todos os certificados nela contidos"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel4">
@@ -289,6 +291,7 @@
                 <Component class="javax.swing.JLabel" name="lblLTV">
                   <Properties>
                     <Property name="text" type="java.lang.String" value=" "/>
+                    <Property name="toolTipText" type="java.lang.String" value="Referente a se a assinatura cont&#xe9;m toda a informa&#xe7;&#xe3;o necess&#xe1;ria para validar todos os certificados nela contidos"/>
                   </Properties>
                 </Component>
                 <Component class="javax.swing.JLabel" name="jLabel3">
@@ -368,6 +371,7 @@
     <Component class="javax.swing.JButton" name="btnGuardar">
       <Properties>
         <Property name="text" type="java.lang.String" value="Guardar em ficheiro"/>
+        <Property name="toolTipText" type="java.lang.String" value="Guarda o resultado da valida&#xe7;&#xe3;o de todos os documentos num ficheiro de texto"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnGuardarActionPerformed"/>

@@ -12,8 +12,14 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
+import static java.awt.image.ImageObserver.WIDTH;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -29,15 +35,15 @@ import org.icepdf.core.pobjects.Document;
 public final class Signature extends JPanel {
 
     private final JLabel lblImage;
-    private final JLabel lblSize;
+    private final JLabel lblText;
 
     private boolean dragging = false;
-    private final boolean focused = true;
-    private boolean placed = false;
     private SignatureHandler cr;
     private final ImagePanel parent;
     private final Document document;
     private final int pageNumber;
+    private int colorValue;
+    private boolean ascending;
 
     public Document getDocument() {
         return document;
@@ -78,21 +84,34 @@ public final class Signature extends JPanel {
         cr.setSnapSize(new Dimension(1, 1));
         cr.registerSignature((Signature) this);
         setBackground(Color.LIGHT_GRAY);
-        //setBackground(new Color(110, 110, 110, 150));
+        ascending = true;
 
         lblImage = new JLabel();
-        lblSize = new JLabel();
+        lblText = new JLabel();
         add(lblImage);
-        add(lblSize);
+        add(lblText);
         lblImage.setLocation(0, 0);
         lblImage.setSize(this.getSize());
         lblImage.setLocation(0, 0);
+        lblText.setLocation(0, 0);
         lblImage.setSize(this.getSize());
+        lblText.setText("<html>Arraste ou aumente</html>");
+        lblText.setVisible(true);
+        setBackground(Color.BLACK);
+
+        startGlowingEffect();
     }
 
     public void showSize(boolean b) {
-        lblSize.setText("[" + getWidth() + ", " + getHeight() + "]");
-        lblSize.setVisible(b);
+        if (b) {
+            lblText.setText("[" + getWidth() + ", " + getHeight() + "]");
+        } else {
+            if (getWidth() >= 125 && getHeight() >= 25) {
+                lblText.setText("<html>Arraste ou aumente</html>");
+            } else {
+                lblText.setText("« + »");
+            }
+        }
     }
 
     private String imageLocation;
@@ -100,6 +119,9 @@ public final class Signature extends JPanel {
     public void setImageLocation(String imageLocation) {
         this.imageLocation = imageLocation;
         refreshImage();
+        if (imageLocation == null) {
+            startGlowingEffect();
+        }
     }
 
     public String getImageLocation() {
@@ -123,10 +145,8 @@ public final class Signature extends JPanel {
             lblImage.setLocation(0, 0);
             setBorder(new LineBorder(Color.BLACK, 1));
         } else {
-            setBackground(Color.LIGHT_GRAY);
             lblImage.setIcon(null);
         }
-        repaint();
     }
 
     public Point getPositionOnDocument() {
@@ -160,15 +180,48 @@ public final class Signature extends JPanel {
     }
 
     public void destroy() {
-        cr.deregisterComponent((Signature) this);
+        cr.deregisterSignature((Signature) this);
         cr = null;
         this.setVisible(false);
         repaint();
     }
 
-    public void place() {
-        placed = true;
-        setBorder(null);
-        cr.deregisterSignature(this);
+    private ScheduledExecutorService exec = null;
+
+    private void startGlowingEffect() {
+        if (exec == null) {
+            exec = Executors.newSingleThreadScheduledExecutor();
+            exec.scheduleAtFixedRate(new Runnable() {
+                @Override
+                public void run() {
+                    if (Signature.this.isVisible()) {
+                        if (imageLocation == null) {
+                            if (ascending) {
+                                colorValue += 3;
+                                if (colorValue == 255) {
+                                    ascending = false;
+                                }
+                            } else {
+                                colorValue -= 3;
+                                if (colorValue == 0) {
+                                    ascending = true;
+                                }
+                            }
+                            Color newBackgroundColor = new Color(colorValue, colorValue, colorValue);
+                            setBackground(newBackgroundColor);
+
+                            int deltaColor = 255 - colorValue;
+                            lblText.setForeground(new Color(deltaColor, deltaColor, deltaColor));
+                        } else {
+                            exec.shutdown();
+                            exec = null;
+                        }
+                    } else {
+                        exec.shutdown();
+                        exec = null;
+                    }
+                }
+            }, 0, 25, TimeUnit.MILLISECONDS);
+        }
     }
 }
