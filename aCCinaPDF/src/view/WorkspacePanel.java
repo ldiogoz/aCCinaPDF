@@ -1783,7 +1783,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             String reason = sv.getSignature().getReason();
             if (reason == null) {
                 lblReason.setText("Não definida");
-            } else if (reason.equals("")) {
+            } else if (reason.isEmpty()) {
                 lblReason.setText("Não definida");
             } else {
                 lblReason.setText(reason);
@@ -1791,7 +1791,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             String location = sv.getSignature().getLocation();
             if (location == null) {
                 lblLocation.setText("Não definido");
-            } else if (location.equals("")) {
+            } else if (location.isEmpty()) {
                 lblLocation.setText("Não definido");
             } else {
                 lblLocation.setText(location);
@@ -1832,9 +1832,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     }
 
     private void btnAlterarAparenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterarAparenciaActionPerformed
-        if (tempCCAlias != null) {
-            signatureSettings.setCcAlias(tempCCAlias);
-        }
+        signatureSettings.setCcAlias(tempCCAlias);
         signatureSettings.setReason(tfReason.getText());
         signatureSettings.setLocation(tfLocation.getText());
         signatureSettings.setText(tfText.getText());

@@ -213,7 +213,7 @@ public class CCInstance {
         while (aliasesEnum.hasMoreElements()) {
             final String alias = (String) aliasesEnum.nextElement();
             if (null != alias) {
-                if ("".equals(alias)) {
+                if (alias.isEmpty()) {
                     throw new AliasException("Alias está em branco");
                 } else {
                     final Certificate[] certChain = ks.getCertificateChain(alias);
@@ -301,6 +301,10 @@ public class CCInstance {
             throw new SignatureFailedException(message);
         }
 
+        if (reader.getNumberOfPages() - 1 < settings.getPageNumber()) {
+            settings.setPageNumber(reader.getNumberOfPages() - 1);
+        }
+
         if (null == pk) {
             String message = "Erro! Não foi encontrado nenhum SmartCard!";
             if (sl != null) {
@@ -366,18 +370,21 @@ public class CCInstance {
             if (null != settings.getAppearance().getImageLocation()) {
                 appearance.setImage(Image.getInstance(settings.getAppearance().getImageLocation()));
             }
-            com.itextpdf.text.Font font = null;
-            if (settings.getAppearance().isItalic() && settings.getAppearance().isBold()) {
-                font = FontFactory.getFont(settings.getAppearance().getFontLocation(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 0, Font.BOLD + Font.ITALIC, new BaseColor(settings.getAppearance().getFontColor().getRGB()));
+
+            com.itextpdf.text.Font font = new com.itextpdf.text.Font(FontFactory.getFont(settings.getAppearance().getFontLocation(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 0).getBaseFont());
+            
+            font.setColor(new BaseColor(settings.getAppearance().getFontColor().getRGB()));
+            if (settings.getAppearance().isBold() && settings.getAppearance().isItalic()) {
+                font.setStyle(Font.BOLD + Font.ITALIC);
             } else if (settings.getAppearance().isBold()) {
-                font = FontFactory.getFont(settings.getAppearance().getFontLocation(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 0, Font.BOLD, new BaseColor(settings.getAppearance().getFontColor().getRGB()));
+                font.setStyle(Font.BOLD);
             } else if (settings.getAppearance().isItalic()) {
-                font = FontFactory.getFont(settings.getAppearance().getFontLocation(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 0, Font.ITALIC, new BaseColor(settings.getAppearance().getFontColor().getRGB()));
+                font.setStyle(Font.ITALIC);
             } else {
-                font = FontFactory.getFont(settings.getAppearance().getFontLocation(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 0, Font.PLAIN, new BaseColor(settings.getAppearance().getFontColor().getRGB()));
+                font.setStyle(Font.PLAIN);
             }
-            BaseFont bf = font.getBaseFont();
-            appearance.setLayer2Font(new com.itextpdf.text.Font(bf));
+
+            appearance.setLayer2Font(font);
             String text = "";
             if (settings.getAppearance().isShowName()) {
                 if (!settings.getCcAlias().getName().isEmpty()) {

@@ -6,10 +6,8 @@
 package model;
 
 import com.itextpdf.text.pdf.AcroFields;
-import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.security.PdfPKCS7;
 import com.itextpdf.text.pdf.security.SignaturePermissions;
-import controller.CCInstance;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.MouseAdapter;

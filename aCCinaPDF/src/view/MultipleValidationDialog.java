@@ -178,7 +178,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             String reason = sv.getSignature().getReason();
             if (reason == null) {
                 lblReason.setText("Não definida");
-            } else if (reason.equals("")) {
+            } else if (reason.isEmpty()) {
                 lblReason.setText("Não definida");
             } else {
                 lblReason.setText(reason);
@@ -186,7 +186,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             String location = sv.getSignature().getLocation();
             if (location == null) {
                 lblLocation.setText("Não definido");
-            } else if (location.equals("")) {
+            } else if (location.isEmpty()) {
                 lblLocation.setText("Não definido");
             } else {
                 lblLocation.setText(location);
@@ -795,7 +795,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     toWrite += "Razão: ";
                     if (reason == null) {
                         toWrite += "Não definida";
-                    } else if (reason.equals("")) {
+                    } else if (reason.isEmpty()) {
                         toWrite += "Não definida";
                     } else {
                         toWrite += reason;
@@ -805,7 +805,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     toWrite += "Localização: : ";
                     if (location == null) {
                         toWrite += "Não definido";
-                    } else if (location.equals("")) {
+                    } else if (location.isEmpty()) {
                         toWrite += "Não definido";
                     } else {
                         toWrite += location;

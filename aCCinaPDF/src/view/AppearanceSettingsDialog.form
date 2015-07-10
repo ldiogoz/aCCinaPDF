@@ -210,13 +210,13 @@
                       <Group type="102" attributes="0">
                           <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="checkBoxNome" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowName" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="checkBoxRazao" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowReason" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="checkBoxLocalizacao" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowLocation" min="-2" max="-2" attributes="0"/>
                           <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                          <Component id="checkBoxDate" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowDate" min="-2" max="-2" attributes="0"/>
                           <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -232,13 +232,13 @@
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="103" alignment="0" groupAlignment="3" attributes="0">
-                          <Component id="checkBoxRazao" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowReason" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="checkBoxNome" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowName" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <Group type="103" groupAlignment="3" attributes="0">
-                          <Component id="checkBoxLocalizacao" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="checkBoxDate" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowLocation" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbShowDate" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -247,22 +247,22 @@
         </DimensionLayout>
       </Layout>
       <SubComponents>
-        <Component class="javax.swing.JCheckBox" name="checkBoxRazao">
+        <Component class="javax.swing.JCheckBox" name="cbShowReason">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Raz&#xe3;o"/>
           </Properties>
           <Events>
-            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="checkBoxRazaoItemStateChanged"/>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbShowReasonItemStateChanged"/>
           </Events>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="checkBoxLocalizacao">
+        <Component class="javax.swing.JCheckBox" name="cbShowLocation">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Localiza&#xe7;&#xe3;o"/>
           </Properties>
           <Events>
-            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="checkBoxLocalizacaoItemStateChanged"/>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbShowLocationItemStateChanged"/>
           </Events>
         </Component>
         <Container class="view.PreviewPanel" name="previewPanel1">
@@ -287,13 +287,13 @@
             </DimensionLayout>
           </Layout>
         </Container>
-        <Component class="javax.swing.JCheckBox" name="checkBoxDate">
+        <Component class="javax.swing.JCheckBox" name="cbShowDate">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Data e Hora"/>
           </Properties>
           <Events>
-            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="checkBoxDateItemStateChanged"/>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbShowDateItemStateChanged"/>
           </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="jLabel1">
@@ -301,13 +301,13 @@
             <Property name="text" type="java.lang.String" value="Mostrar:"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="checkBoxNome">
+        <Component class="javax.swing.JCheckBox" name="cbShowName">
           <Properties>
             <Property name="selected" type="boolean" value="true"/>
             <Property name="text" type="java.lang.String" value="Nome"/>
           </Properties>
           <Events>
-            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="checkBoxNomeItemStateChanged"/>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cbShowNameItemStateChanged"/>
           </Events>
         </Component>
       </SubComponents>

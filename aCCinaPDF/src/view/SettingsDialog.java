@@ -54,7 +54,7 @@ public class SettingsDialog extends javax.swing.JDialog {
             pdfVersion = getConfigParameter("pdfversion");
             prefix = getConfigParameter("prefix");
             signatureWidthString = getConfigParameter("signatureWidth");
-            signatureHeightString = getConfigParameter("signatureWidth");
+            signatureHeightString = getConfigParameter("signatureHeight");
         } catch (IOException ex) {
             loadSettings();
             return;
@@ -105,7 +105,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         propertiesRead.load(new FileInputStream(configFile));
         value = propertiesRead.getProperty(parameter);
         if (value == null) {
-            CCSignatureSettings signatureSettings = new CCSignatureSettings(true);
+            CCSignatureSettings signatureSettings = new CCSignatureSettings(false);
             JOptionPane.showMessageDialog(this, "O ficheiro de configurações está corrompido\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
         }
         return value;

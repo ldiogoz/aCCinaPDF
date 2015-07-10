@@ -28,7 +28,7 @@ public class FileSystemModel implements TreeModel {
     public FileSystemModel(File rootDirectory, final String match) {
         root = rootDirectory;
         if (match != null) {
-            if (!match.equals("")) {
+            if (!match.isEmpty()) {
                 ff = new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {

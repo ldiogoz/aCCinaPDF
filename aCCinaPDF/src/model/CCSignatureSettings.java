@@ -39,8 +39,57 @@ public final class CCSignatureSettings {
     private AppearanceSettings appearance;
     private String prefix;
 
-    public CCSignatureSettings(boolean createNewConfig) {
-        getConfig(createNewConfig);
+    public CCSignatureSettings(boolean forceCreateConfigFile) {
+        appearance = new AppearanceSettings();
+        String fsettings = "aCCinaPDF.cfg";
+        if (!new File(fsettings).exists() || forceCreateConfigFile) {
+            Properties propertiesWrite = new Properties();
+            FileOutputStream fileOut;
+            try {
+                propertiesWrite.setProperty("prefix", "aCCinatura");
+                propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
+                propertiesWrite.setProperty("fontItalic", "true");
+                propertiesWrite.setProperty("fontBold", "false");
+                propertiesWrite.setProperty("showName", "true");
+                propertiesWrite.setProperty("showReason", "true");
+                propertiesWrite.setProperty("showLocation", "true");
+                propertiesWrite.setProperty("showDate", "true");
+                propertiesWrite.setProperty("fontColor", "0");
+                propertiesWrite.setProperty("signatureWidth", "403");
+                propertiesWrite.setProperty("signatureHeight", "25");
+                propertiesWrite.setProperty("pdfversion", String.valueOf(PdfWriter.PDF_VERSION_1_7));
+                fileOut = new FileOutputStream(fsettings);
+                propertiesWrite.store(fileOut, "Settings");
+                fileOut.close();
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        try {
+            String prefixStr = getConfigParameter("prefix");
+            String boldStr = getConfigParameter("fontBold");
+            String italicStr = getConfigParameter("fontItalic");
+            String fontLocationStr = getConfigParameter("fontLocation");
+            String showNameStr = getConfigParameter("showName");
+            String showDateStr = getConfigParameter("showDate");
+            String showReasonStr = getConfigParameter("showReason");
+            String showLocationStr = getConfigParameter("showLocation");
+            String fontColorStr = getConfigParameter("fontColor");
+
+            setPrefix(prefixStr);
+            appearance.setBold(Boolean.valueOf(boldStr));
+            appearance.setItalic(Boolean.valueOf(italicStr));
+            appearance.setFontLocation(fontLocationStr);
+            appearance.setShowName(Boolean.valueOf(showNameStr));
+            appearance.setShowDate(Boolean.valueOf(showDateStr));
+            appearance.setShowReason(Boolean.valueOf(showReasonStr));
+            appearance.setShowLocation(Boolean.valueOf(showLocationStr));
+            appearance.setFontColor(new Color(Integer.valueOf(fontColorStr)));
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 
     public String getPrefix() {
@@ -54,13 +103,8 @@ public final class CCSignatureSettings {
     private String getConfigParameter(String parameter) throws FileNotFoundException, IOException {
         Properties propertiesRead = new Properties();
         String configFile = "aCCinaPDF.cfg";
-        String value = "";
-        if (!new File(configFile).exists()) {
-            getConfig(true);
-            JOptionPane.showMessageDialog(null, "O ficheiro de configurações não foi encontrado\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
-        }
         propertiesRead.load(new FileInputStream(configFile));
-        value = propertiesRead.getProperty(parameter);
+        String value = propertiesRead.getProperty(parameter);
         return value;
     }
 
@@ -159,63 +203,4 @@ public final class CCSignatureSettings {
     public void setVisibleSignature(boolean visibleSignature) {
         this.visibleSignature = visibleSignature;
     }
-
-    private void getConfig(boolean createNewConfig) {
-        File fsettings = new File("aCCinaPDF.cfg");
-        if (!fsettings.exists() || createNewConfig) {
-            Properties propertiesWrite = new Properties();
-            FileOutputStream fileOut;
-            try {
-                propertiesWrite.setProperty("prefix", "aCCinatura");
-                propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
-                propertiesWrite.setProperty("fontItalic", "true");
-                propertiesWrite.setProperty("fontBold", "false");
-                propertiesWrite.setProperty("showName", "true");
-                propertiesWrite.setProperty("showReason", "true");
-                propertiesWrite.setProperty("showLocation", "true");
-                propertiesWrite.setProperty("showDate", "true");
-                propertiesWrite.setProperty("fontColor", "0");
-                propertiesWrite.setProperty("signatureWidth", "403");
-                propertiesWrite.setProperty("signatureHeight", "25");
-                propertiesWrite.setProperty("pdfversion", String.valueOf(PdfWriter.PDF_VERSION_1_7));
-                fileOut = new FileOutputStream(fsettings);
-                propertiesWrite.store(fileOut, "Settings");
-                fileOut.close();
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        try {
-            String prefixStr = getConfigParameter("prefix");
-            String boldStr = getConfigParameter("bold");
-            String italicStr = getConfigParameter("italic");
-            String fontLocationStr = getConfigParameter("fontLocation");
-            String showNameStr = getConfigParameter("showName");
-            String showDateStr = getConfigParameter("showDate");
-            String showReasonStr = getConfigParameter("showReason");
-            String showLocationStr = getConfigParameter("showLocation");
-            String fontColorStr = getConfigParameter("fontColor");
-
-            if (prefixStr == null || boldStr == null || italicStr == null || fontLocationStr == null || showNameStr == null
-                    || showDateStr == null || showReasonStr == null || showLocationStr == null || fontColorStr == null) {
-                return;
-            }
-
-            setPrefix(prefixStr);
-            appearance = new AppearanceSettings();
-            appearance.setBold(Boolean.valueOf(boldStr));
-            appearance.setItalic(Boolean.valueOf(italicStr));
-            appearance.setFontLocation(fontLocationStr);
-            appearance.setShowName(Boolean.valueOf(showNameStr));
-            appearance.setShowDate(Boolean.valueOf(showDateStr));
-            appearance.setShowReason(Boolean.valueOf(showReasonStr));
-            appearance.setShowLocation(Boolean.valueOf(showLocationStr));
-            appearance.setFontColor(new Color(Integer.valueOf(fontColorStr)));
-        } catch (IOException ex) {
-
-        }
-    }
-
 }
