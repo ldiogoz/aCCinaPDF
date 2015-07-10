@@ -85,6 +85,7 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
@@ -126,8 +127,7 @@ import view.MultipleValidationDialog;
 public class CCInstance {
 
     private static final String SIGNATURE_CREATOR = "aCCinaPDF";
-    private final String keystoreFile = getCurrentFolder() + System.getProperty("file.separator") + "keystore" + System.getProperty("file.separator") + "aCCinaPDF_cacerts";
-    //private final String keystoreFile = "C:\\aCCinaPDF_cacerts";
+    private static final String KEYSTORE_PATH = "/keystore/aCCinaPDF_cacerts";
 
     private static CCInstance instance;
 
@@ -608,12 +608,12 @@ public class CCInstance {
     }
 
     private Certificate hasTrustedCertificate(final X509Certificate x509c) throws KeyStoreException, IOException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidAlgorithmParameterException {
-        final FileInputStream fis = new FileInputStream(keystoreFile);
+        final InputStream fis = CCInstance.class.getResourceAsStream(KEYSTORE_PATH);
         final KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
         keystore.load(fis, null);
 
         final PKIXParameters params = new PKIXParameters(keystore);
-        final ArrayList<Certificate> trustedCertList = new ArrayList<Certificate>();
+        final ArrayList<Certificate> trustedCertList = new ArrayList<>();
 
         for (final TrustAnchor ta : params.getTrustAnchors()) {
             Certificate cert = (Certificate) ta.getTrustedCert();
