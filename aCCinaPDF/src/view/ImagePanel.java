@@ -6,6 +6,7 @@
 package view;
 
 import com.itextpdf.text.pdf.AcroFields;
+import controller.Settings;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -107,7 +108,7 @@ public class ImagePanel extends JPanel {
                     int pgNumber = sv.getPosList().get(0).page - 1;
                     if (this.pageNumber == pgNumber) {
                         for (AcroFields.FieldPosition pos : sv.getPosList()) {
-                            int p1 = (int) (p.x + (pos.position.getLeft() * scale));                            
+                            int p1 = (int) (p.x + (pos.position.getLeft() * scale));
                             int p2 = (int) (p.y + Math.floor((document.getPageDimension(pageNumber, scale).getHeight() - pos.position.getTop() - scale * 10) * scale));
                             int p3 = (int) (pos.position.getWidth() * scale);
                             int p4 = (int) (pos.position.getHeight() * scale);
@@ -299,8 +300,15 @@ public class ImagePanel extends JPanel {
             int w = (int) document.getPageDimension(pageNumber, 0, scale).toDimension().getWidth();
             int h = (int) document.getPageDimension(pageNumber, 0, scale).toDimension().getHeight();
 
-            image = document.getPageImage(pageNumber, GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, 0f, java.awt.Image.SCALE_SMOOTH);
-            tmp = image.getScaledInstance(w, h, Image.SCALE_SMOOTH);
+            int quality;
+            if (Settings.getSettings().getRenderImageQuality() == Image.SCALE_FAST) {
+                quality = Image.SCALE_FAST;
+            } else {
+                quality = Image.SCALE_SMOOTH;
+            }
+
+            image = document.getPageImage(pageNumber, GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, 0f, quality);
+            tmp = image.getScaledInstance(w, h, quality);
             dimg = new BufferedImage(w, h, BufferedImage.SCALE_FAST);
 
             Graphics2D g2d = dimg.createGraphics();

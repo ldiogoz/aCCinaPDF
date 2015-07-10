@@ -12,14 +12,11 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
-import static java.awt.image.ImageObserver.WIDTH;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
@@ -220,7 +217,7 @@ public final class Signature extends JPanel {
                         exec = null;
                     }
                 }
-            }, 0, 25, TimeUnit.MILLISECONDS);
+            }, 0, 16, TimeUnit.MILLISECONDS);
         }
     }
 }

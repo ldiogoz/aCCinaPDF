@@ -7,7 +7,9 @@ package model;
 
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
+import controller.Settings;
 import java.awt.Color;
+import java.awt.Image;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,6 +48,8 @@ public final class CCSignatureSettings {
             Properties propertiesWrite = new Properties();
             FileOutputStream fileOut;
             try {
+                propertiesWrite.setProperty("renderQuality", String.valueOf(Image.SCALE_SMOOTH));
+                propertiesWrite.setProperty("pdfversion", "/1.7");
                 propertiesWrite.setProperty("prefix", "aCCinatura");
                 propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
                 propertiesWrite.setProperty("fontItalic", "true");
@@ -68,6 +72,8 @@ public final class CCSignatureSettings {
             }
         }
         try {
+            String pdfVersionStr = getConfigParameter("pdfversion");
+            String renderQualityStr = getConfigParameter("renderQuality");
             String prefixStr = getConfigParameter("prefix");
             String boldStr = getConfigParameter("fontBold");
             String italicStr = getConfigParameter("fontItalic");
@@ -78,6 +84,8 @@ public final class CCSignatureSettings {
             String showLocationStr = getConfigParameter("showLocation");
             String fontColorStr = getConfigParameter("fontColor");
 
+            Settings.getSettings().setPdfVersion(pdfVersionStr);
+            Settings.getSettings().setRenderImageQuality(Integer.valueOf(renderQualityStr));
             setPrefix(prefixStr);
             appearance.setBold(Boolean.valueOf(boldStr));
             appearance.setItalic(Boolean.valueOf(italicStr));

@@ -16,7 +16,6 @@ import com.itextpdf.text.Image;
 import com.itextpdf.text.error_messages.MessageLocalization;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfEncryption;
 import com.itextpdf.text.pdf.PdfReader;
@@ -49,7 +48,6 @@ import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -85,7 +83,6 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.naming.InvalidNameException;
 import javax.naming.ldap.LdapName;
 import javax.naming.ldap.Rdn;
@@ -347,12 +344,36 @@ public class CCInstance {
         }
 
         // Aparência da Assinatura
+        final char pdfVersion;
+        switch (Settings.getSettings().getPdfVersion()) {
+            case "/1.2":
+                pdfVersion = PdfWriter.VERSION_1_2;
+                break;
+            case "/1.3":
+                pdfVersion = PdfWriter.VERSION_1_3;
+                break;
+            case "/1.4":
+                pdfVersion = PdfWriter.VERSION_1_4;
+                break;
+            case "/1.5":
+                pdfVersion = PdfWriter.VERSION_1_5;
+                break;
+            case "/1.6":
+                pdfVersion = PdfWriter.VERSION_1_6;
+                break;
+            case "/1.7":
+                pdfVersion = PdfWriter.VERSION_1_7;
+                break;
+            default:
+                pdfVersion = PdfWriter.VERSION_1_7;
+        }
+
         final PdfStamper stamper;
         if (getNumberOfSignatures(pdfPath) == 0) {
-            stamper = PdfStamper.createSignature(reader, os, PdfWriter.VERSION_1_2);
+            stamper = PdfStamper.createSignature(reader, os, pdfVersion);
         } else {
-            stamper = PdfStamper.createSignature(reader, os, PdfWriter.VERSION_1_2, null, true);
-            PdfContentByte t = stamper.getOverContent(settings.getPageNumber());
+            stamper = PdfStamper.createSignature(reader, os, pdfVersion, null, true);
+            //PdfContentByte t = stamper.getOverContent(settings.getPageNumber());
         }
 
         final PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
@@ -372,7 +393,7 @@ public class CCInstance {
             }
 
             com.itextpdf.text.Font font = new com.itextpdf.text.Font(FontFactory.getFont(settings.getAppearance().getFontLocation(), BaseFont.IDENTITY_H, BaseFont.EMBEDDED, 0).getBaseFont());
-            
+
             font.setColor(new BaseColor(settings.getAppearance().getFontColor().getRGB()));
             if (settings.getAppearance().isBold() && settings.getAppearance().isItalic()) {
                 font.setStyle(Font.BOLD + Font.ITALIC);
