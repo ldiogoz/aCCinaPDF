@@ -13,8 +13,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import model.CCSignatureSettings;
 
 /**
  *
@@ -24,13 +26,17 @@ public class SettingsDialog extends javax.swing.JDialog {
 
     /**
      * Creates new form SettingsDialog
+     *
      * @param parent
      * @param modal
      */
     public SettingsDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        loadSettings();
+    }
 
+    private void loadSettings() {
         DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
         dcbm.addElement(PdfWriter.PDF_VERSION_1_2);
         dcbm.addElement(PdfWriter.PDF_VERSION_1_3);
@@ -39,7 +45,26 @@ public class SettingsDialog extends javax.swing.JDialog {
         dcbm.addElement(PdfWriter.PDF_VERSION_1_6);
         dcbm.addElement(PdfWriter.PDF_VERSION_1_7);
         jComboBox1.setModel(dcbm);
-        String pdfVersion = getConfigParameter("pdfversion");
+
+        String pdfVersion = null;
+        String prefix = null;
+        String signatureWidthString = null;
+        String signatureHeightString = null;
+        try {
+            pdfVersion = getConfigParameter("pdfversion");
+            prefix = getConfigParameter("prefix");
+            signatureWidthString = getConfigParameter("signatureWidth");
+            signatureHeightString = getConfigParameter("signatureWidth");
+        } catch (IOException ex) {
+            loadSettings();
+            return;
+        }
+
+        if (pdfVersion == null || prefix == null || signatureWidthString == null || signatureHeightString == null) {
+            loadSettings();
+            return;
+        }
+
         switch (pdfVersion) {
             case "/1.2":
                 jComboBox1.setSelectedIndex(0);
@@ -62,29 +87,26 @@ public class SettingsDialog extends javax.swing.JDialog {
             default:
                 jComboBox1.setSelectedIndex(5);
         }
-        
-        //preenchimento da largura e altura da assinatura
-        String prefix = getConfigParameter("prefix");
-        int signatureWidth = Integer.parseInt(getConfigParameter("signatureWidth"));
-        int signatureHeight = Integer.parseInt(getConfigParameter("signatureHeight"));
+        int signatureWidth = Integer.parseInt(signatureWidthString);
+        int signatureHeight = Integer.parseInt(signatureHeightString);
         tfPrefix.setText(prefix);
         tfHeight.setText(String.valueOf(signatureHeight));
         tfWidth.setText(String.valueOf(signatureWidth));
     }
 
-    private String getConfigParameter(String parameter) {
+    private String getConfigParameter(String parameter) throws FileNotFoundException, IOException {
         Properties propertiesRead = new Properties();
+        String configFile = "aCCinaPDF.cfg";
         String value = "";
-        try {
-            propertiesRead.load(new FileInputStream("aCCinaPDF.cfg"));
-            value = propertiesRead.getProperty(parameter);
-        } catch (FileNotFoundException ex) {
-            controller.Logger.getLogger().addEntry(ex);
-            return "Not Found";
-
-        } catch (IOException ex) {
-            controller.Logger.getLogger().addEntry(ex);
-            return "Not Found";
+        if (!new File(configFile).exists()) {
+            CCSignatureSettings signatureSettings = new CCSignatureSettings(true);
+            JOptionPane.showMessageDialog(this, "O ficheiro de configurações não foi encontrado\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+        propertiesRead.load(new FileInputStream(configFile));
+        value = propertiesRead.getProperty(parameter);
+        if (value == null) {
+            CCSignatureSettings signatureSettings = new CCSignatureSettings(true);
+            JOptionPane.showMessageDialog(this, "O ficheiro de configurações está corrompido\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
         }
         return value;
     }
@@ -245,22 +267,22 @@ public class SettingsDialog extends javax.swing.JDialog {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         int signatureHeight = 0;
         int signatureWidth = 0;
-        try{
+        try {
             signatureHeight = Integer.parseInt(tfHeight.getText());
             signatureWidth = Integer.parseInt(tfWidth.getText());
-            
-        }catch(NumberFormatException ex){
+
+        } catch (NumberFormatException ex) {
             Logger.getLogger().addEntry(ex);
         }
-        if(signatureHeight < 1){
+        if (signatureHeight < 1) {
             JOptionPane.showMessageDialog(this, "Altura de assinatura inválida, insira um número maior que 0", "Altura inválida", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if(signatureWidth < 1){
+        if (signatureWidth < 1) {
             JOptionPane.showMessageDialog(this, "Largura de assinatura inválida, insira um número maior que 0", "Largura inválida", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        
+
         try {
             Properties propertiesWrite;
             try (FileInputStream in = new FileInputStream("aCCinaPDF.cfg")) {
@@ -306,7 +328,7 @@ public class SettingsDialog extends javax.swing.JDialog {
             java.util.logging.Logger.getLogger(SettingsDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        
+
         //</editor-fold>
 
         /* Create and display the dialog */

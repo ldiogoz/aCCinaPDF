@@ -201,7 +201,7 @@ public class ACCinaPDF {
 
         } else {
             // GUI
-            CCSignatureSettings defaultSettings = new CCSignatureSettings();
+            CCSignatureSettings defaultSettings = new CCSignatureSettings(false);
             if (SystemUtils.IS_OS_WINDOWS) {
                 for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
                     if ("Windows".equals(info.getName())) {

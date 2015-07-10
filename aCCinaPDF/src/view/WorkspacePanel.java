@@ -221,8 +221,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                             createTempSignature();
                             jtValidation.clearSelection();
                         }
-                        signatureSettings = new CCSignatureSettings();
-                        btnImage.setText("Carregar Imagem");
+                        signatureSettings = new CCSignatureSettings(false);
+                        btnImage.setText("Adicionar Imagem de fundo");
                     } else {
                         JOptionPane.showMessageDialog(mainWindow, "Este Documento não pode ser assinado porque foi certificado com um nível\nde certificação que não permite quaisquer alterações ao mesmo.", "Erro", JOptionPane.ERROR_MESSAGE);
                     }
@@ -261,19 +261,19 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         }
     }
 
-    private String getConfigParameter(String parameter) {
+    private String getConfigParameter(String parameter) throws FileNotFoundException, IOException {
         Properties propertiesRead = new Properties();
+        String configFile = "aCCinaPDF.cfg";
         String value = "";
-        try {
-            propertiesRead.load(new FileInputStream("aCCinaPDF.cfg"));
-            value = propertiesRead.getProperty(parameter);
-        } catch (FileNotFoundException ex) {
-            controller.Logger.getLogger().addEntry(ex);
-            return "Not Found";
-
-        } catch (IOException ex) {
-            controller.Logger.getLogger().addEntry(ex);
-            return "Not Found";
+        if (!new File(configFile).exists()) {
+            signatureSettings = new CCSignatureSettings(true);
+            JOptionPane.showMessageDialog(mainWindow, "O ficheiro de configurações não foi encontrado\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+        propertiesRead.load(new FileInputStream(configFile));
+        value = propertiesRead.getProperty(parameter);
+        if (value == null) {
+            signatureSettings = new CCSignatureSettings(true);
+            JOptionPane.showMessageDialog(mainWindow, "O ficheiro de configurações está corrompido\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
         }
         return value;
     }
@@ -504,18 +504,32 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     public void createTempSignature() {
         if (null == tempSignature) {
-            int sizeX = Integer.parseInt(getConfigParameter("signatureWidth"));
-            int sizeY = Integer.parseInt(getConfigParameter("signatureHeight"));
-            tempSignature = new Signature(document, imagePanel.getPageNumber(), imagePanel, new Dimension(sizeX, sizeY));
+            int signatureWidth;
+            int signatureHeight;
+            try {
+                String stringWidth = getConfigParameter("signatureWidth");
+                String stringHeight = getConfigParameter("signatureHeight");
+                if (stringWidth == null || stringHeight == null) {
+                    createTempSignature();
+                    return;
+                } else {
+                    signatureWidth = Integer.parseInt(stringWidth);
+                    signatureHeight = Integer.parseInt(stringHeight);
+                }
+            } catch (IOException ex) {
+                createTempSignature();
+                return;
+            }
+            tempSignature = new Signature(document, imagePanel.getPageNumber(), imagePanel, new Dimension(signatureWidth, signatureHeight));
             int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
             int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
-            tempSignature.setSize(new Dimension(sizeX, sizeY));
+            tempSignature.setSize(new Dimension(signatureWidth, signatureHeight));
             tempSignature.setLocation(x, y);
             tempSignature.setVisible(true);
             tempSignature.repaint();
             imagePanel.add(tempSignature, 2, 0);
         }
-        fixTempSignaturePosition(false);
+        fixTempSignaturePosition(true);
         repaint();
     }
 
@@ -542,11 +556,25 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     public void fixTempSignaturePosition(boolean force) {
         if (null != tempSignature) {
             if (!tempSignature.isInsideDocument()) {
-                int sizeX = Integer.parseInt(getConfigParameter("signatureWidth"));
-                int sizeY = Integer.parseInt(getConfigParameter("signatureHeight"));
+                int signatureWidth = 403;
+                int signatureHeight = 35;
+                try {
+                    String stringWidth = getConfigParameter("signatureWidth");
+                    String stringHeight = getConfigParameter("signatureHeight");
+                    if (stringWidth == null || stringHeight == null) {
+                        fixTempSignaturePosition(force);
+                        return;
+                    } else {
+                        signatureWidth = Integer.parseInt(stringWidth);
+                        signatureHeight = Integer.parseInt(stringHeight);
+                    }
+                } catch (IOException ex) {
+                    fixTempSignaturePosition(force);
+                    return;
+                }
                 int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
                 int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
-                tempSignature.setSize(new Dimension(sizeX, sizeY));
+                tempSignature.setSize(new Dimension(signatureWidth, signatureHeight));
                 tempSignature.setLocation(x, y);
                 if (!tempSignature.isInsideDocument()) {
                     if (force) {
@@ -562,11 +590,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private void forceFixTempSignaturePosition() {
         if (null != tempSignature) {
             if (!tempSignature.isInsideDocument()) {
-                int sizeX = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getWidth() / 3;
-                int sizeY = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight() / 10;
+                int signatureWidth = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getWidth() / 3;
+                int signatureHeight = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight() / 10;
                 int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
                 int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
-                tempSignature.setSize(new Dimension(sizeX, sizeY));
+                tempSignature.setSize(new Dimension(signatureWidth, signatureHeight));
                 tempSignature.setLocation(x, y);
                 if (!tempSignature.isInsideDocument()) {
                     forceFixTempSignaturePosition();
@@ -1011,7 +1039,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         jTabbedPane1.addTab("Geral", tabGeneral);
 
-        btnImage.setText("Carregar Imagem");
+        btnImage.setText("Adicionar Imagem de fundo");
         btnImage.setToolTipText("Incluir uma imagem de fundo na assinatura visível");
         btnImage.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1833,14 +1861,14 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 String file = jfc.getSelectedFile().getAbsolutePath();
                 try {
                     tempSignature.setImageLocation(file);
-                    btnImage.setText("Remover Imagem");
+                    btnImage.setText("Remover Imagem de fundo");
                 } catch (Exception e) {
                     controller.Logger.getLogger().addEntry(e);
                 }
             }
         } else {
             tempSignature.setImageLocation(null);
-            btnImage.setText("Carregar Imagem");
+            btnImage.setText("Adicionar Imagem de fundo");
         }
         tempSignature.repaint();
     }//GEN-LAST:event_btnImageActionPerformed

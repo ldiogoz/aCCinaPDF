@@ -140,7 +140,7 @@ public final class SignatureHandler extends MouseAdapter {
     @Override
     public void mouseEntered(MouseEvent e) {
         if (!resizing) {
-            if (null == s.getImage()) {
+            if (null == s.getImageLocation()) {
                 Component source = e.getComponent();
                 ((JPanel) source).setBorder(new LineBorder(Color.BLACK, 1));
             }
@@ -151,8 +151,10 @@ public final class SignatureHandler extends MouseAdapter {
     @Override
     public void mouseExited(MouseEvent e) {
         if (!resizing) {
-            Component source = e.getComponent();
-            ((JPanel) source).setBorder(null);
+            if (null == s.getImageLocation()) {
+                Component source = e.getComponent();
+                ((JPanel) source).setBorder(null);
+            }
         }
         s.showSize(false);
     }
@@ -284,6 +286,10 @@ public final class SignatureHandler extends MouseAdapter {
         if (realPoint.getX() >= 0 && realPoint.getY() >= 0 && realPoint.getX() + width <= s.getDocument().getPageDimension(s.getPageNumber(), 0, s.getParent().getScale()).getWidth() && realPoint.getY() + height <= s.getDocument().getPageDimension(s.getPageNumber(), 0, s.getParent().getScale()).getHeight()) {
             source.setBounds(x, y, width, height);
             source.validate();
+        }
+        
+        if(s.getImageLocation() != null){
+            s.refreshImage();
         }
     }
 

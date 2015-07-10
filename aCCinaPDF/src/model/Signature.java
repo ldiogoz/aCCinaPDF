@@ -138,7 +138,7 @@ public final class Signature extends JPanel {
         return null;
     }
 
-    private void refreshImage() {
+    public void refreshImage() {
         if (null != getImage()) {
             setBackground(new Color(255, 255, 255, 255));
             lblImage.setIcon(new ImageIcon(getImage().getScaledInstance(getWidth(), getHeight(), Image.SCALE_FAST)));
@@ -176,7 +176,6 @@ public final class Signature extends JPanel {
     @Override
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        refreshImage();
     }
 
     public void destroy() {

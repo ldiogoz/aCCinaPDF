@@ -667,7 +667,7 @@
                       <SubComponents>
                         <Component class="javax.swing.JButton" name="btnImage">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Carregar Imagem"/>
+                            <Property name="text" type="java.lang.String" value="Adicionar Imagem de fundo"/>
                             <Property name="toolTipText" type="java.lang.String" value="Incluir uma imagem de fundo na assinatura vis&#xed;vel"/>
                           </Properties>
                           <Events>
