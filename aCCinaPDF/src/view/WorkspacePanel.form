@@ -598,7 +598,7 @@
                               <ComponentRef name="buttonGroup1"/>
                             </Property>
                             <Property name="text" type="java.lang.String" value="&lt;html&gt;N&#xe3;o s&#xe3;o permitidas altera&#xe7;&#xf5;es&lt;/html&gt;"/>
-                            <Property name="toolTipText" type="java.lang.String" value="Bloquear o documento, impedindo altera&#xe7;&#xf5;es ao mesmo"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Certificar o documento e bloque&#xe1;-lo, impedindo altera&#xe7;&#xf5;es futuras ao mesmo"/>
                           </Properties>
                         </Component>
                         <Component class="javax.swing.JRadioButton" name="jRadioButton3">

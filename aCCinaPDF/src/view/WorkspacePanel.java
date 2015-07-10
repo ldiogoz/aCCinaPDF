@@ -973,7 +973,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         buttonGroup1.add(jRadioButton2);
         jRadioButton2.setText("<html>Não são permitidas alterações</html>");
-        jRadioButton2.setToolTipText("Bloquear o documento, impedindo alterações ao mesmo");
+        jRadioButton2.setToolTipText("Certificar o documento e bloqueá-lo, impedindo alterações futuras ao mesmo");
 
         buttonGroup1.add(jRadioButton3);
         jRadioButton3.setText("Preenchimento de formulário permitido");

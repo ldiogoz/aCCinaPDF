@@ -10,10 +10,6 @@ import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
-/**
- *
- * @author Diogo
- */
 public final class Logger {
 
     private static Logger logger;

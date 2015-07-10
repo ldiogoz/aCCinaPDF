@@ -7,10 +7,6 @@ package controller;
 
 import java.awt.Image;
 
-/**
- *
- * @author Toshiba
- */
 public class Settings {
 
     private int renderImageQuality = Image.SCALE_SMOOTH;

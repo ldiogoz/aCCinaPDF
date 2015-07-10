@@ -10,7 +10,6 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import controller.CCInstance;
 import exception.RevisionExtractionException;
-import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -839,13 +838,11 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             }
             writeToFile(toWrite);
         }
-        System.out.println(toWrite);
     }//GEN-LAST:event_btnGuardarActionPerformed
 
     private void lblAdditionalInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblAdditionalInfoMouseClicked
         if (SwingUtilities.isLeftMouseButton(evt)) {
             if (msg != null) {
-
                 JOptionPane.showMessageDialog(null, msg);
             }
         }

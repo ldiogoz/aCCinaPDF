@@ -14,10 +14,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
 
-/**
- * The ComponentResizer allows you to resize a component by dragging a border of
- * the component.
- */
 public final class SignatureHandler extends MouseAdapter {
 
     private final Map<Integer, Integer> cursors = new HashMap<>();
@@ -99,8 +95,7 @@ public final class SignatureHandler extends MouseAdapter {
         int minimumWidth = drag.left + drag.right;
         int minimumHeight = drag.top + drag.bottom;
 
-        if (minimum.width < minimumWidth
-                || minimum.height < minimumHeight) {
+        if (minimum.width < minimumWidth || minimum.height < minimumHeight) {
             String message = "Minimum size cannot be less than drag insets";
             throw new IllegalArgumentException(message);
         }
@@ -287,8 +282,8 @@ public final class SignatureHandler extends MouseAdapter {
             source.setBounds(x, y, width, height);
             source.validate();
         }
-        
-        if(s.getImageLocation() != null){
+
+        if (s.getImageLocation() != null) {
             s.refreshImage();
         }
     }

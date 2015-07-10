@@ -40,12 +40,12 @@
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="jComboBox1" min="-2" pref="240" max="-2" attributes="0"/>
                           </Group>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                              <Component id="jComboBox2" min="-2" pref="127" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                  </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="jLabel7" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jComboBox2" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -225,6 +225,7 @@
     <Component class="javax.swing.JLabel" name="jLabel7">
       <Properties>
         <Property name="text" type="java.lang.String" value="Qualidade da renderiza&#xe7;&#xe3;o PDF:"/>
+        <Property name="toolTipText" type="java.lang.String" value="Qualidade com que &#xe9; renderizado(mostrado) o PDF. Em computadores de baixa performance, deve ser usada a qualidade Baixa"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="jComboBox2">
@@ -235,6 +236,7 @@
             <StringItem index="1" value="Baixa"/>
           </StringArray>
         </Property>
+        <Property name="toolTipText" type="java.lang.String" value="Qualidade com que &#xe9; renderizado(mostrado) o PDF. Em computadores de baixa performance, deve ser usada a qualidade Baixa"/>
       </Properties>
     </Component>
   </SubComponents>
