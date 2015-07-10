@@ -107,7 +107,7 @@ public class ImagePanel extends JPanel {
                     int pgNumber = sv.getPosList().get(0).page - 1;
                     if (this.pageNumber == pgNumber) {
                         for (AcroFields.FieldPosition pos : sv.getPosList()) {
-                            int p1 = (int) (p.x + (pos.position.getLeft() * scale));
+                            int p1 = (int) (p.x + (pos.position.getLeft() * scale));                            
                             int p2 = (int) (p.y + Math.floor((document.getPageDimension(pageNumber, scale).getHeight() - pos.position.getTop() - scale * 10) * scale));
                             int p3 = (int) (pos.position.getWidth() * scale);
                             int p4 = (int) (pos.position.getHeight() * scale);
@@ -196,6 +196,7 @@ public class ImagePanel extends JPanel {
         if (scale < 3f) {
             scale += 0.2f;
             refreshParent();
+            refreshSignatureValidationListPanels();
         }
         return scale;
     }
@@ -204,6 +205,7 @@ public class ImagePanel extends JPanel {
         if (scale > 0.4f) {
             scale -= 0.2f;
             refreshParent();
+            refreshSignatureValidationListPanels();
         }
         return scale;
     }
