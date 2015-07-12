@@ -51,14 +51,14 @@ public class LoadingDialog extends javax.swing.JDialog {
         switch (type) {
             case FILE_SEARCHING:
                 setTitle("A procurar");
-                setText("Documentos encontrados: 0");
+                setText("Documentos encontrados: 0"); 
                 setIcon("/image/search.jpg");
                 btn.setEnabled(true);
                 break;
             case SMARTCARD_SEARCHING:
-                setTitle("A procurar Smartcards");
-                setText("A obter informações do Smartcard...");
-                setIcon("/image/smartcard.jpg");
+                setTitle("A procurar");
+                setText("A obter informações do CC...");
+                setIcon("/image/insertCC.jpg");
                 btn.setEnabled(true);
                 break;
             case SIGNING:

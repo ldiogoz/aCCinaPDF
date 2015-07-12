@@ -640,7 +640,7 @@
                                       <Component id="btnImage" alignment="0" max="32767" attributes="0"/>
                                       <Component id="cbVisibleSignature" min="-2" max="-2" attributes="0"/>
                                       <Component id="lblText" alignment="0" min="-2" max="-2" attributes="0"/>
-                                      <Component id="btnAlterarAparencia" alignment="0" max="32767" attributes="0"/>
+                                      <Component id="btnChangeAppearance" alignment="0" max="32767" attributes="0"/>
                                   </Group>
                                   <EmptySpace min="-2" max="-2" attributes="0"/>
                               </Group>
@@ -654,7 +654,7 @@
                                   <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
                                   <Component id="btnImage" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="btnAlterarAparencia" min="-2" max="-2" attributes="0"/>
+                                  <Component id="btnChangeAppearance" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="lblText" min="-2" max="-2" attributes="0"/>
                                   <EmptySpace max="-2" attributes="0"/>
@@ -684,13 +684,13 @@
                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cbVisibleSignatureActionPerformed"/>
                           </Events>
                         </Component>
-                        <Component class="javax.swing.JButton" name="btnAlterarAparencia">
+                        <Component class="javax.swing.JButton" name="btnChangeAppearance">
                           <Properties>
                             <Property name="text" type="java.lang.String" value="Alterar Apar&#xea;ncia"/>
                             <Property name="toolTipText" type="java.lang.String" value="Alterar dados da apar&#xea;ncia da assinatura como os dados a apresentar, o tipo de letra, a cor da letra"/>
                           </Properties>
                           <Events>
-                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAlterarAparenciaActionPerformed"/>
+                            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnChangeAppearanceActionPerformed"/>
                           </Events>
                         </Component>
                         <Component class="javax.swing.JLabel" name="lblText">

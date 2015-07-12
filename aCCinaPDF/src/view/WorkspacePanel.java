@@ -116,7 +116,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         rightPanel.setBackground(Color.WHITE);
         lblText.setVisible(false);
         jScrollPane1.setVisible(false);
-        btnAlterarAparencia.setVisible(false);
+        btnChangeAppearance.setVisible(false);
         add(jMenuBar1, BorderLayout.NORTH);
         ToolTipManager.sharedInstance().registerComponent(jtValidation);
         jSplitPane1.setDividerSize(0);
@@ -481,7 +481,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         }
 
         if (null != mainWindow.getLoadingDialog()) {
-            mainWindow.getLoadingDialog().setText("Insira o Smartcard no leitor...");
+            mainWindow.getLoadingDialog().setText("Insira o CC no leitor...");
         }
 
         return true;
@@ -492,7 +492,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnImage.setVisible(true);
         lblText.setVisible(true);
         jScrollPane1.setVisible(true);
-        btnAlterarAparencia.setVisible(true);
+        btnChangeAppearance.setVisible(true);
         btnImage.setVisible(true);
         tfReason.setText("Assinatura Eletrónica Qualificada (DL 62/2003)");
         tfLocation.setText("");
@@ -690,7 +690,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         tabAppearance = new javax.swing.JPanel();
         btnImage = new javax.swing.JButton();
         cbVisibleSignature = new javax.swing.JCheckBox();
-        btnAlterarAparencia = new javax.swing.JButton();
+        btnChangeAppearance = new javax.swing.JButton();
         lblText = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tfText = new javax.swing.JTextArea();
@@ -1056,11 +1056,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
         });
 
-        btnAlterarAparencia.setText("Alterar Aparência");
-        btnAlterarAparencia.setToolTipText("Alterar dados da aparência da assinatura como os dados a apresentar, o tipo de letra, a cor da letra");
-        btnAlterarAparencia.addActionListener(new java.awt.event.ActionListener() {
+        btnChangeAppearance.setText("Alterar Aparência");
+        btnChangeAppearance.setToolTipText("Alterar dados da aparência da assinatura como os dados a apresentar, o tipo de letra, a cor da letra");
+        btnChangeAppearance.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnAlterarAparenciaActionPerformed(evt);
+                btnChangeAppearanceActionPerformed(evt);
             }
         });
 
@@ -1083,7 +1083,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     .addComponent(btnImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cbVisibleSignature)
                     .addComponent(lblText)
-                    .addComponent(btnAlterarAparencia, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnChangeAppearance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         tabAppearanceLayout.setVerticalGroup(
@@ -1094,7 +1094,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addGap(3, 3, 3)
                 .addComponent(btnImage)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btnAlterarAparencia)
+                .addComponent(btnChangeAppearance)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblText)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1614,6 +1614,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                                     validPath = true;
                                 }
 
+                                signatureSettings.setOcspClient(ocsp);
+                                signatureSettings.setTimestamp(timestamp);
+
                                 if (validPath) {
                                     if (!CCInstance.getInstance().signPdf(documento.getDocumentLocation(), dest, signatureSettings, null)) {
                                         JOptionPane.showMessageDialog(mainWindow, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
@@ -1675,7 +1678,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     }
 
     public void assinarLote(CCSignatureSettings settings) {
-        ArrayList<File> lista = mainWindow.getOpenedFiles();
+        ArrayList<File> toSignList = mainWindow.getOpenedFiles();
         try {
             if (tempCCAlias.getCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getCertificate().getPublicKey())) {
                 String dest = null;
@@ -1697,7 +1700,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     return;
                 }
 
-                MultipleSignDialog msd = new MultipleSignDialog(mainWindow, true, lista, settings, dest);
+                MultipleSignDialog msd = new MultipleSignDialog(mainWindow, true, toSignList, settings, dest);
                 msd.setLocationRelativeTo(null);
                 msd.setVisible(true);
 
@@ -1831,7 +1834,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         }
     }
 
-    private void btnAlterarAparenciaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlterarAparenciaActionPerformed
+    private void btnChangeAppearanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeAppearanceActionPerformed
         signatureSettings.setCcAlias(tempCCAlias);
         signatureSettings.setReason(tfReason.getText());
         signatureSettings.setLocation(tfLocation.getText());
@@ -1840,7 +1843,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         AppearanceSettingsDialog njd = new AppearanceSettingsDialog(mainWindow, true, signatureSettings);
         njd.setLocationRelativeTo(null);
         njd.setVisible(true);
-    }//GEN-LAST:event_btnAlterarAparenciaActionPerformed
+    }//GEN-LAST:event_btnChangeAppearanceActionPerformed
 
     private void cbTimestampActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbTimestampActionPerformed
         lbTimestamp.setVisible(cbTimestamp.isSelected());
@@ -1955,7 +1958,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnImage.setVisible(cbVisibleSignature.isSelected());
         lblText.setVisible(cbVisibleSignature.isSelected());
         jScrollPane1.setVisible(cbVisibleSignature.isSelected());
-        btnAlterarAparencia.setVisible(cbVisibleSignature.isSelected());
+        btnChangeAppearance.setVisible(cbVisibleSignature.isSelected());
         if (cbVisibleSignature.isSelected()) {
             createTempSignature();
         } else {
@@ -2044,8 +2047,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar bottomToolbar;
-    private javax.swing.JButton btnAlterarAparencia;
     private javax.swing.JButton btnApplySignature;
+    private javax.swing.JButton btnChangeAppearance;
     private javax.swing.JButton btnCheckAliasCertificate;
     private javax.swing.JButton btnCheckCertificate;
     private javax.swing.JButton btnImage;
