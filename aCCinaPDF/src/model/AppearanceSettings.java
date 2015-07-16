@@ -18,6 +18,18 @@ public class AppearanceSettings {
     private Color fontColor;
     private boolean italic, bold;
     private boolean showReason, showLocation, showDate, showName;
+    private int align;
+
+    public AppearanceSettings() {
+    }
+
+    public int getAlign() {
+        return align;
+    }
+
+    public void setAlign(int align) {
+        this.align = align;
+    }
 
     public boolean isShowName() {
         return showName;

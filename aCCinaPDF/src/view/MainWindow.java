@@ -112,6 +112,10 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         ctrl.setPrintMenuItem(jMenuItem2);
     }
 
+    public WorkspacePanel getWorkspacePanel() {
+        return workspacePanel;
+    }
+
     private void setupTreePopups() {
         jtOpenedDocuments.addMouseListener(new MouseAdapter() {
             @Override
@@ -152,6 +156,30 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                             }
                         };
 
+                        ActionListener removeOthers = new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                final ArrayList<File> alFilesToClose = new ArrayList<>();
+                                boolean showDialog = false;
+                                for (File file : getOpenedFiles()) {
+                                    if (!getSelectedOpenedFiles().contains(file)) {
+                                        alFilesToClose.add(file);
+                                        if (file.equals(openedFile)) {
+                                            showDialog = true;
+                                        }
+                                    }
+                                }
+                                closeDocuments(alFilesToClose, showDialog);
+                            }
+                        };
+
+                        ActionListener removeAll = new ActionListener() {
+                            @Override
+                            public void actionPerformed(ActionEvent e) {
+                                closeDocuments(getOpenedFiles(), true);
+                            }
+                        };
+
                         ActionListener show = new ActionListener() {
                             @Override
                             public void actionPerformed(ActionEvent e) {
@@ -168,12 +196,22 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                             m.addActionListener(open);
                             popup.add(m);
                         }
-                        m = new JMenuItem("Remover do lote");
+                        m = new JMenuItem(getSelectedOpenedFiles().size() > 1 ? "Remover estes documentos do lote" : "Remover este documento do lote");
                         m.addActionListener(remove);
                         popup.add(m);
-                        m = new JMenuItem("Mostrar localização no explorador");
-                        m.addActionListener(show);
-                        popup.add(m);
+                        if (getOpenedFiles().size() > 1) {
+                            m = new JMenuItem("Remover os outros documentos do lote");
+                            m.addActionListener(removeOthers);
+                            popup.add(m);
+                            m = new JMenuItem("Remover todos os documentos do lote");
+                            m.addActionListener(removeAll);
+                            popup.add(m);
+                        }
+                        if (getSelectedOpenedFiles().size() == 1) {
+                            m = new JMenuItem("Mostrar localização no explorador");
+                            m.addActionListener(show);
+                            popup.add(m);
+                        }
 
                         popup.show(e.getComponent(), e.getX(), e.getY());
                     }
@@ -834,8 +872,15 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     }
 
     public void closeDocuments(ArrayList<File> listaD, boolean showCloseDialog) {
-        if (!workspacePanel.getStatus().equals(WorkspacePanel.Status.READY)) {
-            return;
+        if (workspacePanel.getStatus().equals(WorkspacePanel.Status.SIGNING)) {
+            if (listaD.contains(openedFile)) {
+                String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelá-la e fechar " + (listaD.size() == 1 ? "o documento pretendido?" : "os documentos pretendidos?");
+                Object[] options = {"Sim", "Não"};
+                int opt = JOptionPane.showOptionDialog(this, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                if (opt != JOptionPane.YES_OPTION) {
+                    return;
+                }
+            }
         }
 
         if (!listaD.isEmpty()) {

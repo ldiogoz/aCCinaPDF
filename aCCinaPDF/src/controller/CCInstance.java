@@ -10,17 +10,22 @@ import com.itextpdf.text.BaseColor;
 import model.CCSignatureSettings;
 import model.CCAlias;
 import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
 import com.itextpdf.text.ExceptionConverter;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.error_messages.MessageLocalization;
 import com.itextpdf.text.pdf.AcroFields;
 import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.ColumnText;
 import com.itextpdf.text.pdf.PdfDictionary;
 import com.itextpdf.text.pdf.PdfEncryption;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
 import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.itextpdf.text.pdf.security.CertificateUtil;
 import com.itextpdf.text.pdf.security.CertificateVerification;
@@ -126,7 +131,15 @@ public class CCInstance {
     private static final String SIGNATURE_CREATOR = "aCCinaPDF";
     private static final String KEYSTORE_PATH = "/keystore/aCCinaPDF_cacerts";
 
+    private KeyStore ks;
+    private SunPKCS11 pkcs11Provider;
+    private final ArrayList<CCAlias> aliasList = new ArrayList<>();
+
     private static CCInstance instance;
+
+    public CCInstance() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     public static void newIstance() {
         instance = new CCInstance();
@@ -134,14 +147,6 @@ public class CCInstance {
 
     public static final CCInstance getInstance() {
         return instance;
-    }
-
-    private KeyStore ks;
-    private SunPKCS11 pkcs11Provider;
-    private final ArrayList<CCAlias> aliasList = new ArrayList<>();
-
-    public CCInstance() {
-        Security.addProvider(new BouncyCastleProvider());
     }
 
     public final ArrayList<CCAlias> loadKeyStoreAndAliases() throws LibraryNotLoadedException, KeyStoreNotLoadedException, CertificateException, KeyStoreException, LibraryNotFoundException, AliasException {
@@ -384,8 +389,8 @@ public class CCInstance {
         appearance.setSignatureCreator(SIGNATURE_CREATOR);
         appearance.setCertificate(owner);
 
+        final String fieldName = settings.getPrefix() + " " + (1 + getNumberOfSignatures(pdfPath));
         if (settings.isVisibleSignature()) {
-            final String fieldName = settings.getPrefix() + " " + (1 + getNumberOfSignatures(pdfPath));
             appearance.setVisibleSignature(settings.getPositionOnDocument(), settings.getPageNumber() + 1, fieldName);
             appearance.setRenderingMode(PdfSignatureAppearance.RenderingMode.DESCRIPTION);
             if (null != settings.getAppearance().getImageLocation()) {
@@ -430,7 +435,32 @@ public class CCInstance {
                 text += settings.getText();
             }
 
-            appearance.setLayer2Text(text);
+            PdfTemplate layer2 = appearance.getLayer(2);
+            Rectangle rect = settings.getPositionOnDocument();
+            Rectangle sr = new Rectangle(rect.getWidth(), rect.getHeight());
+            float size = ColumnText.fitText(font, text, sr, 1024, PdfWriter.RUN_DIRECTION_DEFAULT);
+            ColumnText ct = new ColumnText(layer2);
+            ct.setRunDirection(PdfWriter.RUN_DIRECTION_DEFAULT);
+            ct.setAlignment(Element.ALIGN_MIDDLE);
+            int align;
+            switch (settings.getAppearance().getAlign()) {
+                case 0:
+                    align = Element.ALIGN_LEFT;
+                    break;
+                case 1:
+                    align = Element.ALIGN_CENTER;
+                    break;
+                case 2:
+                    align = Element.ALIGN_RIGHT;
+                    break;
+                default:
+                    align = Element.ALIGN_LEFT;
+            }
+
+            ct.setSimpleColumn(new Phrase(text, font), sr.getLeft(), sr.getBottom(), sr.getRight(), sr.getTop(), size, align);
+            ct.go();
+        } else {
+            appearance.setVisibleSignature(new Rectangle(0, 0, 0, 0), 1, fieldName);
         }
 
         // CRL <- Pesado!
@@ -462,6 +492,8 @@ public class CCInstance {
             new File(destination).delete();
             if ("sun.security.pkcs11.wrapper.PKCS11Exception: CKR_FUNCTION_CANCELED".equals(e.getMessage())) {
                 throw new SignatureFailedException("Acção cancelada pelo utilizador!");
+            } else if ("sun.security.pkcs11.wrapper.PKCS11Exception: CKR_GENERAL_ERROR".equals(e.getMessage())) {
+                throw new SignatureFailedException("Não foi possível aplicar a assinatura.\nCertifique-se que tem permissões de escrita no ficheiro: feche outras aplicações de assinatura digital, reabra o aCCinaPDF e tente de novo!");
             } else if (e instanceof ExceptionConverter) {
                 String message = "TimeStamp falhou: Não tem ligação à Internet ou o URL de Servidor de TimeStamp é inválido!";
                 if (sl != null) {

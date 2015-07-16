@@ -130,9 +130,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 if (e.isControlDown()) {
                     e.consume();
                     if (e.getWheelRotation() < 0) {
-                        imagePanel.scaleUp();
+                        zoomIn();
                     } else {
-                        imagePanel.scaleDown();
+                        zoomOut();
                     }
                     fixTempSignaturePosition(true);
                 }
@@ -188,7 +188,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             try {
                 boolean permiteAlteracoes = CCInstance.getInstance().getCertificationLevel(document.getDocumentLocation()) != PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED;
                 btnSign.setEnabled(permiteAlteracoes);
-                btnSign.setText((permiteAlteracoes ? "Assinar" : "O Documento não permite alterações"));
+                btnSign.setToolTipText((permiteAlteracoes ? "Assinar" : "O documento está certificado não permite alterações"));
             } catch (IOException ex) {
                 controller.Logger.getLogger().addEntry(ex);
             }
@@ -211,7 +211,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         rightPanel.setVisible(true);
 
         switch (ce) {
-            case SIGN_PANEL:
+            case SIGN_PANEL: {
                 try {
                     if (CCInstance.getInstance().getCertificationLevel(document.getDocumentLocation()) != PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
                         status = Status.SIGNING;
@@ -227,9 +227,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                         JOptionPane.showMessageDialog(mainWindow, "Este Documento não pode ser assinado porque foi certificado com um nível\nde certificação que não permite quaisquer alterações ao mesmo.", "Erro", JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (IOException ex) {
-                    controller.Logger.getLogger().addEntry(ex);
+                    Logger.getLogger(WorkspacePanel.class.getName()).log(Level.SEVERE, null, ex);
                 }
-                break;
+            }
+            break;
             case VALIDATE_PANEL:
                 status = Status.VALIDATING;
                 break;
@@ -350,7 +351,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
                                     TreeNodeWithState childVerified = null;
                                     if (sv.getOcspCertificateStatus().equals(CertificateStatus.OK) || sv.getCrlCertificateStatus().equals(CertificateStatus.OK)) {
-                                        childVerified = new TreeNodeWithState("O Certificado inerente a esta assinatura foi verificado e é válido", TreeNodeWithState.State.VALID);
+                                        childVerified = new TreeNodeWithState("O Certificado inerente a esta assinatura foi verificado e é válido", (sv.isValid() ? TreeNodeWithState.State.VALID : TreeNodeWithState.State.WARNING));
                                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
                                         childVerified = new TreeNodeWithState("O Certificado inerente a esta assinatura foi revogado", TreeNodeWithState.State.INVALID);
                                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHECKED) && sv.getCrlCertificateStatus().equals(CertificateStatus.UNCHECKED)) {
@@ -365,7 +366,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
                                     TreeNodeWithState childTimestamp = null;
                                     if (sv.isValidTimeStamp()) {
-                                        childTimestamp = new TreeNodeWithState("A Assinatura inclui um carimbo de Data e Hora válido", TreeNodeWithState.State.VALID);
+                                        childTimestamp = new TreeNodeWithState("A Assinatura inclui um carimbo de Data e Hora válido", (sv.isValid() ? TreeNodeWithState.State.VALID : TreeNodeWithState.State.WARNING));
                                     } else {
                                         childTimestamp = new TreeNodeWithState("A Data e Hora da assinatura são do relógio do computador do signatário", TreeNodeWithState.State.WARNING);
                                     }
@@ -607,37 +608,39 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     @Override
     public void onSignatureClick(SignatureValidation sv) {
-        jtValidation.clearSelection();
-        if (!rightPanel.isVisible()) {
-            cl.show(this.rightPanel, String.valueOf(CardEnum.VALIDATE_PANEL));
-            rightPanel.setVisible(true);
-            jSplitPane1.setDividerSize(5);
-            jSplitPane1.setDividerLocation(0.6);
-        } else if (this.status == Status.SIGNING) {
-            String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
-            Object[] options = {"Sim", "Não"};
-            int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-            if (opt == JOptionPane.YES_OPTION) {
-                removeTempSignature();
+        if (status != Status.SIGNING) {
+            jtValidation.clearSelection();
+            if (!rightPanel.isVisible()) {
                 cl.show(this.rightPanel, String.valueOf(CardEnum.VALIDATE_PANEL));
-            } else {
-                return;
-            }
-        }
-
-        for (int i = 0; i < jtValidation.getRowCount(); i++) {
-            TreePath tp = jtValidation.getPathForRow(i);
-            DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) tp.getLastPathComponent();
-            if (dmtn.getUserObject() instanceof SignatureValidation) {
-                SignatureValidation sVal = (SignatureValidation) dmtn.getUserObject();
-                if (sv.equals(sVal)) {
-                    jtValidation.setSelectionRow(i);
-                    jtValidation.expandRow(i);
+                rightPanel.setVisible(true);
+                jSplitPane1.setDividerSize(5);
+                jSplitPane1.setDividerLocation(0.6);
+            } else if (this.status == Status.SIGNING) {
+                String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
+                Object[] options = {"Sim", "Não"};
+                int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                if (opt == JOptionPane.YES_OPTION) {
+                    removeTempSignature();
+                    cl.show(this.rightPanel, String.valueOf(CardEnum.VALIDATE_PANEL));
+                } else {
+                    return;
                 }
             }
-        }
 
-        status = Status.READY;
+            for (int i = 0; i < jtValidation.getRowCount(); i++) {
+                TreePath tp = jtValidation.getPathForRow(i);
+                DefaultMutableTreeNode dmtn = (DefaultMutableTreeNode) tp.getLastPathComponent();
+                if (dmtn.getUserObject() instanceof SignatureValidation) {
+                    SignatureValidation sVal = (SignatureValidation) dmtn.getUserObject();
+                    if (sv.equals(sVal)) {
+                        jtValidation.setSelectionRow(i);
+                        jtValidation.expandRow(i);
+                    }
+                }
+            }
+
+            status = Status.READY;
+        }
     }
 
     /**
@@ -855,10 +858,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         topToolbar.add(btnZoomIn);
 
         btnSign.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
-        btnSign.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/sign.png"))); // NOI18N
+        btnSign.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/certified.png"))); // NOI18N
         btnSign.setText(" Assinar ");
         btnSign.setToolTipText("Assinar documento(s)");
-        btnSign.setDisabledIcon(null);
         btnSign.setFocusable(false);
         btnSign.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnSign.setIconTextGap(0);
@@ -872,10 +874,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         topToolbar.add(btnSign);
 
         btnValidate.setFont(new java.awt.Font("SansSerif", 0, 14)); // NOI18N
-        btnValidate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/validar.png"))); // NOI18N
+        btnValidate.setIcon(new javax.swing.ImageIcon(getClass().getResource("/image/success.png"))); // NOI18N
         btnValidate.setText(" Validar ");
         btnValidate.setToolTipText("Validar documento(s)");
-        btnValidate.setDisabledIcon(null);
         btnValidate.setFocusable(false);
         btnValidate.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         btnValidate.setIconTextGap(0);
@@ -1064,7 +1065,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
         });
 
-        lblText.setText("Texto da Assinatura:");
+        lblText.setText("Texto adicional da Assinatura:");
+        lblText.setToolTipText("Mostrar texto adicional, abaixo da informação básica que pode ser escolhida na janela Alterar Aparência");
 
         tfText.setColumns(20);
         tfText.setLineWrap(true);
@@ -1573,11 +1575,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         removeTempSignature();
     }//GEN-LAST:event_btnValidateActionPerformed
 
-    private void assinarDocumento(Document documento, boolean ocsp, boolean timestamp) {
+    private void assinarDocumento(Document document, boolean ocsp, boolean timestamp) {
         try {
             if (tempCCAlias.getCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getCertificate().getPublicKey())) {
                 try {
-                    String path1 = documento.getDocumentLocation();
+                    String path1 = document.getDocumentLocation();
                     String path2 = null;
 
                     if (path1.endsWith(".pdf")) {
@@ -1618,7 +1620,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                                 signatureSettings.setTimestamp(timestamp);
 
                                 if (validPath) {
-                                    if (!CCInstance.getInstance().signPdf(documento.getDocumentLocation(), dest, signatureSettings, null)) {
+                                    if (!CCInstance.getInstance().signPdf(document.getDocumentLocation(), dest, signatureSettings, null)) {
                                         JOptionPane.showMessageDialog(mainWindow, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
                                         return;
                                     }
@@ -1645,7 +1647,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                         if (ex.getLocalizedMessage().equals("Erro a abrir o ficheiro de saída!")) {
                             JOptionPane.showMessageDialog(mainWindow, "Impossível criar ficheiro de saída (permissões?)", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
                             controller.Logger.getLogger().addEntry(ex);
-                            assinarDocumento(documento, ocsp, timestamp);
+                            assinarDocumento(document, ocsp, timestamp);
                         } else {
                             JOptionPane.showMessageDialog(mainWindow, "Erro desconhecido - Ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
                             controller.Logger.getLogger().addEntry(ex);
@@ -1656,11 +1658,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 } catch (SignatureFailedException ex) {
                     if (ex.getLocalizedMessage().equals("TimeStamp falhou: Não tem ligação à Internet ou o URL de Servidor de TimeStamp é inválido!")) {
                         //JOptionPane.showMessageDialog(mainWindow, "Não tem ligação à Internet ou\no URL de Servidor de TimeStamp é inválido!", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
-                        String msg = "Não aparenta ter uma ligação válida à Internet\nDeseja assinar o documento mesmo assim?\nAtenção: A validação a longo termo não será possível.";
+                        String msg = "Não aparenta ter uma ligação válida à Internet ou o URL do Servidor de TimeStamp é inválido\nDeseja assinar o documento mesmo assim?\nAtenção: A validação a longo termo não será possível.";
                         Object[] options = {"Sim", "Não"};
                         int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                         if (opt == JOptionPane.YES_OPTION) {
-                            assinarDocumento(documento, false, false);
+                            assinarDocumento(document, false, false);
                         }
                     } else {
                         controller.Logger.getLogger().addEntry(ex);
@@ -1911,7 +1913,12 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             signatureSettings.setOcspClient(true);
             if (cbTimestamp.isSelected()) {
                 signatureSettings.setTimestamp(true);
-                signatureSettings.setTimestampServer(tfTimestamp.getText());
+                if (tfTimestamp.getText().isEmpty()) {
+                    JOptionPane.showMessageDialog(mainWindow, "Escolheu aplicar um timestamp na assinatura.\nO campo 'Servidor TimeStamp' não pode estar em branco", "", JOptionPane.ERROR_MESSAGE);
+                    return;
+                } else {
+                    signatureSettings.setTimestampServer(tfTimestamp.getText());
+                }
             } else {
                 signatureSettings.setTimestamp(false);
                 cbTimestamp.setSelected(false);
@@ -1924,7 +1931,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 Dimension d = tempSignature.getScaledSizeOnDocument();
                 float p1 = (float) p.getX();
                 float p3 = (float) d.getWidth() + p1;
-                float p2 = (float) ((document.getPageDimension(imagePanel.getPageNumber(), 0).getHeight()) - (p.getY() + d.getHeight()));
+                float p2 = (float) ((document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight()) - (p.getY() + d.getHeight()));
                 float p4 = (float) d.getHeight() + p2;
 
                 signatureSettings.setVisibleSignature(true);
@@ -2028,7 +2035,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             try {
                 File f = CCInstance.getInstance().extractRevision(document.getDocumentLocation(), sv.getName());
                 openPdfReaderFromFile(f);
-            } catch (IOException | RevisionExtractionException ex) {
+            } catch (RevisionExtractionException | IOException ex) {
                 Logger.getLogger(WorkspacePanel.class.getName()).log(Level.SEVERE, null, ex);
             }
         }

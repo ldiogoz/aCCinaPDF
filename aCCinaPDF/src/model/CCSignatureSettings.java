@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import view.AppearanceSettingsDialog;
 
 /**
@@ -44,31 +45,7 @@ public final class CCSignatureSettings {
         appearance = new AppearanceSettings();
         String fsettings = "aCCinaPDF.cfg";
         if (!new File(fsettings).exists() || forceCreateConfigFile) {
-            Properties propertiesWrite = new Properties();
-            FileOutputStream fileOut;
-            try {
-                propertiesWrite.setProperty("renderQuality", String.valueOf(Image.SCALE_SMOOTH));
-                propertiesWrite.setProperty("pdfversion", "/1.7");
-                propertiesWrite.setProperty("prefix", "aCCinatura");
-                propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
-                propertiesWrite.setProperty("fontItalic", "true");
-                propertiesWrite.setProperty("fontBold", "false");
-                propertiesWrite.setProperty("showName", "true");
-                propertiesWrite.setProperty("showReason", "true");
-                propertiesWrite.setProperty("showLocation", "true");
-                propertiesWrite.setProperty("showDate", "true");
-                propertiesWrite.setProperty("fontColor", "0");
-                propertiesWrite.setProperty("signatureWidth", "403");
-                propertiesWrite.setProperty("signatureHeight", "25");
-                propertiesWrite.setProperty("pdfversion", String.valueOf(PdfWriter.PDF_VERSION_1_7));
-                fileOut = new FileOutputStream(fsettings);
-                propertiesWrite.store(fileOut, "Settings");
-                fileOut.close();
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            createConfigFile();
         }
         try {
             String pdfVersionStr = getConfigParameter("pdfversion");
@@ -82,6 +59,14 @@ public final class CCSignatureSettings {
             String showReasonStr = getConfigParameter("showReason");
             String showLocationStr = getConfigParameter("showLocation");
             String fontColorStr = getConfigParameter("fontColor");
+            String textAlignStr = getConfigParameter("textAlign");
+
+            if (pdfVersionStr == null || renderQualityStr == null || prefixStr == null || boldStr == null || italicStr == null || fontLocationStr == null
+                    || showNameStr == null || showDateStr == null || showReasonStr == null || showLocationStr == null || fontColorStr == null || textAlignStr == null) {
+                new File(fsettings).delete();
+                createConfigFile();
+                return;
+            }
 
             Settings.getSettings().setPdfVersion(pdfVersionStr);
             Settings.getSettings().setRenderImageQuality(Integer.valueOf(renderQualityStr));
@@ -94,9 +79,58 @@ public final class CCSignatureSettings {
             appearance.setShowReason(Boolean.valueOf(showReasonStr));
             appearance.setShowLocation(Boolean.valueOf(showLocationStr));
             appearance.setFontColor(new Color(Integer.valueOf(fontColorStr)));
+            appearance.setAlign(Integer.valueOf(textAlignStr));
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    private void createConfigFile() {
+        String fsettings = "aCCinaPDF.cfg";
+        Properties propertiesWrite = new Properties();
+        FileOutputStream fileOut;
+        try {
+            propertiesWrite.setProperty("renderQuality", String.valueOf(Image.SCALE_SMOOTH));
+            propertiesWrite.setProperty("pdfversion", "/1.7");
+            propertiesWrite.setProperty("prefix", "aCCinatura");
+            propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
+            propertiesWrite.setProperty("fontItalic", "true");
+            propertiesWrite.setProperty("fontBold", "false");
+            propertiesWrite.setProperty("textAlign", "0");
+            propertiesWrite.setProperty("showName", "true");
+            propertiesWrite.setProperty("showReason", "true");
+            propertiesWrite.setProperty("showLocation", "true");
+            propertiesWrite.setProperty("showDate", "true");
+            propertiesWrite.setProperty("fontColor", "0");
+            propertiesWrite.setProperty("signatureWidth", "403");
+            propertiesWrite.setProperty("signatureHeight", "34");
+            propertiesWrite.setProperty("pdfversion", String.valueOf(PdfWriter.PDF_VERSION_1_7));
+            fileOut = new FileOutputStream(fsettings);
+            propertiesWrite.store(fileOut, "Settings");
+            fileOut.close();
+            loadDefaults();
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    private void loadDefaults() {
+        Settings.getSettings().setPdfVersion("/1.7");
+        Settings.getSettings().setRenderImageQuality(Image.SCALE_SMOOTH);
+        setPrefix("aCCinatura");
+        appearance.setBold(false);
+        appearance.setItalic(true);
+        appearance.setFontLocation("extrafonts" + File.separator + "verdana.ttf");
+        appearance.setShowName(true);
+        appearance.setShowDate(true);
+        appearance.setShowReason(true);
+        appearance.setShowLocation(true);
+        appearance.setFontColor(new Color(0));
+        appearance.setAlign(0);
+
+        JOptionPane.showMessageDialog(null, "O ficheiro de configurações está corrompido ou pertence a uma versão antiga\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
     }
 
     public String getPrefix() {

@@ -35,7 +35,6 @@ public class SignatureValidation {
     private final boolean changed;
     private final boolean coversEntireDocument;
     private final int revision, numRevisions;
-    private final int certificationLevel;
     private final CertificateStatus ocspCertificateStatus;
     private final CertificateStatus crlCertificateStatus;
     private final boolean validTimeStamp;
@@ -53,7 +52,6 @@ public class SignatureValidation {
         this.coversEntireDocument = coversEntireDocument;
         this.revision = revision;
         this.numRevisions = numRevisions;
-        this.certificationLevel = documentCertificationLevel;
         this.signaturePermissions = signaturePermissions;
         this.valid = valid;
         this.ocspCertificateStatus = ocspCertificateStatus;
@@ -62,7 +60,6 @@ public class SignatureValidation {
         this.posList = posList;
         this.panel = new JPanel();
 
-        this.panel.setCursor(new Cursor(Cursor.HAND_CURSOR));
         this.panel.setBackground(new Color(0, 0, 0, 0));
         this.panel.setToolTipText(name);
         this.panel.addMouseListener(new MouseAdapter() {

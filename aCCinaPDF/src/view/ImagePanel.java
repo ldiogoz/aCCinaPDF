@@ -16,18 +16,15 @@ import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseAdapter;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
 import model.SignatureValidation;
+import java.awt.Cursor;
 import org.icepdf.core.pobjects.Document;
 import org.icepdf.core.pobjects.Page;
 import org.icepdf.core.util.GraphicsRenderingHints;
@@ -35,7 +32,6 @@ import org.icepdf.core.util.GraphicsRenderingHints;
 public class ImagePanel extends JPanel {
 
     private MainWindow mainWindow;
-    private BufferedImage img;
     private Document document;
     private int pageNumber;
     private float scale;
@@ -45,7 +41,7 @@ public class ImagePanel extends JPanel {
     private JButton btnPageForward;
 
     public void clear() {
-        img = null;
+        bi = null;
         document = null;
     }
 
@@ -129,22 +125,29 @@ public class ImagePanel extends JPanel {
                             jp1.addMouseListener(new MouseAdapter() {
                                 @Override
                                 public void mouseEntered(java.awt.event.MouseEvent evt) {
-                                    jp1.setBackground(new Color(0, 0, 0, 45));
-                                    jp1.setBorder(new LineBorder(Color.BLACK, 1));
-                                    repaint();
+                                    if (mainWindow.getWorkspacePanel().getStatus() != WorkspacePanel.Status.SIGNING) {
+                                        jp1.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                                        jp1.setBackground(new Color(0, 0, 0, 45));
+                                        jp1.setBorder(new LineBorder(Color.BLACK, 1));
+                                        repaint();
+                                    } else {
+                                        jp1.setCursor(null);
+                                    }
                                 }
 
                                 @Override
                                 public void mouseExited(java.awt.event.MouseEvent evt) {
-                                    if (selectedSignature == null) {
-                                        jp1.setBackground(new Color(0, 0, 0, 0));
-                                        jp1.setBorder(null);
-                                        repaint();
-                                    } else {
-                                        if (!selectedSignature.equals(sv)) {
+                                    if (mainWindow.getWorkspacePanel().getStatus() != WorkspacePanel.Status.SIGNING) {
+                                        if (selectedSignature == null) {
                                             jp1.setBackground(new Color(0, 0, 0, 0));
                                             jp1.setBorder(null);
                                             repaint();
+                                        } else {
+                                            if (!selectedSignature.equals(sv)) {
+                                                jp1.setBackground(new Color(0, 0, 0, 0));
+                                                jp1.setBorder(null);
+                                                repaint();
+                                            }
                                         }
                                     }
                                 }
@@ -181,7 +184,7 @@ public class ImagePanel extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        return img == null ? super.getPreferredSize() : new Dimension(img.getWidth(), img.getHeight());
+        return bi == null ? super.getPreferredSize() : new Dimension(bi.getWidth(), bi.getHeight());
     }
 
     public float getScale() {
@@ -190,7 +193,7 @@ public class ImagePanel extends JPanel {
 
     public void setScale(float scale) {
         this.scale = scale;
-        img = fitDocument();
+        bi = fitDocument();
     }
 
     public float scaleUp() {
@@ -252,7 +255,7 @@ public class ImagePanel extends JPanel {
     }
 
     private void refreshParent() {
-        img = fitDocument();
+        bi = fitDocument();
         repaint();
         parent.setViewportView(this);
     }
@@ -264,9 +267,9 @@ public class ImagePanel extends JPanel {
     public Point getImageLocation() {
 
         Point p = null;
-        if (img != null) {
-            int x = (getWidth() - img.getWidth()) / 2;
-            int y = (getHeight() - img.getHeight()) / 2;
+        if (bi != null) {
+            int x = (getWidth() - bi.getWidth()) / 2;
+            int y = (getHeight() - bi.getHeight()) / 2;
             p = new Point(x, y);
         }
         return p;
@@ -283,16 +286,15 @@ public class ImagePanel extends JPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        if (img != null) {
+        if (bi != null) {
             Point p = getImageLocation();
-            g.drawImage(img, p.x, p.y, this);
+            g.drawImage(bi, p.x, p.y, this);
             g.setColor(Color.LIGHT_GRAY);
-            g.drawRect(p.x, p.y, img.getWidth(), img.getHeight());
+            g.drawRect(p.x, p.y, bi.getWidth(), bi.getHeight());
         }
     }
 
-    private BufferedImage dimg;
-    private Image tmp;
+    private BufferedImage bi;
     private Image image;
 
     private BufferedImage fitDocument() {
@@ -307,15 +309,14 @@ public class ImagePanel extends JPanel {
                 quality = Image.SCALE_SMOOTH;
             }
 
-            image = document.getPageImage(pageNumber, GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, 0f, quality);
-            tmp = image.getScaledInstance(w, h, quality);
-            dimg = new BufferedImage(w, h, BufferedImage.SCALE_FAST);
+            image = document.getPageImage(pageNumber, GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, 0f, quality).getScaledInstance(w, h, quality);
+            bi = new BufferedImage(w, h, BufferedImage.SCALE_FAST);
 
-            Graphics2D g2d = dimg.createGraphics();
-            g2d.drawImage(tmp, 0, 0, null);
+            Graphics2D g2d = bi.createGraphics();
+            g2d.drawImage(image, 0, 0, null);
             g2d.dispose();
 
-            return dimg;
+            return bi;
         }
         return null;
     }

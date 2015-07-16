@@ -273,13 +273,10 @@
                       <Font name="SansSerif" size="14" style="0"/>
                     </Property>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/image/sign.png"/>
+                      <Image iconType="3" name="/image/certified.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" Assinar "/>
                     <Property name="toolTipText" type="java.lang.String" value="Assinar documento(s)"/>
-                    <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="0" name="null"/>
-                    </Property>
                     <Property name="focusable" type="boolean" value="false"/>
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="iconTextGap" type="int" value="0"/>
@@ -296,13 +293,10 @@
                       <Font name="SansSerif" size="14" style="0"/>
                     </Property>
                     <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="3" name="/image/validar.png"/>
+                      <Image iconType="3" name="/image/success.png"/>
                     </Property>
                     <Property name="text" type="java.lang.String" value=" Validar "/>
                     <Property name="toolTipText" type="java.lang.String" value="Validar documento(s)"/>
-                    <Property name="disabledIcon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
-                      <Image iconType="0" name="null"/>
-                    </Property>
                     <Property name="focusable" type="boolean" value="false"/>
                     <Property name="horizontalTextPosition" type="int" value="0"/>
                     <Property name="iconTextGap" type="int" value="0"/>
@@ -695,7 +689,8 @@
                         </Component>
                         <Component class="javax.swing.JLabel" name="lblText">
                           <Properties>
-                            <Property name="text" type="java.lang.String" value="Texto da Assinatura:"/>
+                            <Property name="text" type="java.lang.String" value="Texto adicional da Assinatura:"/>
+                            <Property name="toolTipText" type="java.lang.String" value="Mostrar texto adicional, abaixo da informa&#xe7;&#xe3;o b&#xe1;sica que pode ser escolhida na janela Alterar Apar&#xea;ncia"/>
                           </Properties>
                         </Component>
                         <Container class="javax.swing.JScrollPane" name="jScrollPane1">

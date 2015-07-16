@@ -42,7 +42,7 @@ public class PreviewPanel extends JPanel {
         int x = 5, y = 15;
 
         if (aliasName != null) {
-            if (showName) {
+            if (showName && !aliasName.isEmpty()) {
                 if (m.stringWidth(aliasName) < (getWidth())) {
                     g.drawString(aliasName, x, y);
                 } else {
@@ -65,7 +65,7 @@ public class PreviewPanel extends JPanel {
             }
         }
         if (reason != null) {
-            if (showReason) {
+            if (showReason && !reason.isEmpty()) {
                 if (m.stringWidth(reason) < (getWidth())) {
                     g.drawString(reason, x, y);
                 } else {
@@ -88,7 +88,7 @@ public class PreviewPanel extends JPanel {
             }
         }
         if (location != null) {
-            if (showLocation) {
+            if (showLocation && !location.isEmpty()) {
                 if (m.stringWidth(location) < (getWidth())) {
                     g.drawString(location, x, y);
                 } else {
@@ -136,22 +136,24 @@ public class PreviewPanel extends JPanel {
         }
 
         if (text != null) {
-            if (m.stringWidth(text) < (getWidth())) {
-                g.drawString(text, x, y);
-            } else {
-                String[] words = text.split(" ");
-                String currentLine = words[0];
-                for (int i = 1; i < words.length; i++) {
-                    if (m.stringWidth(currentLine + words[i]) < getWidth()) {
-                        currentLine += " " + words[i];
-                    } else {
-                        g.drawString(currentLine, x, y);
-                        y += m.getHeight();
-                        currentLine = words[i];
+            if (!text.isEmpty()) {
+                if (m.stringWidth(text) < (getWidth())) {
+                    g.drawString(text, x, y);
+                } else {
+                    String[] words = text.split(" ");
+                    String currentLine = words[0];
+                    for (int i = 1; i < words.length; i++) {
+                        if (m.stringWidth(currentLine + words[i]) < getWidth()) {
+                            currentLine += " " + words[i];
+                        } else {
+                            g.drawString(currentLine, x, y);
+                            y += m.getHeight();
+                            currentLine = words[i];
+                        }
                     }
-                }
-                if (currentLine.trim().length() > 0) {
-                    g.drawString(currentLine, x, y);
+                    if (currentLine.trim().length() > 0) {
+                        g.drawString(currentLine, x, y);
+                    }
                 }
             }
         }

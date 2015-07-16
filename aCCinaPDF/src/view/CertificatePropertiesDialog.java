@@ -114,7 +114,10 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
             controller.Logger.getLogger().addEntry(ex);
         }
 
-        RDN subjectCN = x500subject.getRDNs(BCStyle.CN)[0];
+        RDN subjectCN = null;
+        if (x500subject.getRDNs(BCStyle.CN).length > 0) {
+            subjectCN = x500subject.getRDNs(BCStyle.CN)[0];
+        }
         RDN subjectOU1 = null;
         if (x500subject.getRDNs(BCStyle.OU).length >= 1) {
             subjectOU1 = x500subject.getRDNs(BCStyle.OU)[0];
@@ -127,9 +130,14 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
             jTextField3.setText(IETFUtils.valueToString(subjectOU2.getFirst().getValue()));
             jTextField3.setCaretPosition(0);
         }
-        RDN subjectO = x500subject.getRDNs(BCStyle.O)[0];
-        RDN subjectC = x500subject.getRDNs(BCStyle.C)[0];
-
+        RDN subjectO = null;
+        if (x500subject.getRDNs(BCStyle.O).length > 0) {
+            subjectO = x500subject.getRDNs(BCStyle.O)[0];
+        }
+        RDN subjectC = null;
+        if (x500subject.getRDNs(BCStyle.C).length > 0) {
+            subjectC = x500subject.getRDNs(BCStyle.C)[0];
+        }
         if (!x500issuer.equals(x500subject)) {
             RDN issuerCN = x500issuer.getRDNs(BCStyle.CN)[0];
             if (1 == x500issuer.getRDNs(BCStyle.OU).length) {
@@ -153,9 +161,13 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
 
         jTextField1.setText(WordUtils.capitalize(IETFUtils.valueToString(subjectCN.getFirst().getValue()).toLowerCase()));
         jTextField1.setCaretPosition(0);
-        jTextField4.setText(IETFUtils.valueToString(subjectO.getFirst().getValue()));
+        if (subjectO != null) {
+            jTextField4.setText(IETFUtils.valueToString(subjectO.getFirst().getValue()));
+        }
         jTextField4.setCaretPosition(0);
-        jTextField5.setText(IETFUtils.valueToString(subjectC.getFirst().getValue()));
+        if (subjectC != null) {
+            jTextField5.setText(IETFUtils.valueToString(subjectC.getFirst().getValue()));
+        }
         jTextField5.setCaretPosition(0);
 
         jTextField11.setText(since.toLocaleString());
