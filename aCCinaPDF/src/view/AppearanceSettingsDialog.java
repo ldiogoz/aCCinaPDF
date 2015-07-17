@@ -92,16 +92,16 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
         switch (align) {
             case 0:
-                jComboBox1.setSelectedIndex(0);
+                cbBoxAlign.setSelectedIndex(0);
                 break;
             case 1:
-                jComboBox1.setSelectedIndex(1);
+                cbBoxAlign.setSelectedIndex(1);
                 break;
             case 2:
-                jComboBox1.setSelectedIndex(2);
+                cbBoxAlign.setSelectedIndex(2);
                 break;
             default:
-                jComboBox1.setSelectedIndex(0);
+                cbBoxAlign.setSelectedIndex(0);
         }
 
         previewPanel1.setReason(signatureSettings.getReason());
@@ -134,6 +134,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             cbShowReason.setSelected(false);
         }
         previewPanel1.setText(signatureSettings.getText());
+        previewPanel1.setAlign(align);
         colorChooser.setPreviewPanel(new JPanel());
         Color color = signatureSettings.getAppearance().getFontColor();
         colorChooser.setColor(color);
@@ -141,7 +142,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         cbShowReason.setSelected(showReason);
         cbShowLocation.setSelected(showLocation);
         cbShowDate.setSelected(showDate);
-
+        
         ColorSelectionModel model = colorChooser.getSelectionModel();
         ChangeListener changeListener = new ChangeListener() {
             @Override
@@ -246,7 +247,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         cbShowName = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
+        cbBoxAlign = new javax.swing.JComboBox();
         checkBoxGuardar = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -388,7 +389,12 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
         jLabel3.setText("Alinhar:");
 
-        jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Esquerda", "Centro", "Direita" }));
+        cbBoxAlign.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Esquerda", "Centro", "Direita" }));
+        cbBoxAlign.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                cbBoxAlignItemStateChanged(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -411,7 +417,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                         .addGap(45, 45, 45)
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jComboBox1, 0, 157, Short.MAX_VALUE)))
+                        .addComponent(cbBoxAlign, 0, 157, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -429,7 +435,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                         .addComponent(cbShowLocation)
                         .addComponent(cbShowDate)
                         .addComponent(jLabel3)
-                        .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cbBoxAlign, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
@@ -516,7 +522,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         signatureSettings.getAppearance().setItalic(checkBoxItalic.isSelected());
         String fontLocation = getFontLocationByName((String) cbFontType.getSelectedItem());
         signatureSettings.getAppearance().setFontLocation(fontLocation);
-        signatureSettings.getAppearance().setAlign(jComboBox1.getSelectedIndex());
+        signatureSettings.getAppearance().setAlign(cbBoxAlign.getSelectedIndex());
 
         this.dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
@@ -524,6 +530,17 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     private void cbShowNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbShowNameItemStateChanged
         previewPanel1.setShowName(cbShowName.isSelected());
     }//GEN-LAST:event_cbShowNameItemStateChanged
+
+    private void cbBoxAlignItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbBoxAlignItemStateChanged
+        if(cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("esquerda")){
+            previewPanel1.setAlign(0);
+        }else if(cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("centro")){
+            previewPanel1.setAlign(1);
+        }else{
+            previewPanel1.setAlign(2);
+        }
+        previewPanel1.repaint();
+    }//GEN-LAST:event_cbBoxAlignItemStateChanged
 
     private String getFontLocationByName(String name) {
         Set<Map.Entry<com.itextpdf.text.Font, String>> entries = fontList.entrySet();
@@ -552,7 +569,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                 properties.setProperty("showReason", String.valueOf(cbShowReason.isSelected()));
                 properties.setProperty("showLocation", String.valueOf(cbShowLocation.isSelected()));
                 properties.setProperty("showDate", String.valueOf(cbShowDate.isSelected()));
-                switch (jComboBox1.getSelectedIndex()) {
+                switch (cbBoxAlign.getSelectedIndex()) {
                     case 0:
                         properties.setProperty("textAlign", "0");
                         break;
@@ -633,6 +650,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox cbBoxAlign;
     private javax.swing.JComboBox cbFontType;
     private javax.swing.JCheckBox cbShowDate;
     private javax.swing.JCheckBox cbShowLocation;
@@ -645,7 +663,6 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     private javax.swing.Box.Filler filler1;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

@@ -27,7 +27,7 @@ public class PreviewPanel extends JPanel {
     private boolean showDate;
     private boolean showName;
     private String aliasName;
-
+    private int align;
     public PreviewPanel() {
         super();
     }
@@ -38,13 +38,13 @@ public class PreviewPanel extends JPanel {
 
         g.setFont(new Font("Verdana", Font.PLAIN, 11));
         FontMetrics m = g.getFontMetrics();
-
         int x = 5, y = 15;
-
+        
         if (aliasName != null) {
             if (showName && !aliasName.isEmpty()) {
+                int charCountNome = m.stringWidth(aliasName)/2;
                 if (m.stringWidth(aliasName) < (getWidth())) {
-                    g.drawString(aliasName, x, y);
+                    drawLine(charCountNome, aliasName, x, y, g, m);
                 } else {
                     String[] words = aliasName.split(" ");
                     String currentLine = words[0];
@@ -52,13 +52,15 @@ public class PreviewPanel extends JPanel {
                         if (m.stringWidth(currentLine + words[i]) < getWidth()) {
                             currentLine += " " + words[i];
                         } else {
-                            g.drawString(currentLine, x, y);
+                            charCountNome = m.stringWidth(currentLine);
+                            drawLine(charCountNome, currentLine, x, y, g, m);
                             y += m.getHeight();
                             currentLine = words[i];
                         }
                     }
                     if (currentLine.trim().length() > 0) {
-                        g.drawString(currentLine, x, y);
+                        charCountNome = m.stringWidth(currentLine)/2;
+                        drawLine(charCountNome, currentLine, x, y, g, m);
                     }
                 }
                 y += 15;
@@ -66,8 +68,9 @@ public class PreviewPanel extends JPanel {
         }
         if (reason != null) {
             if (showReason && !reason.isEmpty()) {
+                int reasonCharCount = m.stringWidth(reason)/2;
                 if (m.stringWidth(reason) < (getWidth())) {
-                    g.drawString(reason, x, y);
+                    drawLine(reasonCharCount, reason, x, y, g, m);
                 } else {
                     String[] words = reason.split(" ");
                     String currentLine = words[0];
@@ -75,13 +78,15 @@ public class PreviewPanel extends JPanel {
                         if (m.stringWidth(currentLine + words[i]) < getWidth()) {
                             currentLine += " " + words[i];
                         } else {
-                            g.drawString(currentLine, x, y);
+                            reasonCharCount = m.stringWidth(currentLine);
+                            drawLine(reasonCharCount, currentLine, x, y, g, m);
                             y += m.getHeight();
                             currentLine = words[i];
                         }
                     }
                     if (currentLine.trim().length() > 0) {
-                        g.drawString(currentLine, x, y);
+                        reasonCharCount = m.stringWidth(currentLine)/2;
+                        drawLine(reasonCharCount, currentLine, x, y, g, m);
                     }
                 }
                 y += 15;
@@ -89,22 +94,26 @@ public class PreviewPanel extends JPanel {
         }
         if (location != null) {
             if (showLocation && !location.isEmpty()) {
+                int locationCharCount = m.stringWidth(location)/2;
                 if (m.stringWidth(location) < (getWidth())) {
-                    g.drawString(location, x, y);
+                    drawLine(locationCharCount, location, x, y, g, m);
                 } else {
                     String[] words = location.split(" ");
                     String currentLine = words[0];
                     for (int i = 1; i < words.length; i++) {
+                        
                         if (m.stringWidth(currentLine + words[i]) < getWidth()) {
                             currentLine += " " + words[i];
                         } else {
-                            g.drawString(currentLine, x, y);
+                            locationCharCount = m.stringWidth(currentLine);
+                            drawLine(locationCharCount, currentLine, x, y, g, m);
                             y += m.getHeight();
                             currentLine = words[i];
                         }
                     }
                     if (currentLine.trim().length() > 0) {
-                        g.drawString(currentLine, x, y);
+                        locationCharCount = m.stringWidth(currentLine)/2;
+                        drawLine(locationCharCount, currentLine, x, y, g, m);
                     }
                 }
                 y += 15;
@@ -114,8 +123,9 @@ public class PreviewPanel extends JPanel {
             Date date = new Date();
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss ");
             String timestamp = sdf.format(date) + "+" + TimeZone.SHORT;
+            int timestampCharCount = m.stringWidth(timestamp)/2;
             if (m.stringWidth(timestamp) < (getWidth())) {
-                g.drawString(timestamp, x, y);
+                   drawLine(timestampCharCount, timestamp, x, y, g, m);
             } else {
                 String[] words = timestamp.split(" ");
                 String currentLine = words[0];
@@ -123,13 +133,15 @@ public class PreviewPanel extends JPanel {
                     if (m.stringWidth(currentLine + words[i]) < getWidth()) {
                         currentLine += " " + words[i];
                     } else {
-                        g.drawString(currentLine, x, y);
+                        timestampCharCount = m.stringWidth(currentLine);
+                        drawLine(timestampCharCount, currentLine, x, y, g, m);
                         y += m.getHeight();
                         currentLine = words[i];
                     }
                 }
                 if (currentLine.trim().length() > 0) {
-                    g.drawString(currentLine, x, y);
+                    timestampCharCount = m.stringWidth(currentLine)/2;
+                    drawLine(timestampCharCount, currentLine, x, y, g, m);
                 }
             }
             y += 15;
@@ -137,8 +149,9 @@ public class PreviewPanel extends JPanel {
 
         if (text != null) {
             if (!text.isEmpty()) {
+                int textCharCount = m.stringWidth(text)/2;
                 if (m.stringWidth(text) < (getWidth())) {
-                    g.drawString(text, x, y);
+                    drawLine(textCharCount, text, x, y, g, m);
                 } else {
                     String[] words = text.split(" ");
                     String currentLine = words[0];
@@ -146,17 +159,38 @@ public class PreviewPanel extends JPanel {
                         if (m.stringWidth(currentLine + words[i]) < getWidth()) {
                             currentLine += " " + words[i];
                         } else {
-                            g.drawString(currentLine, x, y);
-                            y += m.getHeight();
+                            textCharCount = m.stringWidth(currentLine);
+                            drawLine(textCharCount, currentLine, x, y, g, m);
+                            y += m.getHeight(); 
                             currentLine = words[i];
                         }
                     }
                     if (currentLine.trim().length() > 0) {
-                        g.drawString(currentLine, x, y);
+                        textCharCount = m.stringWidth(currentLine)/2;
+                        drawLine(textCharCount, currentLine, x, y, g, m);
                     }
                 }
             }
         }
+    }
+    
+    private void drawLine(int numChars, String text, int x, int y, Graphics g, FontMetrics m){
+                   if(align == 0 || align > 2 || align < 0){
+                        g.drawString(text, x, y);
+                    }else if(align == 1){
+                        if(numChars >= 280){
+                           g.drawString(text, x, y); 
+                        }else{
+                           g.drawString(text, 280 - numChars, y); 
+                        }
+                    }else if(align == 2){
+                        if(numChars >= 560){
+                            g.drawString(text, x, y);
+                        }else{
+                            numChars = m.stringWidth(text);
+                            g.drawString(text, 560-numChars, y);
+                        }
+                    }
     }
 
     public void setShowReason(boolean showReason) {
@@ -166,6 +200,10 @@ public class PreviewPanel extends JPanel {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public void setAlign(int align) {
+        this.align = align;
     }
 
     public void setText(String text) {
