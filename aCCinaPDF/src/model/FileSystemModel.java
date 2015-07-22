@@ -1,7 +1,21 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ *   Copyright 2015 Luís Diogo Zambujo, Micael Sousa Farinha and Miguel Frade
+ *
+ *   This file is part of aCCinaPDF.
+ *
+ *   aCCinaPDF is free software: you can redistribute it and/or modify
+ *   it under the terms of the GNU Affero Affero General Public License as published by
+ *   the Free Software Foundation, either version 3 of the License, or
+ *   (at your option) any later version.
+ *
+ *   aCCinaPDF is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU Affero General Public License for more details.
+ *
+ *   You should have received a copy of the GNU Affero General Public License
+ *   along with aCCinaPDF.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 package model;
 
@@ -33,17 +47,6 @@ public class FileSystemModel implements TreeModel {
                     @Override
                     public boolean accept(File dir, String name) {
                         return name.toLowerCase().contains(match.toLowerCase());
-
-                        /* SO FICHEIROS
-                        
-                         if ((new File(dir.getAbsolutePath() + System.getProperty("file.separator") + name)).isFile()) {
-                         if (name.contains(match)) {
-                         return name.toLowerCase().contains(match.toLowerCase());
-                         }
-                         } else {
-                         return true;
-                         }
-                         return false;*/
                     }
                 };
             } else {
