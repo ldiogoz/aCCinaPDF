@@ -21,7 +21,6 @@ package model;
 
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
-import controller.Settings;
 import java.awt.Color;
 import java.awt.Image;
 import java.io.File;
@@ -54,11 +53,16 @@ public final class CCSignatureSettings {
     private int pageNumber;
     private AppearanceSettings appearance;
     private String prefix;
+    private boolean createdNewSettings;
+
+    private static final String SETTINGS_FILE = "aCCinaPDF.cfg";
 
     public CCSignatureSettings(boolean forceCreateConfigFile) {
         appearance = new AppearanceSettings();
-        String fsettings = "aCCinaPDF.cfg";
-        if (!new File(fsettings).exists() || forceCreateConfigFile) {
+        if (!new File(SETTINGS_FILE).exists() || forceCreateConfigFile) {
+            if (!new File(SETTINGS_FILE).exists()) {
+                createdNewSettings = true;
+            }
             createConfigFile();
         }
         try {
@@ -77,7 +81,7 @@ public final class CCSignatureSettings {
 
             if (pdfVersionStr == null || renderQualityStr == null || prefixStr == null || boldStr == null || italicStr == null || fontLocationStr == null
                     || showNameStr == null || showDateStr == null || showReasonStr == null || showLocationStr == null || fontColorStr == null || textAlignStr == null) {
-                new File(fsettings).delete();
+                new File(SETTINGS_FILE).delete();
                 createConfigFile();
                 return;
             }
@@ -104,7 +108,7 @@ public final class CCSignatureSettings {
         Properties propertiesWrite = new Properties();
         FileOutputStream fileOut;
         try {
-            propertiesWrite.setProperty("renderQuality", String.valueOf(Image.SCALE_SMOOTH));
+            propertiesWrite.setProperty("renderQuality", String.valueOf(2));
             propertiesWrite.setProperty("pdfversion", "/1.7");
             propertiesWrite.setProperty("prefix", "aCCinatura");
             propertiesWrite.setProperty("fontLocation", "extrafonts" + File.separator + "verdana.ttf");
@@ -144,7 +148,9 @@ public final class CCSignatureSettings {
         appearance.setFontColor(new Color(0));
         appearance.setAlign(0);
 
-        JOptionPane.showMessageDialog(null, "O ficheiro de configurações está corrompido ou pertence a uma versão antiga\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+        if (!createdNewSettings) {
+            JOptionPane.showMessageDialog(null, "O ficheiro de configurações está corrompido ou pertence a uma versão antiga\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     public String getPrefix() {

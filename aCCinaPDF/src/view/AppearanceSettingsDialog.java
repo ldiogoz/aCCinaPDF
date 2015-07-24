@@ -22,12 +22,14 @@ package view;
 import com.itextpdf.text.FontFactory;
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontFormatException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +38,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.colorchooser.ColorSelectionModel;
 import javax.swing.event.ChangeEvent;
@@ -50,7 +53,7 @@ import org.apache.commons.lang3.SystemUtils;
 public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
     private CCSignatureSettings signatureSettings;
-    private HashMap<com.itextpdf.text.Font, String> fontList;
+    private HashMap<com.itextpdf.text.Font, String> hmFonts;
 
     /**
      * Creates new form NewJDialog
@@ -78,22 +81,21 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         dirs.add("extrafonts");
 
         // Hashmap com fonts
-        fontList = getAllFonts(dirs);
-        ArrayList<String> fontsListArray = new ArrayList<>();
-        for (Map.Entry<com.itextpdf.text.Font, String> font : fontList.entrySet()) {
-            fontsListArray.add(font.getKey().getFamilyname());
-        }
-        Comparator<String> strCompare = new Comparator<String>() {
-            @Override
-            public int compare(String str1, String str2) {
-                return str1.compareTo(str2);
-            }
-        };
+        hmFonts = getAllFonts(dirs);
+        ArrayList<com.itextpdf.text.Font> alFonts = new ArrayList<>(hmFonts.keySet());
 
-        fontsListArray.sort(strCompare);
-        for (String str : fontsListArray) {
-            cbFontType.addItem(str);
+        Collections.sort(alFonts, new Comparator<com.itextpdf.text.Font>() {
+            @Override
+            public int compare(com.itextpdf.text.Font f1, com.itextpdf.text.Font f2) {
+                return f1.getFamilyname().compareToIgnoreCase(f2.getFamilyname());
+            }
+        });
+
+        DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
+        for (com.itextpdf.text.Font font : alFonts) {
+            dcbm.addElement(font.getFamilyname());
         }
+        cbFontType.setModel(dcbm);
 
         String fontLocation = signatureSettings.getAppearance().getFontLocation();
         boolean italic = signatureSettings.getAppearance().isItalic();
@@ -156,7 +158,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         cbShowReason.setSelected(showReason);
         cbShowLocation.setSelected(showLocation);
         cbShowDate.setSelected(showDate);
-        
+
         ColorSelectionModel model = colorChooser.getSelectionModel();
         ChangeListener changeListener = new ChangeListener() {
             @Override
@@ -167,14 +169,35 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         };
         model.addChangeListener(changeListener);
 
-        if (italic && bold) {
-            lblSignature.setFont(new Font(fontLocation, Font.ITALIC + Font.BOLD, 36));
-        } else if (italic && !bold) {
-            lblSignature.setFont(new Font(fontLocation, Font.ITALIC, 36));
-        } else if (!italic && bold) {
-            lblSignature.setFont(new Font(fontLocation, Font.BOLD, 36));
+        if (fontLocation.contains("aCCinaPDF" + File.separator + "extrafonts")) {
+            try {
+                Font newFont = Font.createFont(Font.TRUETYPE_FONT, new File(fontLocation));
+                Font font = null;
+                if (italic && bold) {
+                    font = newFont.deriveFont(Font.ITALIC + Font.BOLD, 36);
+                } else if (italic && !bold) {
+                    font = newFont.deriveFont(Font.ITALIC, 36);
+                } else if (!italic && bold) {
+                    font = newFont.deriveFont(Font.BOLD, 36);
+                } else {
+                    font = newFont.deriveFont(Font.PLAIN, 36);
+                }
+                lblSignature.setFont(font);
+            } catch (FontFormatException ex) {
+                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (IOException ex) {
+                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
         } else {
-            lblSignature.setFont(new Font(fontLocation, Font.PLAIN, 36));
+            if (italic && bold) {
+                lblSignature.setFont(new Font(fontLocation, Font.ITALIC + Font.BOLD, 36));
+            } else if (italic && !bold) {
+                lblSignature.setFont(new Font(fontLocation, Font.ITALIC, 36));
+            } else if (!italic && bold) {
+                lblSignature.setFont(new Font(fontLocation, Font.BOLD, 36));
+            } else {
+                lblSignature.setFont(new Font(fontLocation, Font.PLAIN, 36));
+            }
         }
 
         checkBoxBold.setSelected(bold);
@@ -546,18 +569,18 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_cbShowNameItemStateChanged
 
     private void cbBoxAlignItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbBoxAlignItemStateChanged
-        if(cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("esquerda")){
+        if (cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("esquerda")) {
             previewPanel1.setAlign(0);
-        }else if(cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("centro")){
+        } else if (cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("centro")) {
             previewPanel1.setAlign(1);
-        }else{
+        } else {
             previewPanel1.setAlign(2);
         }
         previewPanel1.repaint();
     }//GEN-LAST:event_cbBoxAlignItemStateChanged
 
     private String getFontLocationByName(String name) {
-        Set<Map.Entry<com.itextpdf.text.Font, String>> entries = fontList.entrySet();
+        Set<Map.Entry<com.itextpdf.text.Font, String>> entries = hmFonts.entrySet();
         for (Map.Entry<com.itextpdf.text.Font, String> entry : entries) {
             if (entry.getKey().getFamilyname().equals(name)) {
                 return entry.getValue();
@@ -607,13 +630,35 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     }
 
     private void changeLabel() {
-        String font = getFontCbBox();
+        String fontLocation = getFontCbBox();
+
+        try {
+            Font newFont = Font.createFont(Font.TRUETYPE_FONT, new File(getFontLocationByName(fontLocation)));
+            Font font = null;
+
+            if (checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
+                font = newFont.deriveFont(Font.ITALIC + Font.BOLD, 36);
+            } else if (checkBoxBold.isSelected() && !checkBoxItalic.isSelected()) {
+                font = newFont.deriveFont(Font.BOLD, 36);
+            } else if (!checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
+                font = newFont.deriveFont(Font.ITALIC, 36);
+            } else {
+                font = newFont.deriveFont(Font.PLAIN, 36);
+            }
+            lblSignature.setFont(font);
+            return;
+        } catch (FontFormatException ex) {
+            Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         if (checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(font, Font.BOLD + Font.ITALIC, 36));
+            lblSignature.setFont(new Font(fontLocation, Font.BOLD + Font.ITALIC, 36));
         } else if (checkBoxBold.isSelected() && !checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(font, Font.BOLD, 36));
+            lblSignature.setFont(new Font(fontLocation, Font.BOLD, 36));
         } else if (!checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(font, Font.ITALIC, (Integer) 36));
+            lblSignature.setFont(new Font(fontLocation, Font.ITALIC, (Integer) 36));
         } else {
             lblSignature.setFont(new Font(cbFontType.getSelectedItem().toString(), Font.PLAIN, (Integer) 36));
         }

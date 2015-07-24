@@ -20,12 +20,9 @@
 package view;
 
 import com.itextpdf.text.pdf.AcroFields;
-import controller.Settings;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -39,14 +36,22 @@ import javax.swing.JScrollPane;
 import javax.swing.border.LineBorder;
 import model.SignatureValidation;
 import java.awt.Cursor;
+import java.io.File;
+import java.io.IOException;
+import model.Settings;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.rendering.ImageType;
+import org.apache.pdfbox.rendering.PDFRenderer;
 import org.icepdf.core.pobjects.Document;
-import org.icepdf.core.pobjects.Page;
-import org.icepdf.core.util.GraphicsRenderingHints;
+import org.imgscalr.Scalr;
+import org.imgscalr.Scalr.Method;
 
 public class ImagePanel extends JPanel {
 
     private MainWindow mainWindow;
-    private Document document;
+    private PDDocument pdfDocument;
+    private PDFRenderer pdfRenderer;
+    private String documentLocation;
     private int pageNumber;
     private float scale;
 
@@ -54,15 +59,31 @@ public class ImagePanel extends JPanel {
     private JButton btnPageBackward;
     private JButton btnPageForward;
 
+    private Status status;
+
     public void clear() {
         bi = null;
-        document = null;
+        if (pdfDocument != null) {
+            try {
+                pdfDocument.close();
+            } catch (IOException ex) {
+            }
+        }
+        pdfDocument = null;
+        pdfRenderer = null;
+        documentLocation = null;
     }
 
     public enum DocumentPageControl {
 
         PAGE_UP,
         PAGE_DOWN
+    };
+
+    public enum Status {
+
+        READY,
+        RENDERING
     };
 
     public ImagePanel() {
@@ -84,92 +105,142 @@ public class ImagePanel extends JPanel {
         refreshSignatureValidationListPanels();
     }
 
-    public void setDocumentAndComponents(MainWindow mainWindow, JScrollPane parent, Document document, JButton btnBackward, JButton btnForward) {
+    private BufferedImage imgs[];
+
+    public void setDocumentAndComponents(final MainWindow mainWindow, JScrollPane parent, Document document, final JButton btnBackward, final JButton btnForward) {
         this.mainWindow = mainWindow;
         this.parent = parent;
-        this.document = document;
-        this.btnPageBackward = btnBackward;
-        this.btnPageForward = btnForward;
+        try {
+            this.documentLocation = document.getDocumentLocation();
+            this.pdfDocument = PDDocument.load(new File(documentLocation));
+            this.pdfRenderer = new PDFRenderer(pdfDocument);
 
-        this.pageNumber = 0;
-        this.scale = 1f;
-        this.svList = null;
-        setBorder(null);
-        refreshParent();
-        JLabel lblDocName = new JLabel(document.getDocumentLocation());
-        lblDocName.setLocation(0, 0);
-        add(lblDocName);
-        lblDocName.setVisible(true);
-        refreshTitle();
-        setSelectedSignature(null);
+            imgs = new BufferedImage[pdfDocument.getPages().getCount()];
+            final int pages = pdfDocument.getPages().getCount();
+
+            Runnable r = new Runnable() {
+
+                @Override
+                public void run() {
+                    status = Status.RENDERING;
+                    ImagePanel.this.btnPageBackward = btnBackward;
+                    ImagePanel.this.btnPageForward = btnForward;
+                    ImagePanel.this.pageNumber = 0;
+                    ImagePanel.this.scale = 1f;
+                    ImagePanel.this.svList = null;
+                    setBorder(null);
+                    JLabel lblDocName = new JLabel(documentLocation);
+                    lblDocName.setLocation(0, 0);
+                    add(lblDocName);
+                    lblDocName.setVisible(true);
+                    try {
+                        imgs[0] = pdfRenderer.renderImage(0, 2f, ImageType.RGB);
+                        mainWindow.getWorkspacePanel().showPanelComponents();
+                        status = Status.READY;
+                    } catch (IOException ex) {
+                        return;
+                    }
+                    refreshParent();
+                    refreshTitle();
+
+                    if (pages > 1) {
+                        for (int i = 1; i < pages; i++) {
+                            try {
+                                imgs[i] = pdfRenderer.renderImage(i, 2f, ImageType.RGB);
+                            } catch (Exception e) {
+                                break;
+                            }
+                        }
+                    }
+                }
+            };
+
+            Thread t = new Thread(r);
+            t.start();
+
+            if (pdfDocument == null) {
+                mainWindow.getWorkspacePanel().setDocument(null);
+                return;
+            }
+
+        } catch (IOException ex) {
+            controller.Logger.getLogger().addEntry(ex);
+        }
     }
 
     final private ArrayList<JPanel> panelList = new ArrayList<>();
 
-    public synchronized void refreshSignatureValidationListPanels() {
+    public void refreshSignatureValidationListPanels() {
         for (JPanel jp : panelList) {
             remove(jp);
         }
 
-        if (document != null) {
+        if (imgs[pageNumber] == null) {
+            return;
+        }
+
+        if (pdfDocument != null) {
             if (svList != null) {
                 Point p = getImageLocation();
                 for (final SignatureValidation sv : svList) {
-                    int pgNumber = sv.getPosList().get(0).page - 1;
-                    if (this.pageNumber == pgNumber) {
-                        for (AcroFields.FieldPosition pos : sv.getPosList()) {
-                            int p1 = (int) (p.x + (pos.position.getLeft() * scale));
-                            int p2 = (int) (p.y + Math.floor((document.getPageDimension(pageNumber, scale).getHeight() - pos.position.getTop() - scale * 10) * scale));
-                            int p3 = (int) (pos.position.getWidth() * scale);
-                            int p4 = (int) (pos.position.getHeight() * scale);
+                    try {
+                        int pgNumber = sv.getPosList().get(0).page - 1;
+                        if (this.pageNumber == pgNumber) {
+                            for (AcroFields.FieldPosition pos : sv.getPosList()) {
+                                int p1 = (int) (p.x + (pos.position.getLeft() * scale));
+                                int p2 = (int) (p.y + Math.floor((pdfDocument.getPage(pageNumber).getCropBox().getHeight() - pos.position.getTop()) * scale));
+                                int p3 = (int) (pos.position.getWidth() * scale);
+                                int p4 = (int) (pos.position.getHeight() * scale);
 
-                            final JPanel jp1 = sv.getPanel();
-                            jp1.setLocation(p1, p2);
-                            jp1.setSize(p3, p4);
+                                final JPanel jp1 = sv.getPanel();
+                                jp1.setLocation(p1, p2);
+                                jp1.setSize(p3, p4);
 
-                            if (sv.equals(selectedSignature)) {
-                                jp1.setBackground(new Color(0, 0, 0, 45));
-                                jp1.setBorder(new LineBorder(Color.BLACK, 1));
-                            } else {
-                                jp1.setBackground(new Color(0, 0, 0, 0));
-                                jp1.setBorder(null);
-                            }
-
-                            jp1.setVisible(true);
-                            jp1.addMouseListener(new MouseAdapter() {
-                                @Override
-                                public void mouseEntered(java.awt.event.MouseEvent evt) {
-                                    if (mainWindow.getWorkspacePanel().getStatus() != WorkspacePanel.Status.SIGNING) {
-                                        jp1.setCursor(new Cursor(Cursor.HAND_CURSOR));
-                                        jp1.setBackground(new Color(0, 0, 0, 45));
-                                        jp1.setBorder(new LineBorder(Color.BLACK, 1));
-                                        repaint();
-                                    } else {
-                                        jp1.setCursor(null);
-                                    }
+                                if (sv.equals(selectedSignature)) {
+                                    jp1.setBackground(new Color(0, 0, 0, 45));
+                                    jp1.setBorder(new LineBorder(Color.BLACK, 1));
+                                } else {
+                                    jp1.setBackground(new Color(0, 0, 0, 0));
+                                    jp1.setBorder(null);
                                 }
 
-                                @Override
-                                public void mouseExited(java.awt.event.MouseEvent evt) {
-                                    if (mainWindow.getWorkspacePanel().getStatus() != WorkspacePanel.Status.SIGNING) {
-                                        if (selectedSignature == null) {
-                                            jp1.setBackground(new Color(0, 0, 0, 0));
-                                            jp1.setBorder(null);
+                                jp1.setVisible(true);
+                                jp1.addMouseListener(new MouseAdapter() {
+                                    @Override
+                                    public void mouseEntered(java.awt.event.MouseEvent evt) {
+                                        if (mainWindow.getWorkspacePanel().getStatus() != WorkspacePanel.Status.SIGNING) {
+                                            jp1.setCursor(new Cursor(Cursor.HAND_CURSOR));
+                                            jp1.setBackground(new Color(0, 0, 0, 45));
+                                            jp1.setBorder(new LineBorder(Color.BLACK, 1));
                                             repaint();
                                         } else {
-                                            if (!selectedSignature.equals(sv)) {
+                                            jp1.setCursor(null);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void mouseExited(java.awt.event.MouseEvent evt) {
+                                        if (mainWindow.getWorkspacePanel().getStatus() != WorkspacePanel.Status.SIGNING) {
+                                            if (selectedSignature == null) {
                                                 jp1.setBackground(new Color(0, 0, 0, 0));
                                                 jp1.setBorder(null);
                                                 repaint();
+                                            } else {
+                                                if (!selectedSignature.equals(sv)) {
+                                                    jp1.setBackground(new Color(0, 0, 0, 0));
+                                                    jp1.setBorder(null);
+                                                    repaint();
+                                                }
                                             }
                                         }
                                     }
-                                }
-                            });
-                            panelList.add(jp1);
-                            add(jp1);
-                            repaint();
+                                });
+                                panelList.add(jp1);
+                                add(jp1);
+                                repaint();
+                            }
                         }
+                    } catch (Exception e) {
                     }
                 }
             }
@@ -231,13 +302,13 @@ public class ImagePanel extends JPanel {
     public boolean setPageNumberControl(DocumentPageControl dpc) {
         boolean changed = false;
         if (dpc.equals(DocumentPageControl.PAGE_UP)) {
-            if (null != document && pageNumber < (document.getNumberOfPages() - 1)) {
+            if (null != pdfDocument && pageNumber < (pdfDocument.getPages().getCount() - 1)) {
                 pageNumber++;
                 changed = true;
                 refreshSignatureValidationListPanels();
             }
         } else if (dpc.equals(DocumentPageControl.PAGE_DOWN)) {
-            if (null != document && pageNumber > 0) {
+            if (null != pdfDocument && pageNumber > 0) {
                 pageNumber--;
                 changed = true;
                 refreshSignatureValidationListPanels();
@@ -246,10 +317,10 @@ public class ImagePanel extends JPanel {
 
         if (0 == pageNumber) {
             btnPageBackward.setEnabled(false);
-            if (document.getNumberOfPages() > 1) {
+            if (pdfDocument.getPages().getCount() > 1) {
                 btnPageForward.setEnabled(true);
             }
-        } else if (document.getNumberOfPages() == (pageNumber + 1)) {
+        } else if (pdfDocument.getPages().getCount() == (pageNumber + 1)) {
             btnPageBackward.setEnabled(true);
             btnPageForward.setEnabled(false);
         } else {
@@ -269,13 +340,23 @@ public class ImagePanel extends JPanel {
     }
 
     private void refreshParent() {
-        bi = fitDocument();
-        repaint();
-        parent.setViewportView(this);
+        while (true) {
+            try {
+                bi = fitDocument();
+                if (bi != null) {
+                    repaint();
+                    parent.setViewportView(ImagePanel.this);
+                    break;
+                }
+                Thread.sleep(100);
+            } catch (Exception e) {
+
+            }
+        }
     }
 
     private void refreshTitle() {
-        mainWindow.setTitle("aCCinaPDF - " + document.getDocumentLocation() + " - Página " + (pageNumber + 1) + " de " + document.getNumberOfPages());
+        mainWindow.setTitle("aCCinaPDF - " + documentLocation + " - Página " + (pageNumber + 1) + " de " + pdfDocument.getPages().getCount());
     }
 
     public Point getImageLocation() {
@@ -301,41 +382,51 @@ public class ImagePanel extends JPanel {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
         if (bi != null) {
-            Point p = getImageLocation();
-            g.drawImage(bi, p.x, p.y, this);
-            g.setColor(Color.LIGHT_GRAY);
-            g.drawRect(p.x, p.y, bi.getWidth(), bi.getHeight());
+            try {
+                Point p = getImageLocation();
+                g.drawImage(bi, p.x, p.y, this);
+                g.setColor(Color.LIGHT_GRAY);
+                g.drawRect(p.x, p.y, bi.getWidth(), bi.getHeight());
+                bi.flush();
+            } catch (Exception e) {
+            }
         }
     }
 
     private BufferedImage bi;
-    private Image image;
 
     private BufferedImage fitDocument() {
-        if (null != document) {
-            int w = (int) document.getPageDimension(pageNumber, 0, scale).toDimension().getWidth();
-            int h = (int) document.getPageDimension(pageNumber, 0, scale).toDimension().getHeight();
+        bi = null;
 
-            int quality;
-            if (Settings.getSettings().getRenderImageQuality() == Image.SCALE_FAST) {
-                quality = Image.SCALE_FAST;
+        if (null != pdfDocument) {
+            status = Status.RENDERING;
+            Method method;
+            if (Settings.getSettings().getRenderImageQuality() == 3) {
+                method = Scalr.Method.QUALITY;
+            } else if (Settings.getSettings().getRenderImageQuality() == 1) {
+                method = Scalr.Method.SPEED;
             } else {
-                quality = Image.SCALE_SMOOTH;
+                method = Scalr.Method.BALANCED;
             }
-
-            image = document.getPageImage(pageNumber, GraphicsRenderingHints.PRINT, Page.BOUNDARY_CROPBOX, 0f, quality).getScaledInstance(w, h, quality);
-            bi = new BufferedImage(w, h, BufferedImage.SCALE_FAST);
-
-            Graphics2D g2d = bi.createGraphics();
-            g2d.drawImage(image, 0, 0, null);
-            g2d.dispose();
-
-            return bi;
+            if (null != imgs[pageNumber]) {
+                try {
+                    bi = Scalr.resize(imgs[pageNumber], method, (int) (pdfDocument.getPage(pageNumber).getCropBox().getWidth() * scale), (int) (pdfDocument.getPage(pageNumber).getCropBox().getHeight() * scale));
+                    refreshSignatureValidationListPanels();
+                    status = Status.READY;
+                    return bi;
+                } catch (Exception e) {
+                    status = Status.READY;
+                }
+            }
         }
         return null;
     }
 
     public int getPageNumber() {
         return pageNumber;
+    }
+
+    public Status getStatus() {
+        return status;
     }
 }

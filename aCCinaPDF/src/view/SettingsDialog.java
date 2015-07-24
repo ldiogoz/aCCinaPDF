@@ -21,8 +21,7 @@ package view;
 
 import com.itextpdf.text.pdf.PdfWriter;
 import controller.Logger;
-import controller.Settings;
-import java.awt.Image;
+import model.Settings;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -83,14 +82,17 @@ public class SettingsDialog extends javax.swing.JDialog {
         }
 
         switch (Integer.valueOf(renderQuality)) {
-            case Image.SCALE_FAST:
+            case 3:
+                jComboBox2.setSelectedIndex(0);
+                break;
+            case 2:
                 jComboBox2.setSelectedIndex(1);
                 break;
-            case Image.SCALE_SMOOTH:
-                jComboBox2.setSelectedIndex(0);
+            case 1:
+                jComboBox2.setSelectedIndex(2);
                 break;
             default:
-                jComboBox2.setSelectedIndex(0);
+                jComboBox2.setSelectedIndex(1);
         }
 
         switch (pdfVersion) {
@@ -210,16 +212,15 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6)
+                            .addComponent(jLabel2))
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(jLabel2)
-                                .addGap(22, 22, 22))
+                                .addGap(18, 18, 18)
+                                .addComponent(tfHeight))
                             .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addComponent(jLabel6)
-                                .addGap(57, 57, 57)))
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                            .addComponent(tfPrefix)
-                            .addComponent(tfHeight, javax.swing.GroupLayout.PREFERRED_SIZE, 145, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
+                                .addComponent(tfPrefix)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel4))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
@@ -253,7 +254,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         jLabel7.setText("Qualidade da renderização PDF:");
         jLabel7.setToolTipText("Qualidade com que é renderizado(mostrado) o PDF. Em computadores de baixa performance, deve ser usada a qualidade Baixa");
 
-        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Alta", "Baixa" }));
+        jComboBox2.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Alta", "Média", "Baixa" }));
         jComboBox2.setToolTipText("Qualidade com que é renderizado(mostrado) o PDF. Em computadores de baixa performance, deve ser usada a qualidade Baixa");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -264,7 +265,11 @@ public class SettingsDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel7)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jComboBox2, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
@@ -274,11 +279,7 @@ public class SettingsDialog extends javax.swing.JDialog {
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(jLabel7)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jComboBox2, javax.swing.GroupLayout.PREFERRED_SIZE, 127, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, 240, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -328,7 +329,7 @@ public class SettingsDialog extends javax.swing.JDialog {
         }
 
         int renderQualitySel = jComboBox2.getSelectedIndex();
-
+        
         try {
             Properties propertiesWrite;
             try (FileInputStream in = new FileInputStream("aCCinaPDF.cfg")) {
@@ -338,11 +339,14 @@ public class SettingsDialog extends javax.swing.JDialog {
             File file = new File("aCCinaPDF.cfg");
             FileOutputStream fileOut;
             if (renderQualitySel == 0) {
-                Settings.getSettings().setRenderImageQuality(Image.SCALE_SMOOTH);
-                propertiesWrite.setProperty("renderQuality", String.valueOf(Image.SCALE_SMOOTH));
+                Settings.getSettings().setRenderImageQuality(2);
+                propertiesWrite.setProperty("renderQuality", String.valueOf(3));
             } else if (renderQualitySel == 1) {
-                Settings.getSettings().setRenderImageQuality(Image.SCALE_FAST);
-                propertiesWrite.setProperty("renderQuality", String.valueOf(Image.SCALE_FAST));
+                Settings.getSettings().setRenderImageQuality(1);
+                propertiesWrite.setProperty("renderQuality", String.valueOf(2));
+            } else if (renderQualitySel == 2) {
+                Settings.getSettings().setRenderImageQuality(0);
+                propertiesWrite.setProperty("renderQuality", String.valueOf(1));
             }
             propertiesWrite.setProperty("prefix", tfPrefix.getText());
             propertiesWrite.setProperty("pdfversion", String.valueOf(jComboBox1.getSelectedItem()));

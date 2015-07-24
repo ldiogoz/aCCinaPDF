@@ -19,6 +19,7 @@
  */
 package controller;
 
+import model.Settings;
 import accinapdf.ACCinaPDF;
 import com.itextpdf.text.BaseColor;
 import model.CCSignatureSettings;

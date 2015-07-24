@@ -113,9 +113,10 @@ public final class Signature extends JPanel {
         startGlowingEffect();
     }
 
-    public void showSize(boolean b) {
-        if (b) {
-            lblText.setText("[" + getWidth() + ", " + getHeight() + "]");
+    public void showSize(boolean show) {
+        if (show) {
+            Dimension dimension = getScaledSizeOnDocument();
+            lblText.setText("[" + (int) dimension.getWidth() + ", " + (int) dimension.getHeight() + "]");
         } else {
             if (getWidth() >= 125 && getHeight() >= 25) {
                 lblText.setText("<html>Arraste ou aumente</html>");

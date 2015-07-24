@@ -183,7 +183,13 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             lblTip.setVisible(false);
             this.document = document;
             imagePanel.setDocumentAndComponents(mainWindow, jsImagePanel, document, btnPageBackward, btnPageForward);
-            jsPageNumber.setModel(new SpinnerNumberModel(1, 1, document.getNumberOfPages(), 1));
+            
+        }
+        jSplitPane1.setDividerSize(0);
+    }
+    
+    public void showPanelComponents(){
+        jsPageNumber.setModel(new SpinnerNumberModel(1, 1, document.getNumberOfPages(), 1));
             btnZoomIn.setEnabled(true);
             btnZoomOut.setEnabled(true);
             topToolbar.setVisible(true);
@@ -206,8 +212,6 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             } catch (IOException ex) {
                 controller.Logger.getLogger().addEntry(ex);
             }
-        }
-        jSplitPane1.setDividerSize(0);
     }
 
     public void changeCard(CardEnum ce, boolean clear) {
@@ -215,7 +219,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             return;
         }
 
-        if (status.equals(Status.SIGNING)) {
+        if (status.equals(Status.SIGNING) || imagePanel.getStatus().equals(ImagePanel.Status.RENDERING)) {
             return;
         }
 
@@ -1945,7 +1949,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 Dimension d = tempSignature.getScaledSizeOnDocument();
                 float p1 = (float) p.getX();
                 float p3 = (float) d.getWidth() + p1;
-                float p2 = (float) ((document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight()) - (p.getY() + d.getHeight()));
+                float p2 = (float) ((document.getPageDimension(imagePanel.getPageNumber(), 0).getHeight()) - (p.getY() + d.getHeight()));
                 float p4 = (float) d.getHeight() + p2;
 
                 signatureSettings.setVisibleSignature(true);
