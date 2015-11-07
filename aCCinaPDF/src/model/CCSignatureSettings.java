@@ -21,6 +21,7 @@ package model;
 
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
+import controller.CCInstance;
 import java.awt.Color;
 import java.awt.Image;
 import java.io.File;
@@ -28,6 +29,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +62,7 @@ public final class CCSignatureSettings {
     private static final String SETTINGS_FILE = "aCCinaPDF.cfg";
 
     public CCSignatureSettings(boolean forceCreateConfigFile) {
+        CCInstance.newIstance();
         appearance = new AppearanceSettings();
         if (!new File(SETTINGS_FILE).exists() || forceCreateConfigFile) {
             if (!new File(SETTINGS_FILE).exists()) {
@@ -84,6 +89,32 @@ public final class CCSignatureSettings {
                 new File(SETTINGS_FILE).delete();
                 createConfigFile();
                 return;
+            }
+
+            String keystoreStr = getConfigParameter("keystore");
+            if (keystoreStr == null) {
+                CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
+                Settings.getSettings().setKeystorePath(null);
+            } else {
+                KeyStore ks = isValidKeystore(new File(keystoreStr));
+                if (ks == null) {
+                    CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
+                    Properties properties = new Properties();
+                    String configFile = "aCCinaPDF.cfg";
+                    properties.load(new FileInputStream(configFile));
+                    properties.remove("keystore");
+                    Settings.getSettings().setKeystorePath(null);
+                    JOptionPane.showMessageDialog(null, "O caminho da KeyStore indicado no ficheiro de configuração não corresponde a um ficheiro KeyStore válido!\nA usar a KeyStore padrão.", "", JOptionPane.WARNING_MESSAGE);
+                    try {
+                        FileOutputStream fileOut = new FileOutputStream(configFile);
+                        properties.store(fileOut, "Settings");
+                        fileOut.close();
+                    } catch (IOException ex) {
+                    }
+                } else {
+                    CCInstance.getInstance().setKeystore(ks);
+                    Settings.getSettings().setKeystorePath(keystoreStr);
+                }
             }
 
             Settings.getSettings().setPdfVersion(pdfVersionStr);
@@ -137,6 +168,7 @@ public final class CCSignatureSettings {
     private void loadDefaults() {
         Settings.getSettings().setPdfVersion("/1.7");
         Settings.getSettings().setRenderImageQuality(Image.SCALE_SMOOTH);
+        CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
         setPrefix("aCCinatura");
         appearance.setBold(false);
         appearance.setItalic(true);
@@ -150,6 +182,31 @@ public final class CCSignatureSettings {
 
         if (!createdNewSettings) {
             JOptionPane.showMessageDialog(null, "O ficheiro de configurações está corrompido ou pertence a uma versão antiga\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+
+    private KeyStore isValidKeystore(File file) {
+        FileInputStream is = null;
+        try {
+            is = new FileInputStream(file);
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            ks.load(is, null);
+            if (ks.aliases().hasMoreElements()) {
+                return ks;
+            } else {
+                return ks;
+            }
+        } catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException | FileNotFoundException e) {
+            return null;
+        } catch (IOException e) {
+            return null;
+        } finally {
+            if (null != is) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                }
+            }
         }
     }
 
@@ -167,6 +224,14 @@ public final class CCSignatureSettings {
         propertiesRead.load(new FileInputStream(configFile));
         String value = propertiesRead.getProperty(parameter);
         return value;
+    }
+
+    public boolean isCreatedNewSettings() {
+        return createdNewSettings;
+    }
+
+    public void setCreatedNewSettings(boolean createdNewSettings) {
+        this.createdNewSettings = createdNewSettings;
     }
 
     public AppearanceSettings getAppearance() {

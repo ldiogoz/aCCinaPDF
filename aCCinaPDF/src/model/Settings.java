@@ -23,9 +23,18 @@ public class Settings {
 
     private int renderImageQuality = 2;
     private String pdfVersion = "/1.7";
+    private String keystorePath;
 
     public String getPdfVersion() {
         return pdfVersion;
+    }
+
+    public String getKeystorePath() {
+        return keystorePath;
+    }
+
+    public void setKeystorePath(String keystorePath) {
+        this.keystorePath = keystorePath;
     }
 
     public void setPdfVersion(String pdfVersion) {

@@ -177,14 +177,15 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         } else {
             lblRevision.setText("<html><u>" + sv.getRevision() + " de " + sv.getNumRevisions() + " (Clique para extrair a revisão)</u></html>");
             final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("Z");
             if (sv.getSignature().getTimeStampToken() == null) {
                 Calendar cal = sv.getSignature().getSignDate();
                 String date = df.format(cal.getTime());
-                lblDate.setText(date + " (hora do computador do signatário)");
+                lblDate.setText(date + " " + sdf.format(cal.getTime()) + " (hora do computador do signatário)");
             } else {
                 Calendar ts = sv.getSignature().getTimeStampDate();
                 String date = df.format(ts.getTime());
-                lblDate.setText(date + " +" + (ts.getTimeZone().getRawOffset() < 10 ? "0" : "") + ts.getTimeZone().getRawOffset());
+                lblDate.setText(date + " " + sdf.format(ts.getTime()));
             }
             boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);
             lblLTV.setText(ltv ? "Sim" : "Não");
@@ -683,8 +684,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         } else {
             sv = (SignatureValidation) dtn.getUserObject();
         }
-        X509Certificate x509c = sv.getSignature().getSigningCertificate();
-        CertificatePropertiesDialog cpd = new CertificatePropertiesDialog((MainWindow) this.getParent(), true, x509c);
+        CertificatePropertiesDialog cpd = new CertificatePropertiesDialog((MainWindow) this.getParent(), true, sv.getSignature().getSignCertificateChain());
         cpd.setLocationRelativeTo(null);
         cpd.setVisible(true);
     }//GEN-LAST:event_jButton1ActionPerformed
@@ -791,14 +791,15 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     toWrite += "Revisão: " + sv.getRevision() + " de " + sv.getNumRevisions();
                     toWrite += newLine + "\t\t";
                     final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    final SimpleDateFormat sdf = new SimpleDateFormat("Z");
                     if (sv.getSignature().getTimeStampToken() == null) {
                         Calendar cal = sv.getSignature().getSignDate();
                         String date = df.format(cal.getTime());
-                        toWrite += (date + " (hora do computador do signatário)");
+                        toWrite += (date + " " + sdf.format(cal.getTime()) + " (hora do computador do signatário)");
                     } else {
                         Calendar ts = sv.getSignature().getTimeStampDate();
                         String date = df.format(ts.getTime());
-                        toWrite += "Data: " + (date + " +" + (ts.getTimeZone().getRawOffset() < 10 ? "0" : "") + ts.getTimeZone().getRawOffset());
+                        toWrite += "Data: " + date + " " + sdf.format(ts.getTime());
                     }
                     toWrite += newLine + "\t\t";
                     boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);

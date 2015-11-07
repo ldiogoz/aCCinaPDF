@@ -52,7 +52,7 @@ public class ImagePanel extends JPanel {
     private PDDocument pdfDocument;
     private PDFRenderer pdfRenderer;
     private String documentLocation;
-    private int pageNumber;
+    private int pageNumber, numberOfPages;
     private float scale;
 
     private JScrollPane parent;
@@ -105,7 +105,7 @@ public class ImagePanel extends JPanel {
         refreshSignatureValidationListPanels();
     }
 
-    private BufferedImage imgs[];
+    private BufferedImage buf;
 
     public void setDocumentAndComponents(final MainWindow mainWindow, JScrollPane parent, Document document, final JButton btnBackward, final JButton btnForward) {
         this.mainWindow = mainWindow;
@@ -114,9 +114,14 @@ public class ImagePanel extends JPanel {
             this.documentLocation = document.getDocumentLocation();
             this.pdfDocument = PDDocument.load(new File(documentLocation));
             this.pdfRenderer = new PDFRenderer(pdfDocument);
+            numberOfPages = pdfDocument.getPages().getCount();
 
-            imgs = new BufferedImage[pdfDocument.getPages().getCount()];
-            final int pages = pdfDocument.getPages().getCount();
+            if (buf != null) {
+                buf.flush();
+                buf = null;
+            }
+
+            System.gc();
 
             Runnable r = new Runnable() {
 
@@ -134,7 +139,7 @@ public class ImagePanel extends JPanel {
                     add(lblDocName);
                     lblDocName.setVisible(true);
                     try {
-                        imgs[0] = pdfRenderer.renderImage(0, 2f, ImageType.RGB);
+                        buf = pdfRenderer.renderImage(0, 2f, ImageType.RGB);
                         mainWindow.getWorkspacePanel().showPanelComponents();
                         status = Status.READY;
                     } catch (IOException ex) {
@@ -142,16 +147,6 @@ public class ImagePanel extends JPanel {
                     }
                     refreshParent();
                     refreshTitle();
-
-                    if (pages > 1) {
-                        for (int i = 1; i < pages; i++) {
-                            try {
-                                imgs[i] = pdfRenderer.renderImage(i, 2f, ImageType.RGB);
-                            } catch (Exception e) {
-                                break;
-                            }
-                        }
-                    }
                 }
             };
 
@@ -175,7 +170,7 @@ public class ImagePanel extends JPanel {
             remove(jp);
         }
 
-        if (imgs[pageNumber] == null) {
+        if (buf == null) {
             return;
         }
 
@@ -302,7 +297,7 @@ public class ImagePanel extends JPanel {
     public boolean setPageNumberControl(DocumentPageControl dpc) {
         boolean changed = false;
         if (dpc.equals(DocumentPageControl.PAGE_UP)) {
-            if (null != pdfDocument && pageNumber < (pdfDocument.getPages().getCount() - 1)) {
+            if (null != pdfDocument && pageNumber < (numberOfPages - 1)) {
                 pageNumber++;
                 changed = true;
                 refreshSignatureValidationListPanels();
@@ -317,10 +312,10 @@ public class ImagePanel extends JPanel {
 
         if (0 == pageNumber) {
             btnPageBackward.setEnabled(false);
-            if (pdfDocument.getPages().getCount() > 1) {
+            if (numberOfPages > 1) {
                 btnPageForward.setEnabled(true);
             }
-        } else if (pdfDocument.getPages().getCount() == (pageNumber + 1)) {
+        } else if (numberOfPages == (pageNumber + 1)) {
             btnPageBackward.setEnabled(true);
             btnPageForward.setEnabled(false);
         } else {
@@ -334,9 +329,27 @@ public class ImagePanel extends JPanel {
 
     public void setPageNumber(int pageNumber) {
         this.pageNumber = pageNumber;
+        render();
         refreshParent();
         refreshTitle();
         refreshSignatureValidationListPanels();
+    }
+
+    private void render() {
+        buf = null;
+        Runnable r = new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    buf = pdfRenderer.renderImage(pageNumber, 2f, ImageType.RGB);
+                } catch (IOException ex) {
+                }
+            }
+        };
+
+        Thread t = new Thread(r);
+        t.start();
     }
 
     private void refreshParent() {
@@ -356,7 +369,7 @@ public class ImagePanel extends JPanel {
     }
 
     private void refreshTitle() {
-        mainWindow.setTitle("aCCinaPDF - " + documentLocation + " - Página " + (pageNumber + 1) + " de " + pdfDocument.getPages().getCount());
+        mainWindow.setTitle("aCCinaPDF - " + documentLocation + " - Página " + (pageNumber + 1) + " de " + numberOfPages);
     }
 
     public Point getImageLocation() {
@@ -387,7 +400,6 @@ public class ImagePanel extends JPanel {
                 g.drawImage(bi, p.x, p.y, this);
                 g.setColor(Color.LIGHT_GRAY);
                 g.drawRect(p.x, p.y, bi.getWidth(), bi.getHeight());
-                bi.flush();
             } catch (Exception e) {
             }
         }
@@ -408,16 +420,16 @@ public class ImagePanel extends JPanel {
             } else {
                 method = Scalr.Method.BALANCED;
             }
-            if (null != imgs[pageNumber]) {
-                try {
-                    bi = Scalr.resize(imgs[pageNumber], method, (int) (pdfDocument.getPage(pageNumber).getCropBox().getWidth() * scale), (int) (pdfDocument.getPage(pageNumber).getCropBox().getHeight() * scale));
-                    refreshSignatureValidationListPanels();
-                    status = Status.READY;
-                    return bi;
-                } catch (Exception e) {
-                    status = Status.READY;
-                }
+            try {
+                bi = Scalr.resize(buf, method, (int) (pdfDocument.getPage(pageNumber).getCropBox().getWidth() * scale), (int) (pdfDocument.getPage(pageNumber).getCropBox().getHeight() * scale));
+                refreshSignatureValidationListPanels();
+                status = Status.READY;
+                System.gc();
+                return bi;
+            } catch (Exception e) {
+                status = Status.READY;
             }
+
         }
         return null;
     }

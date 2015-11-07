@@ -20,6 +20,7 @@
 package view;
 
 import com.itextpdf.text.pdf.PdfReader;
+import controller.CCInstance;
 import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
@@ -82,6 +83,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
      */
     public MainWindow() {
         initComponents();
+
         List<Image> icons = new ArrayList<>();
         icons.add(new ImageIcon(getClass().getResource("/image/aCCinaPDF_logo_icon32.png")).getImage());
         this.setIconImages(icons);
@@ -485,6 +487,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
+        jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenu4 = new javax.swing.JMenu();
         jMenuItem6 = new javax.swing.JMenuItem();
@@ -694,6 +697,14 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jMenuBar1.add(jMenu1);
 
         jMenu3.setText("Opções");
+
+        jMenuItem5.setText("Gestão de Certificados");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
+        jMenu3.add(jMenuItem5);
 
         jMenuItem3.setText("Preferências");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
@@ -1072,6 +1083,12 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         JOptionPane.showMessageDialog(this, msg, "Teclas de Atalho", JOptionPane.INFORMATION_MESSAGE);
     }//GEN-LAST:event_jMenuItem7ActionPerformed
 
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        CertificateManagementDialog cmd = new CertificateManagementDialog(this, true);
+        cmd.setLocationRelativeTo(null);
+        cmd.setVisible(true);
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
+
     private LoadingDialog loadingDialog;
 
     public LoadingDialog getLoadingDialog() {
@@ -1119,6 +1136,12 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
     private ArrayList<File> getMultipleSelectedFiles(JTree jtree) {
         ArrayList<File> aLSelectedFiles = new ArrayList<>();
+        if (jtree == null) {
+            return aLSelectedFiles;
+        }
+        if (jtree.getSelectionPath() == null) {
+            return aLSelectedFiles;
+        }
         for (TreePath tp : jtree.getSelectionPaths()) {
             String strSelectedFile = "";
             Object[] paths = tp.getPath();
@@ -1181,6 +1204,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JMenuItem jMenuItem8;

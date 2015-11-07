@@ -280,12 +280,12 @@ public class CCInstance {
         return null;
     }
 
-    public final Certificate[] getCompleteCertificateChain(final X509Certificate x509c) throws KeyStoreException, IOException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidAlgorithmParameterException {
-        final ArrayList<X509Certificate> certChainList = new ArrayList<X509Certificate>();
+    public final Certificate[] getCompleteTrustedCertificateChain(final X509Certificate x509c) throws KeyStoreException, IOException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidAlgorithmParameterException {
+        final ArrayList<X509Certificate> certChainList = new ArrayList<>();
         certChainList.add(x509c);
         X509Certificate temp = x509c;
         while (true) {
-            X509Certificate issuer = (X509Certificate) hasTrustedCertificate(temp);
+            X509Certificate issuer = (X509Certificate) hasTrustedIssuerCertificate(temp);
             if (null != issuer) {
                 if (temp.equals(issuer)) {
                     break;
@@ -349,7 +349,7 @@ public class CCInstance {
 
         final X509Certificate X509C = ((X509Certificate) owner);
         final Calendar now = Calendar.getInstance();
-        certChain = getCompleteCertificateChain(X509C);
+        certChain = getCompleteTrustedCertificateChain(X509C);
 
         // Leitor e Stamper
         FileOutputStream os = null;
@@ -569,7 +569,10 @@ public class CCInstance {
             final Certificate pkc[] = pk.getCertificates();
             x509c = (X509Certificate) pkc[pkc.length - 1];
 
-            final Certificate[] aL = getCompleteCertificateChain(x509c);
+            System.out.println("Chain: " + pkc.length);
+
+            final Certificate[] aL = pkc;//getCompleteCertificateChain(x509c);
+
             if (null == aL || 0 == aL.length) {
                 return null;
             }
@@ -609,7 +612,7 @@ public class CCInstance {
 
             if (ocspCertificateStatus.equals(CertificateStatus.UNCHECKED) && crlCertificateStatus.equals(CertificateStatus.UNCHECKED)) {
                 if (pkc.length == 1) {
-                    Certificate[] completeChain = getCompleteCertificateChain(x509c);
+                    Certificate[] completeChain = getCompleteTrustedCertificateChain(x509c);
                     if (completeChain.length == 1) {
                         ocspCertificateStatus = CertificateStatus.UNCHAINED;
                     } else {
@@ -682,23 +685,55 @@ public class CCInstance {
         return null;
     }
 
-    private Certificate hasTrustedCertificate(final X509Certificate x509c) throws KeyStoreException, IOException, FileNotFoundException, NoSuchAlgorithmException, CertificateException, InvalidAlgorithmParameterException {
-        final InputStream fis = CCInstance.class.getResourceAsStream(KEYSTORE_PATH);
-        final KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-        keystore.load(fis, null);
+    private KeyStore defaultKs;
+
+    public KeyStore getDefaultKeystore() {
+        if (null == defaultKs) {
+            final InputStream fis = CCInstance.class.getResourceAsStream(KEYSTORE_PATH);
+            defaultKs = null;
+            try {
+                defaultKs = KeyStore.getInstance(KeyStore.getDefaultType());
+                defaultKs.load(fis, null);
+            } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException ex) {
+            }
+        }
+        return defaultKs;
+    }
+
+    public KeyStore getKeystore() {
+        return this.ks;
+    }
+
+    public void setKeystore(KeyStore ks) {
+        this.ks = ks;
+    }
+
+    public ArrayList<Certificate> getTrustedCertificatesFromKeystore(KeyStore keystore) throws KeyStoreException, IOException, NoSuchAlgorithmException, CertificateException, InvalidAlgorithmParameterException {
 
         final PKIXParameters params = new PKIXParameters(keystore);
-        final ArrayList<Certificate> trustedCertList = new ArrayList<>();
+        final ArrayList<Certificate> alTrustedCertificates = new ArrayList<>();
 
         for (final TrustAnchor ta : params.getTrustAnchors()) {
             Certificate cert = (Certificate) ta.getTrustedCert();
-            trustedCertList.add(cert);
+            alTrustedCertificates.add(cert);
         }
 
-        if (trustedCertList.isEmpty()) {
+        return alTrustedCertificates;
+    }
+
+    public Certificate hasTrustedIssuerCertificate(final X509Certificate x509c) {
+        ArrayList<Certificate> alTrustedCertificates;
+        try {
+            alTrustedCertificates = getTrustedCertificatesFromKeystore(getKeystore());
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | InvalidAlgorithmParameterException ex) {
             return null;
         }
-        for (final Certificate c : trustedCertList) {
+
+        if (alTrustedCertificates.isEmpty()) {
+            return null;
+        }
+
+        for (final Certificate c : alTrustedCertificates) {
             try {
                 final X509Certificate x509cc = (X509Certificate) c;
                 if (x509c.getIssuerX500Principal().equals(x509cc.getSubjectX500Principal())) {
@@ -709,6 +744,31 @@ public class CCInstance {
             }
         }
         return null;
+    }
+
+    public boolean isTrustedCertificate(final X509Certificate x509c) {
+        ArrayList<Certificate> alTrustedCertificates;
+        try {
+            alTrustedCertificates = getTrustedCertificatesFromKeystore(getKeystore());
+        } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | InvalidAlgorithmParameterException ex) {
+            return false;
+        }
+
+        if (alTrustedCertificates.isEmpty()) {
+            return false;
+        }
+
+        for (final Certificate c : alTrustedCertificates) {
+            try {
+                final X509Certificate x509cc = (X509Certificate) c;
+                if (x509c.getSubjectX500Principal().equals(x509cc.getSubjectX500Principal())) {
+                    return true;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+        }
+        return false;
     }
 
     public final String getCurrentFolder() {

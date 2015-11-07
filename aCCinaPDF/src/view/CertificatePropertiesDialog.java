@@ -95,12 +95,43 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
 
         Certificate[] certificateChain = null;
         try {
-            certificateChain = CCInstance.getInstance().getCompleteCertificateChain(x509certificate);
+            certificateChain = CCInstance.getInstance().getCompleteTrustedCertificateChain(x509certificate);
         } catch (KeyStoreException | IOException | NoSuchAlgorithmException | CertificateException | InvalidAlgorithmParameterException ex) {
             Logger.getLogger(CertificatePropertiesDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
         setupTree(certificateChain);
         setCertificateProperties(x509certificate);
+        jTree1.setSelectionRow(jTree1.getRowCount() - 1);
+        lastSelectedRow = (jTree1.getRowCount() - 1);
+    }
+
+    /**
+     * Creates new form CertificatePropertiesDialog
+     *
+     * @param parent
+     * @param modal
+     * @param certificateChain
+     * @param index
+     */
+    public CertificatePropertiesDialog(java.awt.Frame parent, boolean modal, Certificate[] certificateChain) {
+        super(parent, modal);
+        this.parent = parent;
+        initComponents();
+
+        jTextField1.setEditable(false);
+        jTextField2.setEditable(false);
+        jTextField3.setEditable(false);
+        jTextField4.setEditable(false);
+        jTextField5.setEditable(false);
+        jTextField6.setEditable(false);
+        jTextField7.setEditable(false);
+        jTextField9.setEditable(false);
+        jTextField10.setEditable(false);
+        jTextField11.setEditable(false);
+        jTextField12.setEditable(false);
+
+        setupTree(certificateChain);
+        setCertificateProperties((X509Certificate) certificateChain[0]);
         jTree1.setSelectionRow(jTree1.getRowCount() - 1);
         lastSelectedRow = (jTree1.getRowCount() - 1);
     }
@@ -236,8 +267,27 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
             if (certificateChain.length > 0) {
                 DefaultMutableTreeNode dmtn[] = new DefaultMutableTreeNode[certificateChain.length];
 
+                boolean needCheck = true;
                 for (int i = (certificateChain.length - 1); i >= 0; i--) {
-                    dmtn[i] = new DefaultMutableTreeNode(getCertificateCN(certificateChain[i]));
+                    if (!needCheck) {
+                        dmtn[i] = new DefaultMutableTreeNode(getCertificateCN(certificateChain[i]));
+                        if (i < (certificateChain.length - 1)) {
+                            dmtn[i + 1].add(dmtn[i]);
+                        }
+                        certChainList.add((X509Certificate) certificateChain[i]);
+                        continue;
+                    }
+                    if (CCInstance.getInstance().isTrustedCertificate((X509Certificate) certificateChain[i])) {
+                        dmtn[i] = new DefaultMutableTreeNode(getCertificateCN(certificateChain[i]));
+                        needCheck = false;
+                    } else {
+                        if (CCInstance.getInstance().hasTrustedIssuerCertificate((X509Certificate) certificateChain[i]) != null) {
+                            dmtn[i] = new DefaultMutableTreeNode(getCertificateCN(certificateChain[i]));
+                        } else {
+                            dmtn[i] = new DefaultMutableTreeNode("(!)" + getCertificateCN(certificateChain[i]));
+
+                        }
+                    }
                     if (i < (certificateChain.length - 1)) {
                         dmtn[i + 1].add(dmtn[i]);
                     }
@@ -685,7 +735,7 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                CertificatePropertiesDialog dialog = new CertificatePropertiesDialog(new javax.swing.JFrame(), true, null);
+                CertificatePropertiesDialog dialog = new CertificatePropertiesDialog(new javax.swing.JFrame(), true, (X509Certificate) null);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                     @Override
                     public void windowClosing(java.awt.event.WindowEvent e) {

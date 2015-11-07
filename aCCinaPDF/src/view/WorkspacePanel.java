@@ -183,35 +183,35 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             lblTip.setVisible(false);
             this.document = document;
             imagePanel.setDocumentAndComponents(mainWindow, jsImagePanel, document, btnPageBackward, btnPageForward);
-            
+
         }
         jSplitPane1.setDividerSize(0);
     }
-    
-    public void showPanelComponents(){
-        jsPageNumber.setModel(new SpinnerNumberModel(1, 1, document.getNumberOfPages(), 1));
-            btnZoomIn.setEnabled(true);
-            btnZoomOut.setEnabled(true);
-            topToolbar.setVisible(true);
-            lblTotalPageNumber.setText(" de " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
-            bottomToolbar.setVisible(true);
-            status = Status.READY;
-            btnPageBackward.setEnabled(false);
-            btnPageForward.setEnabled(document.getNumberOfPages() != 1);
-            removeTempSignature();
-            hideRightPanel();
-            int numSigs = CCInstance.getInstance().getNumberOfSignatures(document.getDocumentLocation());
-            if (numSigs > 0) {
-                startValidationThread();
-            }
 
-            try {
-                boolean permiteAlteracoes = CCInstance.getInstance().getCertificationLevel(document.getDocumentLocation()) != PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED;
-                btnSign.setEnabled(permiteAlteracoes);
-                btnSign.setToolTipText((permiteAlteracoes ? "Assinar" : "O documento está certificado não permite alterações"));
-            } catch (IOException ex) {
-                controller.Logger.getLogger().addEntry(ex);
-            }
+    public void showPanelComponents() {
+        jsPageNumber.setModel(new SpinnerNumberModel(1, 1, document.getNumberOfPages(), 1));
+        btnZoomIn.setEnabled(true);
+        btnZoomOut.setEnabled(true);
+        topToolbar.setVisible(true);
+        lblTotalPageNumber.setText(" de " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
+        bottomToolbar.setVisible(true);
+        status = Status.READY;
+        btnPageBackward.setEnabled(false);
+        btnPageForward.setEnabled(document.getNumberOfPages() != 1);
+        removeTempSignature();
+        hideRightPanel();
+        int numSigs = CCInstance.getInstance().getNumberOfSignatures(document.getDocumentLocation());
+        if (numSigs > 0) {
+            startValidationThread();
+        }
+
+        try {
+            boolean permiteAlteracoes = CCInstance.getInstance().getCertificationLevel(document.getDocumentLocation()) != PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED;
+            btnSign.setEnabled(permiteAlteracoes);
+            btnSign.setToolTipText((permiteAlteracoes ? "Assinar" : "O documento está certificado não permite alterações"));
+        } catch (IOException ex) {
+            controller.Logger.getLogger().addEntry(ex);
+        }
     }
 
     public void changeCard(CardEnum ce, boolean clear) {
@@ -1756,8 +1756,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         } else {
             sv = (SignatureValidation) dtn.getUserObject();
         }
-        X509Certificate x509c = sv.getSignature().getSigningCertificate();
-        CertificatePropertiesDialog cpd = new CertificatePropertiesDialog(mainWindow, true, x509c);
+        CertificatePropertiesDialog cpd = new CertificatePropertiesDialog(mainWindow, true, sv.getSignature().getSignCertificateChain());
         cpd.setLocationRelativeTo(null);
         cpd.setVisible(true);
     }//GEN-LAST:event_btnCheckCertificateActionPerformed
@@ -1792,14 +1791,15 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         } else {
             lblRevision.setText("<html><u>" + sv.getRevision() + " de " + sv.getNumRevisions() + " (Clique para extrair a revisão)</u></html>");
             final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("Z");
             if (sv.getSignature().getTimeStampToken() == null) {
                 Calendar cal = sv.getSignature().getSignDate();
                 String date = df.format(cal.getTime());
-                lblDate.setText(date + " (hora do computador do signatário)");
+                lblDate.setText(date + " " + sdf.format(cal.getTime()) + " (hora do computador do signatário)");
             } else {
                 Calendar ts = sv.getSignature().getTimeStampDate();
                 String date = df.format(ts.getTime());
-                lblDate.setText(date + " +" + (ts.getTimeZone().getRawOffset() < 10 ? "0" : "") + ts.getTimeZone().getRawOffset());
+                lblDate.setText(date + " " + sdf.format(ts.getTime()));
             }
             boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);
             lblLTV.setText(ltv ? "Sim" : "Não");
