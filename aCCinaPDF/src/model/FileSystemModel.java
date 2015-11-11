@@ -22,6 +22,7 @@ package model;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import javax.swing.event.TreeModelEvent;
@@ -98,14 +99,16 @@ public class FileSystemModel implements TreeModel {
         Comparator<String> strCompare = new Comparator<String>() {
             @Override
             public int compare(String str1, String str2) {
-                return str1.compareTo(str2);
+                return str1.toLowerCase().compareTo(str2.toLowerCase());
             }
         };
         if (!folders.isEmpty()) {
-            folders.sort(strCompare);
+            //folders.sort(strCompare);
+            Collections.sort(folders, strCompare);
         }
         if (!files.isEmpty()) {
-            files.sort(strCompare);
+            //files.sort(strCompare);
+            Collections.sort(files, strCompare);
         }
 
         int len = folders.size() + files.size();
