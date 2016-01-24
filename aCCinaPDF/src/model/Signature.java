@@ -19,6 +19,7 @@
  */
 package model;
 
+import controller.Bundle;
 import view.ImagePanel;
 import controller.SignatureHandler;
 import java.awt.Color;
@@ -106,7 +107,7 @@ public final class Signature extends JPanel {
         lblImage.setLocation(0, 0);
         lblText.setLocation(0, 0);
         lblImage.setSize(this.getSize());
-        lblText.setText("<html>Arraste ou aumente</html>");
+        lblText.setText("<html>" + Bundle.getBundle().getString("dragOrZoom") + "</html>");
         lblText.setVisible(true);
         setBackground(Color.BLACK);
 
@@ -119,7 +120,7 @@ public final class Signature extends JPanel {
             lblText.setText("[" + (int) dimension.getWidth() + ", " + (int) dimension.getHeight() + "]");
         } else {
             if (getWidth() >= 125 && getHeight() >= 25) {
-                lblText.setText("<html>Arraste ou aumente</html>");
+                lblText.setText("<html>" + Bundle.getBundle().getString("dragOrZoom") + "</html>");
             } else {
                 lblText.setText("« + »");
             }

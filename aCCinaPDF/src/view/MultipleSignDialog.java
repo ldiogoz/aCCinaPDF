@@ -20,6 +20,7 @@
 package view;
 
 import com.itextpdf.text.DocumentException;
+import controller.Bundle;
 import controller.CCInstance;
 import exception.SignatureFailedException;
 import java.io.File;
@@ -35,6 +36,7 @@ import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import listener.SignatureListener;
 import model.CCSignatureSettings;
+import org.apache.commons.lang3.text.WordUtils;
 
 /**
  *
@@ -57,16 +59,18 @@ public class MultipleSignDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
+        updateText();
+
         jProgressBar1.setMinimum(0);
         jProgressBar1.setMaximum(alFiles.size());
-        jProgressBar1.setString("Assinados: 0 de " + alFiles.size());
+        jProgressBar1.setString(Bundle.getBundle().getString("pb.signed") + ": 0 " + Bundle.getBundle().getString("of") + alFiles.size());
 
         final DefaultTableModel dtm = (DefaultTableModel) jTable1.getModel();
         final SignatureListener sl = new SignatureListener() {
 
             @Override
             public void onSignatureComplete(String filename, boolean valid, String message) {
-                dtm.addRow(new Object[]{filename, (valid ? "Assinatura aplicada com sucesso" : "Assinatura falhou") + (message.isEmpty() ? "" : " - " + message)});
+                dtm.addRow(new Object[]{filename, (valid ? Bundle.getBundle().getString("label.signatureOk") : Bundle.getBundle().getString("label.signatureFailed")) + (message.isEmpty() ? "" : " - " + message)});
             }
         };
 
@@ -74,7 +78,7 @@ public class MultipleSignDialog extends javax.swing.JDialog {
             @Override
             public void run() {
                 int numSigned = 0;
-                btnFechar.setEnabled(false);
+                btnClose.setEnabled(false);
                 for (File file : alFiles) {
                     String destinationPath = "";
                     boolean validPath = false;
@@ -118,7 +122,7 @@ public class MultipleSignDialog extends javax.swing.JDialog {
                             signedDocsList.add(new File(destinationPath));
                             numSigned++;
                             jProgressBar1.setValue(numSigned);
-                            jProgressBar1.setString("Assinados: " + numSigned + " de " + alFiles.size());
+                            jProgressBar1.setString(Bundle.getBundle().getString("pb.signed") + ": " + numSigned + " " + Bundle.getBundle().getString("of") + " " + alFiles.size());
 
                         } else {
                             //JOptionPane.showMessageDialog(this, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
@@ -126,23 +130,42 @@ public class MultipleSignDialog extends javax.swing.JDialog {
                     } catch (CertificateException | IOException | DocumentException | KeyStoreException | NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
                         Logger.getLogger(MultipleSignDialog.class.getName()).log(Level.SEVERE, null, ex);
                     } catch (SignatureFailedException ex) {
-                        if (ex.getLocalizedMessage().equals("Acção cancelada pelo utilizador!")) {
-                            String msg = "Deseja cancelar a assinatura dos restantes documentos?";
-                            Object[] options = {"Sim", "Não"};
+                        if (ex.getLocalizedMessage().equals(Bundle.getBundle().getString("userCanceled"))) {
+                            String msg = Bundle.getBundle().getString("msg.cancelSigning");
+                            Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
                             int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                             if (opt == JOptionPane.YES_OPTION) {
                                 jProgressBar1.setValue(jProgressBar1.getMaximum());
-                                jProgressBar1.setString("A assinatura dos restantes documentos foi cancelada");
+                                jProgressBar1.setString(Bundle.getBundle().getString("pb.canceled"));
                                 break;
                             }
                         }
                     }
                 }
-                btnFechar.setEnabled(true);
+                btnClose.setEnabled(true);
             }
         };
         Thread t = new Thread(r);
         t.start();
+    }
+
+    private void updateText() {
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+                new Object[][]{},
+                new String[]{
+                    WordUtils.capitalize(Bundle.getBundle().getString("file")), WordUtils.capitalize(Bundle.getBundle().getString("result"))
+                }
+        ) {
+            boolean[] canEdit = new boolean[]{
+                false, false
+            };
+
+            @Override
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit[columnIndex];
+            }
+        });
+        btnClose.setText(Bundle.getBundle().getString("btn.close"));
     }
 
     public ArrayList<File> getSignedDocsList() {
@@ -159,7 +182,7 @@ public class MultipleSignDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         jProgressBar1 = new javax.swing.JProgressBar();
-        btnFechar = new javax.swing.JButton();
+        btnClose = new javax.swing.JButton();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
 
@@ -167,10 +190,10 @@ public class MultipleSignDialog extends javax.swing.JDialog {
 
         jProgressBar1.setStringPainted(true);
 
-        btnFechar.setText("Fechar");
-        btnFechar.addActionListener(new java.awt.event.ActionListener() {
+        btnClose.setText("Fechar");
+        btnClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnFecharActionPerformed(evt);
+                btnCloseActionPerformed(evt);
             }
         });
 
@@ -203,7 +226,7 @@ public class MultipleSignDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnFechar)))
+                        .addComponent(btnClose)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -213,7 +236,7 @@ public class MultipleSignDialog extends javax.swing.JDialog {
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 536, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(btnFechar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnClose, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -221,9 +244,9 @@ public class MultipleSignDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnFecharActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFecharActionPerformed
+    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         this.dispose();
-    }//GEN-LAST:event_btnFecharActionPerformed
+    }//GEN-LAST:event_btnCloseActionPerformed
 
     /**
      * @param args the command line arguments
@@ -267,7 +290,7 @@ public class MultipleSignDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnFechar;
+    private javax.swing.JButton btnClose;
     private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTable jTable1;

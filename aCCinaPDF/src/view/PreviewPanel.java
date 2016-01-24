@@ -135,7 +135,7 @@ public class PreviewPanel extends JPanel {
         }
         if (showDate) {
             Date date = new Date();
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy - HH:mm:ss ");
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd - HH:mm:ss ");
             String timestamp = sdf.format(date) + "+" + TimeZone.SHORT;
             int timestampCharCount = m.stringWidth(timestamp)/2;
             if (m.stringWidth(timestamp) < (getWidth())) {

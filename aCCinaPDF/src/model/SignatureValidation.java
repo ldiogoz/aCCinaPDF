@@ -20,8 +20,10 @@
 package model;
 
 import com.itextpdf.text.pdf.AcroFields;
+import com.itextpdf.text.pdf.security.CertificateVerification;
 import com.itextpdf.text.pdf.security.PdfPKCS7;
 import com.itextpdf.text.pdf.security.SignaturePermissions;
+import controller.Bundle;
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.security.cert.CertificateEncodingException;
@@ -161,7 +163,7 @@ public class SignatureValidation {
         try {
             x500name = new JcaX509CertificateHolder(x509cert).getSubject();
         } catch (CertificateEncodingException ex) {
-            return "Desconhecido";
+            return Bundle.getBundle().getString("unknown");
         }
         RDN rdn = x500name.getRDNs(BCStyle.CN)[0];
         return WordUtils.capitalize(IETFUtils.valueToString(rdn.getFirst().getValue()).toLowerCase());
@@ -173,7 +175,7 @@ public class SignatureValidation {
 
     @Override
     public String toString() {
-        return name + (this.isVisible() ? "" : " (Invisível)");
+        return name + (this.isVisible() ? "" : " (" + Bundle.getBundle().getString("invisible") + ")");
     }
 
 }

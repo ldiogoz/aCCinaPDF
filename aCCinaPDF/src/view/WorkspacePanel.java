@@ -23,6 +23,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
+import controller.Bundle;
 import controller.CCInstance;
 import exception.AliasException;
 import exception.KeyStoreNotLoadedException;
@@ -85,6 +86,7 @@ import model.Signature;
 import model.SignatureValidation;
 import model.TreeNodeWithState;
 import model.ValidationTreeCellRenderer;
+import org.apache.commons.lang3.text.WordUtils;
 import org.icepdf.core.pobjects.Document;
 import org.icepdf.ri.common.ComponentKeyBinding;
 import org.icepdf.ri.common.SwingController;
@@ -94,7 +96,7 @@ import org.icepdf.ri.common.SwingViewBuilder;
  *
  * @author Diogo
  */
-public class WorkspacePanel extends javax.swing.JPanel implements SignatureClickListener {
+public final class WorkspacePanel extends javax.swing.JPanel implements SignatureClickListener {
 
     private MainWindow mainWindow;
     private final CardLayout cl;
@@ -121,6 +123,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
      */
     public WorkspacePanel() {
         initComponents();
+        updateText();
         status = Status.READY;
         cl = (CardLayout) this.rightPanel.getLayout();
         topToolbar.setVisible(false);
@@ -154,6 +157,54 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         });
     }
 
+    public void updateText() {
+        hideRightPanel();
+        if (document != null) {
+            imagePanel.refreshTitle();
+            refreshBottomLabel();
+        }
+        btnPageBackward.setText(" " + Bundle.getBundle().getString("btn.pageBackward") + " ");
+        btnPageForward.setText(" " + Bundle.getBundle().getString("btn.pageForward") + " ");
+        btnZoomOut.setText(" " + Bundle.getBundle().getString("btn.zoomOut") + " ");
+        btnZoomIn.setText(" " + Bundle.getBundle().getString("btn.zoomIn") + " ");
+        btnSign.setText(" " + Bundle.getBundle().getString("sign") + " ");
+        btnValidate.setText(" " + Bundle.getBundle().getString("validate") + " ");
+        lblSignaturePanel.setText(Bundle.getBundle().getString("label.signaturePanel"));
+        lblValidationPanel.setText(Bundle.getBundle().getString("label.validationPanel"));
+        btnCheckAliasCertificate.setText(Bundle.getBundle().getString("label.certificateDetails"));
+        btnRefresh.setText(Bundle.getBundle().getString("btn.refresh"));
+        lblTip.setText("<html><center>" + Bundle.getBundle().getString("label.tip") + "</center></html>");
+        lblPage.setText(WordUtils.capitalize(Bundle.getBundle().getString("page")));
+        btnCancel.setText(Bundle.getBundle().getString("btn.cancel"));
+        btnApplySignature.setText(Bundle.getBundle().getString("sign"));
+        btnChangeAppearance.setText(Bundle.getBundle().getString("btn.changeAppearance"));
+        lblText.setText(Bundle.getBundle().getString("label.additionalText"));
+        btnAddBackground.setText(Bundle.getBundle().getString("btn.addBackground"));
+        cbVisibleSignature.setText(Bundle.getBundle().getString("cb.visibleSignature"));
+        jTabbedPane1.setTitleAt(0, Bundle.getBundle().getString("tab.general"));
+        jTabbedPane1.setTitleAt(1, Bundle.getBundle().getString("tab.appearance"));
+        lbRevision.setText(WordUtils.capitalize(Bundle.getBundle().getString("revision")) + ":");
+        lbDate.setText(Bundle.getBundle().getString("date") + ":");
+        lbReason.setText(Bundle.getBundle().getString("reason") + ":");
+        lbLocation.setText(Bundle.getBundle().getString("location") + ":");
+        lbLtv.setText(Bundle.getBundle().getString("isLtv") + ":");
+        lbChangesAllowed.setText(Bundle.getBundle().getString("allowsChanges") + ":");
+        lbInfo.setText(Bundle.getBundle().getString("extraInfo") + ":");
+        lblAdditionalInfo.setText(Bundle.getBundle().getString("extraInfoNone"));
+        lblSignatureType.setText(Bundle.getBundle().getString("label.signatureType"));
+        lblReason1.setText(Bundle.getBundle().getString("reason"));
+        lblLocation1.setText(Bundle.getBundle().getString("location"));
+        jRadioButton1.setText(Bundle.getBundle().getString("radio.signType1"));
+        jRadioButton2.setText(Bundle.getBundle().getString("radio.signType2"));
+        jRadioButton3.setText(Bundle.getBundle().getString("radio.signType3"));
+        jRadioButton4.setText(Bundle.getBundle().getString("radio.signType4"));
+        cbTimestamp.setText(Bundle.getBundle().getString("cb.includeTimestamp"));
+        lbTimestamp.setText(Bundle.getBundle().getString("label.timestampServer"));
+        btnRevalidate.setText(Bundle.getBundle().getString("btn.revalidate"));
+        btnCheckCertificate.setText(Bundle.getBundle().getString("label.certificateDetails"));
+        btnClose.setText(Bundle.getBundle().getString("btn.close"));
+    }
+
     public void setParent(MainWindow mw) {
         this.mainWindow = mw;
     }
@@ -172,9 +223,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             hideRightPanel();
         } else {
             if (status.equals(Status.SIGNING)) {
-                String msg = "Ainda não aplicou a assinatura\nDeseja abrir outro documento?";
+                String msg = Bundle.getBundle().getString("msg.signatureStillNotAppliedOpenOther");
 
-                Object[] options = {"Sim", "Não"};
+                Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
                 int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 if (opt == JOptionPane.NO_OPTION) {
                     return;
@@ -193,7 +244,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnZoomIn.setEnabled(true);
         btnZoomOut.setEnabled(true);
         topToolbar.setVisible(true);
-        lblTotalPageNumber.setText(" de " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
+        lblTotalPageNumber.setText(" " + Bundle.getBundle().getString("of") + " " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
         bottomToolbar.setVisible(true);
         status = Status.READY;
         btnPageBackward.setEnabled(false);
@@ -208,7 +259,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         try {
             boolean permiteAlteracoes = CCInstance.getInstance().getCertificationLevel(document.getDocumentLocation()) != PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED;
             btnSign.setEnabled(permiteAlteracoes);
-            btnSign.setToolTipText((permiteAlteracoes ? "Assinar" : "O documento está certificado não permite alterações"));
+            btnSign.setToolTipText((permiteAlteracoes ? Bundle.getBundle().getString("sign") : Bundle.getBundle().getString("signedNoChangesAllowed")));
         } catch (IOException ex) {
             controller.Logger.getLogger().addEntry(ex);
         }
@@ -240,9 +291,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                             jtValidation.clearSelection();
                         }
                         signatureSettings = new CCSignatureSettings(false);
-                        btnImage.setText("Adicionar Imagem de fundo");
+                        btnAddBackground.setText(Bundle.getBundle().getString("btn.addBackground"));
                     } else {
-                        JOptionPane.showMessageDialog(mainWindow, "Este Documento não pode ser assinado porque foi certificado com um nível\nde certificação que não permite quaisquer alterações ao mesmo.", "Erro", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.failedToSign1"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(WorkspacePanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -275,8 +326,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             sc.openDocument(filePath);
             file.deleteOnExit();
         } else {
-            JOptionPane.showMessageDialog(mainWindow, "O Ficheiro extraído está corrompido e não pôde ser aberto", "Erro", JOptionPane.ERROR_MESSAGE);
-            controller.Logger.getLogger().addEntry("O Ficheiro está corrompido");
+            JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.extractedFileCorrupted"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
+            controller.Logger.getLogger().addEntry(Bundle.getBundle().getString("fileCorrupted"));
         }
     }
 
@@ -286,13 +337,13 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         String value = "";
         if (!new File(configFile).exists()) {
             signatureSettings = new CCSignatureSettings(true);
-            JOptionPane.showMessageDialog(mainWindow, "O ficheiro de configurações não foi encontrado\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.configFileNotFound"), "", JOptionPane.INFORMATION_MESSAGE);
         }
         propertiesRead.load(new FileInputStream(configFile));
         value = propertiesRead.getProperty(parameter);
         if (value == null) {
             signatureSettings = new CCSignatureSettings(true);
-            JOptionPane.showMessageDialog(mainWindow, "O ficheiro de configurações está corrompido\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.configFileCorrupted"), "", JOptionPane.INFORMATION_MESSAGE);
         }
         return value;
     }
@@ -331,7 +382,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     final int numSigs = CCInstance.getInstance().getNumberOfSignatures(document.getDocumentLocation());
                     if (numSigs > 0) {
                         jScrollPane2.setVisible(true);
-                        progressBar.setString("A Validar Assinatura 1 de " + numSigs);
+                        progressBar.setString(Bundle.getBundle().getString("pb.validatingSignature") + " 1 " + Bundle.getBundle().getString("of") + " " + numSigs);
                         progressBar.setMaximum(numSigs);
                         final DefaultMutableTreeNode top = new DefaultMutableTreeNode(null);
                         ValidationListener vl = new ValidationListener() {
@@ -348,45 +399,43 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                                     if (sv.isCertification()) {
                                         if (sv.isValid()) {
                                             if (sv.isChanged() || !sv.isCoversEntireDocument()) {
-                                                childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela certificação não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.CERTIFIED_WARNING);
+                                                childChanged = new TreeNodeWithState("<html>" + Bundle.getBundle().getString("tn.1") + "<br>" + Bundle.getBundle().getString("tn.2") + "</html>", TreeNodeWithState.State.CERTIFIED_WARNING);
                                             } else {
-                                                childChanged = new TreeNodeWithState("O Documento está certificado e não foi modificado", TreeNodeWithState.State.CERTIFIED);
+                                                childChanged = new TreeNodeWithState(Bundle.getBundle().getString("certifiedOk"), TreeNodeWithState.State.CERTIFIED);
                                             }
                                         } else {
-                                            childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta certificação", TreeNodeWithState.State.INVALID);
+                                            childChanged = new TreeNodeWithState(Bundle.getBundle().getString("changedAfterCertified"), TreeNodeWithState.State.INVALID);
+                                        }
+                                    } else if (sv.isValid()) {
+                                        if (sv.isChanged()) {
+                                            childChanged = new TreeNodeWithState("<html>" + Bundle.getBundle().getString("tn.3") + "<br>" + Bundle.getBundle().getString("tn.4") + "</html>", TreeNodeWithState.State.VALID_WARNING);
+                                        } else {
+                                            childChanged = new TreeNodeWithState(Bundle.getBundle().getString("signedOk"), TreeNodeWithState.State.VALID);
                                         }
                                     } else {
-                                        if (sv.isValid()) {
-                                            if (sv.isChanged()) {
-                                                childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela assinatura não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.VALID_WARNING);
-                                            } else {
-                                                childChanged = new TreeNodeWithState("O Documento está assinado e não foi modificado", TreeNodeWithState.State.VALID);
-                                            }
-                                        } else {
-                                            childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta assinatura", TreeNodeWithState.State.INVALID);
-                                        }
+                                        childChanged = new TreeNodeWithState(Bundle.getBundle().getString("signedChangedOrCorrupted"), TreeNodeWithState.State.INVALID);
                                     }
 
                                     TreeNodeWithState childVerified = null;
                                     if (sv.getOcspCertificateStatus().equals(CertificateStatus.OK) || sv.getCrlCertificateStatus().equals(CertificateStatus.OK)) {
-                                        childVerified = new TreeNodeWithState("O Certificado inerente a esta assinatura foi verificado e é válido", (sv.isValid() ? TreeNodeWithState.State.VALID : TreeNodeWithState.State.WARNING));
+                                        childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certOK"), TreeNodeWithState.State.VALID);
                                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
-                                        childVerified = new TreeNodeWithState("O Certificado inerente a esta assinatura foi revogado", TreeNodeWithState.State.INVALID);
+                                        childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certRevoked"), TreeNodeWithState.State.INVALID);
                                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHECKED) && sv.getCrlCertificateStatus().equals(CertificateStatus.UNCHECKED)) {
-                                        childVerified = new TreeNodeWithState("Não foi feita a verificação da revogação de certificados durante a assinatura", TreeNodeWithState.State.WARNING);
+                                        childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certNotVerified"), TreeNodeWithState.State.WARNING);
                                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHAINED)) {
-                                        childVerified = new TreeNodeWithState("O Certificado não está encadeado a um certificado designado como âncora confiável", TreeNodeWithState.State.WARNING);
+                                        childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certNotChained"), TreeNodeWithState.State.WARNING);
                                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.EXPIRED)) {
-                                        childVerified = new TreeNodeWithState("O Certificado expirou", TreeNodeWithState.State.WARNING);
+                                        childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certExpired"), TreeNodeWithState.State.WARNING);
                                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.CHAINED_LOCALLY)) {
-                                        childVerified = new TreeNodeWithState("<html>A assinatura não contém a âncora completa nem verificações de revogação.<br>No entanto, o certificado do assinante foi emitido por um certificado na âncora confiável</html>", TreeNodeWithState.State.VALID_WARNING);
+                                        childVerified = new TreeNodeWithState("<html>" + Bundle.getBundle().getString("tn.5") + "<br>" + Bundle.getBundle().getString("tn.6") + "</html>", TreeNodeWithState.State.VALID_WARNING);
                                     }
 
                                     TreeNodeWithState childTimestamp = null;
                                     if (sv.isValidTimeStamp()) {
-                                        childTimestamp = new TreeNodeWithState("A Assinatura inclui um carimbo de Data e Hora válido", (sv.isValid() ? TreeNodeWithState.State.VALID : TreeNodeWithState.State.WARNING));
+                                        childTimestamp = new TreeNodeWithState(Bundle.getBundle().getString("validTimestamp"), TreeNodeWithState.State.VALID);
                                     } else {
-                                        childTimestamp = new TreeNodeWithState("A Data e Hora da assinatura são do relógio do computador do signatário", TreeNodeWithState.State.WARNING);
+                                        childTimestamp = new TreeNodeWithState(Bundle.getBundle().getString("signerDateTime"), TreeNodeWithState.State.WARNING);
                                     }
 
                                     sig.add(childChanged);
@@ -397,7 +446,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                                     jtValidation.setModel(tm);
                                     progressBar.setValue(progressBar.getValue() + 1);
                                     numParsed++;
-                                    progressBar.setString("A Validar Assinatura " + numParsed + " de " + numSigs);
+                                    progressBar.setString(Bundle.getBundle().getString("pb.validatingSignature") + " " + numParsed + " " + Bundle.getBundle().getString("of") + " " + numSigs);
                                 } else {
                                     CCInstance.getInstance().setValidating(false);
                                 }
@@ -406,7 +455,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                         CCInstance.getInstance().validatePDF(document.getDocumentLocation(), vl);
                         status = Status.READY;
                         jtValidation.setVisible(true);
-                        progressBar.setString("Validação Concluída");
+                        progressBar.setString(Bundle.getBundle().getString("pb.validationCompleted"));
                         if (rightPanel.isVisible() && jtValidation.getRowCount() > 0) {
                             jtValidation.setSelectionRow(jtValidation.getRowCount() - 1);
                         }
@@ -414,14 +463,14 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                         panelValidationResult.setVisible(true);
                         status = Status.READY;
                     } else {
-                        progressBar.setString("O Documento não está assinado");
+                        progressBar.setString(Bundle.getBundle().getString("notSigned"));
                         status = Status.READY;
                         jScrollPane2.setVisible(false);
                     }
                 } catch (IOException | DocumentException | GeneralSecurityException ex) {
                     controller.Logger.getLogger().addEntry(ex);
                     status = Status.READY;
-                    progressBar.setString("Ocorreu um erro durante a validação");
+                    progressBar.setString(Bundle.getBundle().getString("validationError"));
                     jScrollPane2.setVisible(false);
                 }
             }
@@ -500,7 +549,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         }
 
         if (null != mainWindow.getLoadingDialog()) {
-            mainWindow.getLoadingDialog().setText("Insira o CC no leitor...");
+            mainWindow.getLoadingDialog().setText(Bundle.getBundle().getString("insertCConReader"));
         }
 
         return true;
@@ -508,12 +557,12 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     private void clearSignatureFields() {
         cbVisibleSignature.setSelected(true);
-        btnImage.setVisible(true);
+        btnAddBackground.setVisible(true);
         lblText.setVisible(true);
         jScrollPane1.setVisible(true);
         btnChangeAppearance.setVisible(true);
-        btnImage.setVisible(true);
-        tfReason.setText("Assinatura Eletrónica Qualificada (DL 62/2003)");
+        btnAddBackground.setVisible(true);
+        tfReason.setText(Bundle.getBundle().getString("defaultReason"));
         tfLocation.setText("");
         jRadioButton1.setSelected(true);
         cbTimestamp.setSelected(true);
@@ -609,16 +658,20 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private void forceFixTempSignaturePosition() {
         if (null != tempSignature) {
             if (!tempSignature.isInsideDocument()) {
-                int signatureWidth = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getWidth() / 3;
-                int signatureHeight = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight() / 10;
-                int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
-                int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
-                tempSignature.setSize(new Dimension(signatureWidth, signatureHeight));
-                tempSignature.setLocation(x, y);
-                if (!tempSignature.isInsideDocument()) {
-                    forceFixTempSignaturePosition();
-                } else {
-                    repaint();
+                try {
+                    int signatureWidth = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getWidth() / 3;
+                    int signatureHeight = (int) document.getPageDimension(imagePanel.getPageNumber(), 0, imagePanel.getScale()).getHeight() / 10;
+                    int x = ((jsImagePanel.getWidth() / 2) + jsImagePanel.getHorizontalScrollBar().getValue() - (tempSignature.getWidth() / 2));
+                    int y = (jsImagePanel.getHeight() / 2) + jsImagePanel.getVerticalScrollBar().getValue() - (tempSignature.getHeight() / 2);
+                    tempSignature.setSize(new Dimension(signatureWidth, signatureHeight));
+                    tempSignature.setLocation(x, y);
+                    if (!tempSignature.isInsideDocument()) {
+                        forceFixTempSignaturePosition();
+                    } else {
+                        repaint();
+                    }
+                } catch (Exception e) {
+
                 }
             }
         }
@@ -634,9 +687,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 jSplitPane1.setDividerSize(5);
                 jSplitPane1.setDividerLocation(0.6);
             } else if (this.status == Status.SIGNING) {
-                String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
-                Object[] options = {"Sim", "Não"};
-                int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                String msg = "";
+                Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
+                int opt = JOptionPane.showOptionDialog(null, msg, Bundle.getBundle().getString("msg.signatureStillNotAppliedCancel1"), JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 if (opt == JOptionPane.YES_OPTION) {
                     removeTempSignature();
                     cl.show(this.rightPanel, String.valueOf(CardEnum.VALIDATE_PANEL));
@@ -693,14 +746,14 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         lblTotalPageNumber = new javax.swing.JLabel();
         rightPanel = new javax.swing.JPanel();
         clSign = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        lblSignaturePanel = new javax.swing.JLabel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         tabGeneral = new javax.swing.JPanel();
-        jLabel6 = new javax.swing.JLabel();
+        lblSignatureType = new javax.swing.JLabel();
         tfLocation = new javax.swing.JTextField();
-        jLabel5 = new javax.swing.JLabel();
+        lblLocation1 = new javax.swing.JLabel();
         tfReason = new javax.swing.JTextField();
-        jLabel4 = new javax.swing.JLabel();
+        lblReason1 = new javax.swing.JLabel();
         cbTimestamp = new javax.swing.JCheckBox();
         tfTimestamp = new javax.swing.JTextField();
         lbTimestamp = new javax.swing.JLabel();
@@ -709,7 +762,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         jRadioButton3 = new javax.swing.JRadioButton();
         jRadioButton4 = new javax.swing.JRadioButton();
         tabAppearance = new javax.swing.JPanel();
-        btnImage = new javax.swing.JButton();
+        btnAddBackground = new javax.swing.JButton();
         cbVisibleSignature = new javax.swing.JCheckBox();
         btnChangeAppearance = new javax.swing.JButton();
         lblText = new javax.swing.JLabel();
@@ -719,31 +772,31 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         btnCheckAliasCertificate = new javax.swing.JButton();
         btnRefresh = new javax.swing.JButton();
         btnApplySignature = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
         clValidate = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
+        lblValidationPanel = new javax.swing.JLabel();
         panelValidationResult = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jtValidation = new javax.swing.JTree();
         panelSignatureDetails = new javax.swing.JPanel();
         btnCheckCertificate = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel11 = new javax.swing.JLabel();
+        lbDate = new javax.swing.JLabel();
+        lbReason = new javax.swing.JLabel();
+        lbLocation = new javax.swing.JLabel();
+        lbRevision = new javax.swing.JLabel();
+        lbLtv = new javax.swing.JLabel();
         lblRevision = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         lblReason = new javax.swing.JLabel();
         lblLocation = new javax.swing.JLabel();
         lblLTV = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        lbChangesAllowed = new javax.swing.JLabel();
         lblAllowsChanges = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
+        lbInfo = new javax.swing.JLabel();
         lblAdditionalInfo = new javax.swing.JLabel();
         progressBar = new javax.swing.JProgressBar();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        btnClose = new javax.swing.JButton();
+        btnRevalidate = new javax.swing.JButton();
 
         jMenu1.setText("File");
         jMenuBar1.add(jMenu1);
@@ -961,19 +1014,19 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         clSign.setMinimumSize(new java.awt.Dimension(326, 869));
         clSign.setPreferredSize(new java.awt.Dimension(326, 869));
 
-        jLabel1.setText("Painel de Assinatura");
+        lblSignaturePanel.setText("Painel de Assinatura");
 
         tabGeneral.setFont(new java.awt.Font("Verdana", 0, 13)); // NOI18N
 
-        jLabel6.setText("Tipo de Assinatura:");
+        lblSignatureType.setText("Tipo de Assinatura:");
 
         tfLocation.setToolTipText("Localização");
 
-        jLabel5.setText("Localização:");
+        lblLocation1.setText("Localização:");
 
         tfReason.setToolTipText("Razão");
 
-        jLabel4.setText("Razão:");
+        lblReason1.setText("Razão:");
 
         cbTimestamp.setText("Incluir TimeStamp");
         cbTimestamp.setToolTipText("Incluir um timestamp na assinatura, que garante a veracidade da hora em que o documento foi assinado");
@@ -1017,10 +1070,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                             .addComponent(jRadioButton1, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jRadioButton4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jRadioButton3, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblSignatureType, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jRadioButton2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel4, javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel5, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblReason1, javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblLocation1, javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(cbTimestamp, javax.swing.GroupLayout.Alignment.LEADING))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(tfTimestamp, javax.swing.GroupLayout.Alignment.LEADING))
@@ -1030,7 +1083,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             tabGeneralLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(tabGeneralLayout.createSequentialGroup()
                 .addGap(8, 8, 8)
-                .addComponent(jLabel6)
+                .addComponent(lblSignatureType)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRadioButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1040,11 +1093,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRadioButton4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(17, 17, 17)
-                .addComponent(jLabel4)
+                .addComponent(lblReason1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tfReason, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel5)
+                .addComponent(lblLocation1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tfLocation, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1058,11 +1111,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
         jTabbedPane1.addTab("Geral", tabGeneral);
 
-        btnImage.setText("Adicionar Imagem de fundo");
-        btnImage.setToolTipText("Incluir uma imagem de fundo na assinatura visível");
-        btnImage.addActionListener(new java.awt.event.ActionListener() {
+        btnAddBackground.setText("Adicionar Imagem de fundo");
+        btnAddBackground.setToolTipText("Incluir uma imagem de fundo na assinatura visível");
+        btnAddBackground.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnImageActionPerformed(evt);
+                btnAddBackgroundActionPerformed(evt);
             }
         });
 
@@ -1100,7 +1153,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addContainerGap()
                 .addGroup(tabAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 273, Short.MAX_VALUE)
-                    .addComponent(btnImage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnAddBackground, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cbVisibleSignature)
                     .addComponent(lblText)
                     .addComponent(btnChangeAppearance, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1112,7 +1165,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addContainerGap()
                 .addComponent(cbVisibleSignature)
                 .addGap(3, 3, 3)
-                .addComponent(btnImage)
+                .addComponent(btnAddBackground)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnChangeAppearance)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1131,7 +1184,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
         });
 
-        btnCheckAliasCertificate.setText("Mostrar Certificado");
+        btnCheckAliasCertificate.setText("Detalhes do Certificado");
         btnCheckAliasCertificate.setToolTipText("Abre uma janela com os detalhes do certificado no cartão de cidadão");
         btnCheckAliasCertificate.setEnabled(false);
         btnCheckAliasCertificate.addActionListener(new java.awt.event.ActionListener() {
@@ -1156,11 +1209,11 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
         });
 
-        jButton3.setText("Cancelar");
-        jButton3.setToolTipText("Cancela esta assinatura e fecha o painel de validação");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
+        btnCancel.setText("Cancelar");
+        btnCancel.setToolTipText("Cancela esta assinatura e fecha o painel de validação");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+                btnCancelActionPerformed(evt);
             }
         });
 
@@ -1172,13 +1225,13 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addContainerGap()
                 .addGroup(clSignLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, clSignLayout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(lblSignaturePanel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(clSignLayout.createSequentialGroup()
                         .addGroup(clSignLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jTabbedPane1)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, clSignLayout.createSequentialGroup()
-                                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(btnApplySignature, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                             .addComponent(btnCheckAliasCertificate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -1192,7 +1245,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             clSignLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(clSignLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel1)
+                .addComponent(lblSignaturePanel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(clSignLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbAlias, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1204,7 +1257,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(clSignLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnApplySignature)
-                    .addComponent(jButton3))
+                    .addComponent(btnCancel))
                 .addContainerGap())
         );
 
@@ -1213,7 +1266,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         clValidate.setMaximumSize(new java.awt.Dimension(99999, 99999));
         clValidate.setMinimumSize(new java.awt.Dimension(326, 869));
 
-        jLabel2.setText("Painel de Validação");
+        lblValidationPanel.setText("Painel de Validação");
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jtValidation.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
@@ -1235,21 +1288,21 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             }
         });
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel3.setText("Data:");
+        lbDate.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbDate.setText("Data:");
 
-        jLabel8.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel8.setText("Razão:");
+        lbReason.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbReason.setText("Razão:");
 
-        jLabel9.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel9.setText("Local:");
+        lbLocation.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbLocation.setText("Local:");
 
-        jLabel10.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel10.setText("Revisão:");
+        lbRevision.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbRevision.setText("Revisão:");
 
-        jLabel11.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel11.setText("Habilitada para Validação a longo termo:");
-        jLabel11.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
+        lbLtv.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbLtv.setText("Habilitada para Validação a longo termo:");
+        lbLtv.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
         lblRevision.setForeground(new java.awt.Color(0, 0, 255));
         lblRevision.setText(" ");
@@ -1268,14 +1321,14 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         lblLTV.setText(" ");
         lblLTV.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
-        jLabel12.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel12.setText("Permite alterações:");
+        lbChangesAllowed.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbChangesAllowed.setText("Permite alterações:");
 
         lblAllowsChanges.setText(" ");
 
-        jLabel13.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel13.setText("Informação adicional:");
-        jLabel13.setToolTipText("");
+        lbInfo.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbInfo.setText("Informação adicional:");
+        lbInfo.setToolTipText("");
 
         lblAdditionalInfo.setText("Nenhuma");
         lblAdditionalInfo.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1290,36 +1343,33 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(btnCheckCertificate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                        .addComponent(jLabel10)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblRevision))
-                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                        .addComponent(jLabel3)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblDate))
-                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblReason))
-                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                        .addComponent(jLabel9)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblLocation))
-                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                        .addComponent(jLabel11)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblLTV))
-                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                        .addComponent(jLabel12)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblAllowsChanges))
-                    .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                        .addComponent(jLabel13)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblAdditionalInfo)))
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addComponent(lbChangesAllowed)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblAllowsChanges, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                .addComponent(lbInfo)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblAdditionalInfo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                .addComponent(lbRevision)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblRevision, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                .addComponent(lbDate)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblDate, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                .addComponent(lbReason)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblReason, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                .addComponent(lbLtv)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblLTV, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
+                .addComponent(lbLocation)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lblLocation, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         panelSignatureDetailsLayout.setVerticalGroup(
             panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1327,31 +1377,31 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addComponent(btnCheckCertificate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel10, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(lbRevision, javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(lblRevision, javax.swing.GroupLayout.Alignment.TRAILING))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
+                    .addComponent(lbDate)
                     .addComponent(lblDate))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel8)
+                    .addComponent(lbReason)
                     .addComponent(lblReason))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
+                    .addComponent(lbLocation)
                     .addComponent(lblLocation))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
+                    .addComponent(lbLtv)
                     .addComponent(lblLTV))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel12)
+                    .addComponent(lbChangesAllowed)
                     .addComponent(lblAllowsChanges))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel13)
+                    .addComponent(lbInfo)
                     .addComponent(lblAdditionalInfo))
                 .addGap(58, 58, 58))
         );
@@ -1366,26 +1416,26 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         panelValidationResultLayout.setVerticalGroup(
             panelValidationResultLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelValidationResultLayout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 533, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelSignatureDetails, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         progressBar.setStringPainted(true);
 
-        jButton1.setText("Fechar");
-        jButton1.setToolTipText("Fecha o painel de validação");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnClose.setText("Fechar");
+        btnClose.setToolTipText("Fecha o painel de validação");
+        btnClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnCloseActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Revalidar");
-        jButton2.setToolTipText("Volta a verificar e validar todas as assinaturas neste documento");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnRevalidate.setText("Revalidar");
+        btnRevalidate.setToolTipText("Volta a verificar e validar todas as assinaturas neste documento");
+        btnRevalidate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnRevalidateActionPerformed(evt);
             }
         });
 
@@ -1397,12 +1447,12 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 .addContainerGap()
                 .addGroup(clValidateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(clValidateLayout.createSequentialGroup()
-                        .addComponent(jLabel2)
+                        .addComponent(lblValidationPanel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, clValidateLayout.createSequentialGroup()
                         .addGroup(clValidateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jButton2, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnRevalidate, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(btnClose, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(panelValidationResult, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(progressBar, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE))
                         .addContainerGap())))
@@ -1411,15 +1461,15 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             clValidateLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(clValidateLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jLabel2)
+                .addComponent(lblValidationPanel)
                 .addGap(10, 10, 10)
-                .addComponent(jButton2)
+                .addComponent(btnRevalidate)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panelValidationResult, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(btnClose)
                 .addContainerGap())
         );
 
@@ -1459,7 +1509,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             btnZoomOut.setEnabled(0.3f <= scale);
             btnZoomIn.setEnabled(3f > scale);
             fixTempSignaturePosition(true);
-            lblTotalPageNumber.setText(" de " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
+            refreshBottomLabel();
         }
     }
 
@@ -1469,15 +1519,19 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             btnZoomOut.setEnabled(0.3f <= scale);
             btnZoomIn.setEnabled(3f > scale);
             fixTempSignaturePosition(true);
-            lblTotalPageNumber.setText(" de " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
+            refreshBottomLabel();
         }
+    }
+
+    private void refreshBottomLabel() {
+        lblTotalPageNumber.setText(" " + Bundle.getBundle().getString("of") + " " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
     }
 
     public void pageUp() {
         if (null != document) {
             if (imagePanel.setPageNumberControl(ImagePanel.DocumentPageControl.PAGE_UP)) {
                 jsPageNumber.setValue((imagePanel.getPageNumber() + 1));
-                lblTotalPageNumber.setText(" de " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
+                refreshBottomLabel();
                 jsImagePanel.getHorizontalScrollBar().setValue(0);
                 jsImagePanel.getVerticalScrollBar().setValue(0);
                 fixTempSignaturePosition(true);
@@ -1490,7 +1544,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         if (null != document) {
             if (imagePanel.setPageNumberControl(ImagePanel.DocumentPageControl.PAGE_DOWN)) {
                 jsPageNumber.setValue((imagePanel.getPageNumber() + 1));
-                lblTotalPageNumber.setText(" de " + document.getNumberOfPages() + " - Zoom: " + ((int) (imagePanel.getScale() * 100)) + "%");
+                refreshBottomLabel();
                 jsImagePanel.getHorizontalScrollBar().setValue(0);
                 jsImagePanel.getVerticalScrollBar().setValue(0);
                 fixTempSignaturePosition(true);
@@ -1526,8 +1580,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                         changeCard(CardEnum.VALIDATE_PANEL, true);
                         startValidationThread();
                     } else if (WorkspacePanel.this.status == WorkspacePanel.Status.SIGNING) {
-                        String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
-                        Object[] options = {"Sim", "Não"};
+                        String msg = Bundle.getBundle().getString("yes");
+                        Object[] options = {Bundle.getBundle().getString("msg.signatureStillNotAppliedCancel1"), Bundle.getBundle().getString("no")};
                         int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                         if (opt == JOptionPane.YES_OPTION) {
                             status = Status.READY;
@@ -1547,25 +1601,25 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             };
             int numSigs = CCInstance.getInstance().getNumberOfSignatures(document.getDocumentLocation());
             if (numSigs == 0) {
-                m = new JMenuItem("Este documento não está assinado");
+                m = new JMenuItem(Bundle.getBundle().getString("notSigned"));
                 m.addActionListener(validateOne);
                 m.setEnabled(false);
                 popup.add(m);
             } else {
-                m = new JMenuItem("Validar apenas este Documento");
+                m = new JMenuItem(Bundle.getBundle().getString("menuItem.validateOnlyThis"));
                 m.addActionListener(validateOne);
                 popup.add(m);
             }
 
             if (mainWindow.getSelectedOpenedFiles().size() > 1 && mainWindow.getSelectedOpenedFiles().size() < mainWindow.getOpenedFiles().size()) {
-                m = new JMenuItem("Validar os Documentos em lote seleccionados");
+                m = new JMenuItem(Bundle.getBundle().getString("menuItem.validateAllSelected"));
                 m.addActionListener(validateAll);
                 popup.add(m);
-                m = new JMenuItem("Validar todos os Documentos em lote");
+                m = new JMenuItem(Bundle.getBundle().getString("menuItem.validateAll"));
                 m.addActionListener(validateAll);
                 popup.add(m);
             } else {
-                m = new JMenuItem("Validar todos os Documentos em lote");
+                m = new JMenuItem(Bundle.getBundle().getString("menuItem.validateAll"));
                 m.addActionListener(validateAll);
                 popup.add(m);
             }
@@ -1573,21 +1627,19 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             popup.setLightWeightPopupEnabled(true);
             popup.show(btnValidate, 0, btnValidate.getHeight());
 
-        } else {
-            if (!rightPanel.isVisible()) {
+        } else if (!rightPanel.isVisible()) {
+            changeCard(CardEnum.VALIDATE_PANEL, true);
+            startValidationThread();
+        } else if (WorkspacePanel.this.status == WorkspacePanel.Status.SIGNING) {
+            String msg = Bundle.getBundle().getString("msg.signatureStillNotAppliedCancel1");
+            Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
+            int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+            if (opt == JOptionPane.YES_OPTION) {
+                status = Status.READY;
                 changeCard(CardEnum.VALIDATE_PANEL, true);
                 startValidationThread();
-            } else if (WorkspacePanel.this.status == WorkspacePanel.Status.SIGNING) {
-                String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelar a assinatura em curso para visualizar a assinatura seleccionada?";
-                Object[] options = {"Sim", "Não"};
-                int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-                if (opt == JOptionPane.YES_OPTION) {
-                    status = Status.READY;
-                    changeCard(CardEnum.VALIDATE_PANEL, true);
-                    startValidationThread();
-                } else {
-                    return;
-                }
+            } else {
+                return;
             }
         }
         removeTempSignature();
@@ -1605,10 +1657,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     }
 
                     JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setDialogTitle("Guardar como");
+                    fileChooser.setDialogTitle(Bundle.getBundle().getString("saveAs"));
                     if (null != path2) {
                         boolean validPath = false;
-                        FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter("Documento PDF (*.pdf)", "pdf");
+                        FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter(Bundle.getBundle().getString("filter.pdfDocuments") + " (*.pdf)", "pdf");
                         fileChooser.setFileFilter(pdfFilter);
                         File preferedFile = new File(path2);
                         fileChooser.setCurrentDirectory(preferedFile);
@@ -1622,8 +1674,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                             if (userSelection == JFileChooser.APPROVE_OPTION) {
                                 String dest = fileChooser.getSelectedFile().getAbsolutePath();
                                 if (new File(dest).exists()) {
-                                    String msg = "Já existe um ficheiro na directoria seleccionada com o mesmo nome.\nPretende substituí-lo ou escolher um destino novo?";
-                                    Object[] options = {"Substituir", "Escolher destino novo", "Cancelar"};
+                                    String msg = Bundle.getBundle().getString("msg.fileExists");
+                                    Object[] options = {Bundle.getBundle().getString("opt.replace"), Bundle.getBundle().getString("opt.chooseNewPath"), Bundle.getBundle().getString("btn.cancel")};
                                     int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                                     if (opt == JOptionPane.YES_OPTION) {
                                         validPath = true;
@@ -1639,7 +1691,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
                                 if (validPath) {
                                     if (!CCInstance.getInstance().signPdf(document.getDocumentLocation(), dest, signatureSettings, null)) {
-                                        JOptionPane.showMessageDialog(mainWindow, "Erro desconhecido: ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
+                                        JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("unknownErrorLog"), Bundle.getBundle().getString("label.signatureFailed"), JOptionPane.ERROR_MESSAGE);
                                         return;
                                     }
                                     status = Status.READY;
@@ -1650,7 +1702,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                                     mainWindow.loadPdf(new File(dest), false);
                                     hideRightPanel();
                                     imagePanel.setPageNumber(tempPage);
-                                    JOptionPane.showMessageDialog(mainWindow, "Assinatura aplicada com sucesso!", "", JOptionPane.INFORMATION_MESSAGE);
+                                    JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("label.signatureOk"), "", JOptionPane.INFORMATION_MESSAGE);
                                     break;
                                 }
                             }
@@ -1659,25 +1711,22 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                     return;
                 } catch (IOException ex) {
                     if (ex instanceof FileNotFoundException) {
-                        JOptionPane.showMessageDialog(mainWindow, "Ficheiro Keystore não foi encontrado", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.keystoreFileNotFound"), Bundle.getBundle().getString("label.signatureFailed"), JOptionPane.ERROR_MESSAGE);
                         controller.Logger.getLogger().addEntry(ex);
+                    } else if (ex.getLocalizedMessage().equals(Bundle.getBundle().getString("outputFileError"))) {
+                        JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.failedCreateOutputFile"), Bundle.getBundle().getString("label.signatureFailed"), JOptionPane.ERROR_MESSAGE);
+                        controller.Logger.getLogger().addEntry(ex);
+                        assinarDocumento(document, ocsp, timestamp);
                     } else {
-                        if (ex.getLocalizedMessage().equals("Erro a abrir o ficheiro de saída!")) {
-                            JOptionPane.showMessageDialog(mainWindow, "Impossível criar ficheiro de saída (permissões?)", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
-                            controller.Logger.getLogger().addEntry(ex);
-                            assinarDocumento(document, ocsp, timestamp);
-                        } else {
-                            JOptionPane.showMessageDialog(mainWindow, "Erro desconhecido - Ver log", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
-                            controller.Logger.getLogger().addEntry(ex);
-                        }
+                        JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("unknownErrorLog"), Bundle.getBundle().getString("label.signatureFailed"), JOptionPane.ERROR_MESSAGE);
+                        controller.Logger.getLogger().addEntry(ex);
                     }
                 } catch (DocumentException | NoSuchAlgorithmException | InvalidAlgorithmParameterException | HeadlessException | CertificateException | KeyStoreException ex) {
                     controller.Logger.getLogger().addEntry(ex);
                 } catch (SignatureFailedException ex) {
-                    if (ex.getLocalizedMessage().equals("TimeStamp falhou: Não tem ligação à Internet ou o URL de Servidor de TimeStamp é inválido!")) {
-                        //JOptionPane.showMessageDialog(mainWindow, "Não tem ligação à Internet ou\no URL de Servidor de TimeStamp é inválido!", "Assinatura falhou", JOptionPane.ERROR_MESSAGE);
-                        String msg = "Não aparenta ter uma ligação válida à Internet ou o URL do Servidor de TimeStamp é inválido\nDeseja assinar o documento mesmo assim?\nAtenção: A validação a longo termo não será possível.";
-                        Object[] options = {"Sim", "Não"};
+                    if (ex.getLocalizedMessage().equals(Bundle.getBundle().getString("timestampFailed"))) {
+                        String msg = Bundle.getBundle().getString("msg.timestampFailedNoInternet");
+                        Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
                         int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                         if (opt == JOptionPane.YES_OPTION) {
                             assinarDocumento(document, false, false);
@@ -1688,12 +1737,12 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 }
                 return;
             } else {
-                JOptionPane.showMessageDialog(mainWindow, "SmartCard foi retirado ou alterado!", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.smartcardRemovedOrChanged"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
             }
         } catch (LibraryNotLoadedException | KeyStoreNotLoadedException | CertificateException | KeyStoreException | LibraryNotFoundException | AliasException ex) {
             controller.Logger.getLogger().addEntry(ex);
         }
-        JOptionPane.showMessageDialog(mainWindow, "SmartCard foi retirado ou alterado!", "Erro", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.smartcardRemovedOrChanged"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
 
     }
 
@@ -1702,12 +1751,12 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         try {
             if (tempCCAlias.getCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getCertificate().getPublicKey())) {
                 String dest = null;
-                Object[] options = {"Guardar nas directorias dos documentos originais", "Escolher pasta destino", "Cancelar"};
-                int i = JOptionPane.showOptionDialog(null, "Escolha o destino dos ficheiros assinados", "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                Object[] options = {Bundle.getBundle().getString("opt.saveInOriginalFolder"), Bundle.getBundle().getString("msg.choosePath"), Bundle.getBundle().getString("btn.cancel")};
+                int i = JOptionPane.showOptionDialog(null, Bundle.getBundle().getString("msg.chooseSignedPath"), "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 if (i == 1) {
                     JFileChooser chooser = new JFileChooser();
                     chooser.setCurrentDirectory(new java.io.File("."));
-                    chooser.setDialogTitle("Escolha a directoria destino");
+                    chooser.setDialogTitle(Bundle.getBundle().getString("btn.choosePath"));
                     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
                     chooser.setAcceptAllFileFilterUsed(false);
 
@@ -1739,12 +1788,12 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
                 return;
             } else {
-                JOptionPane.showMessageDialog(mainWindow, "SmartCard foi retirado ou alterado!", "Erro", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.smartcardRemovedOrChanged"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
             }
         } catch (LibraryNotLoadedException | KeyStoreNotLoadedException | CertificateException | KeyStoreException | LibraryNotFoundException | AliasException ex) {
             controller.Logger.getLogger().addEntry(ex);
         }
-        JOptionPane.showMessageDialog(mainWindow, "SmartCard foi retirado ou alterado!", "Erro", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.smartcardRemovedOrChanged"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
     }
 
     private void btnCheckCertificateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCheckCertificateActionPerformed
@@ -1789,33 +1838,33 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         if (null == sv) {
             panelSignatureDetails.setVisible(false);
         } else {
-            lblRevision.setText("<html><u>" + sv.getRevision() + " de " + sv.getNumRevisions() + " (Clique para extrair a revisão)</u></html>");
-            final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            lblRevision.setText("<html><u>" + sv.getRevision() + " " + Bundle.getBundle().getString("of") + " " + sv.getNumRevisions() + " (" + Bundle.getBundle().getString("label.clickToExtractRevision") + ")</u></html>");
+            final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             SimpleDateFormat sdf = new SimpleDateFormat("Z");
             if (sv.getSignature().getTimeStampToken() == null) {
                 Calendar cal = sv.getSignature().getSignDate();
                 String date = df.format(cal.getTime());
-                lblDate.setText(date + " " + sdf.format(cal.getTime()) + " (hora do computador do signatário)");
+                lblDate.setText(date + " " + sdf.format(cal.getTime()) + " (" + Bundle.getBundle().getString("signerDateTimeSmall") + ")");
             } else {
                 Calendar ts = sv.getSignature().getTimeStampDate();
                 String date = df.format(ts.getTime());
                 lblDate.setText(date + " " + sdf.format(ts.getTime()));
             }
             boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);
-            lblLTV.setText(ltv ? "Sim" : "Não");
+            lblLTV.setText(ltv ? Bundle.getBundle().getString("yes") : Bundle.getBundle().getString("no"));
             String reason = sv.getSignature().getReason();
             if (reason == null) {
-                lblReason.setText("Não definida");
+                lblReason.setText(Bundle.getBundle().getString("notDefined"));
             } else if (reason.isEmpty()) {
-                lblReason.setText("Não definida");
+                lblReason.setText(Bundle.getBundle().getString("notDefined"));
             } else {
                 lblReason.setText(reason);
             }
             String location = sv.getSignature().getLocation();
             if (location == null) {
-                lblLocation.setText("Não definido");
+                lblLocation.setText(Bundle.getBundle().getString("notDefined"));
             } else if (location.isEmpty()) {
-                lblLocation.setText("Não definido");
+                lblLocation.setText(Bundle.getBundle().getString("notDefined"));
             } else {
                 lblLocation.setText(location);
             }
@@ -1823,28 +1872,28 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             try {
                 int certLevel = CCInstance.getInstance().getCertificationLevel(document.getDocumentLocation());
                 if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING) {
-                    lblAllowsChanges.setText("Apenas anotações");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("onlyAnnotations"));
                 } else if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS) {
-                    lblAllowsChanges.setText("Preenchimento de formulário e anotações");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("annotationsFormFilling"));
                 } else if (certLevel == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
-                    lblAllowsChanges.setText("Não");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("no"));
                 } else {
-                    lblAllowsChanges.setText("Sim");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("yes"));
                 }
             } catch (IOException ex) {
                 controller.Logger.getLogger().addEntry(ex);
             }
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
-                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                msg = (Bundle.getBundle().getString("validationCheck1") + " "
+                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? Bundle.getBundle().getString("validationCheck2") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " " + Bundle.getBundle().getString("at") + " " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                        + (sv.getSignature().getTimeStampToken() != null ? "\n" + Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                lblAdditionalInfo.setText("<html><u>" + Bundle.getBundle().getString("label.clickToView") + "</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                msg = ("O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
-                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                msg = (Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                lblAdditionalInfo.setText("<html><u>" + Bundle.getBundle().getString("label.clickToView") + "</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             } else {
@@ -1870,10 +1919,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         tfTimestamp.setVisible(cbTimestamp.isSelected());
     }//GEN-LAST:event_cbTimestampActionPerformed
 
-    private void btnImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnImageActionPerformed
+    private void btnAddBackgroundActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddBackgroundActionPerformed
         if (tempSignature.getImageLocation() == null) {
             JFileChooser jfc = new JFileChooser();
-            FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files", "png", "jpg");
+            FileNameExtensionFilter filter = new FileNameExtensionFilter(Bundle.getBundle().getString("filter.imageFiles"), "png", "jpg");
             File path = new File(System.getProperty("user.home"));
             jfc.setCurrentDirectory(path);
             jfc.setFileFilter(filter);
@@ -1882,21 +1931,21 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 String file = jfc.getSelectedFile().getAbsolutePath();
                 try {
                     tempSignature.setImageLocation(file);
-                    btnImage.setText("Remover Imagem de fundo");
+                    btnAddBackground.setText(Bundle.getBundle().getString("btn.removeBackgroud"));
                 } catch (Exception e) {
                     controller.Logger.getLogger().addEntry(e);
                 }
             }
         } else {
             tempSignature.setImageLocation(null);
-            btnImage.setText("Adicionar Imagem de fundo");
+            btnAddBackground.setText(Bundle.getBundle().getString("btn.addBackgroud"));
         }
         tempSignature.repaint();
-    }//GEN-LAST:event_btnImageActionPerformed
+    }//GEN-LAST:event_btnAddBackgroundActionPerformed
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
-        String msg = "Deseja realmente cancelar a assinatura?";
-        Object[] options = {"Sim", "Não"};
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        String msg = Bundle.getBundle().getString("msg.cancelSignature");
+        Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
         int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         if (opt == JOptionPane.YES_OPTION) {
             // Cancelar Assinatura
@@ -1911,7 +1960,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             hideRightPanel();
             status = Status.READY;
         }
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
     private void btnApplySignatureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnApplySignatureActionPerformed
         if (tempCCAlias != null) {
@@ -1932,7 +1981,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
             if (cbTimestamp.isSelected()) {
                 signatureSettings.setTimestamp(true);
                 if (tfTimestamp.getText().isEmpty()) {
-                    JOptionPane.showMessageDialog(mainWindow, "Escolheu aplicar um timestamp na assinatura.\nO campo 'Servidor TimeStamp' não pode estar em branco", "", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.timestampEmpty"), "", JOptionPane.ERROR_MESSAGE);
                     return;
                 } else {
                     signatureSettings.setTimestampServer(tfTimestamp.getText());
@@ -1963,8 +2012,8 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 signatureSettings.setVisibleSignature(false);
             }
             if (mainWindow.getOpenedFiles().size() > 1) {
-                Object[] options = {"Todos os documentos no lote", "Apenas este documento", "Cancelar"};
-                int i = JOptionPane.showOptionDialog(null, "Existem múltiplos documentos no lote\nPretende assinar todos os documentos no lote ou apenas o documento actualmente aberto?", "Múltiplos documentos no lote", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                Object[] options = {Bundle.getBundle().getString("menuItem.allDocuments"), Bundle.getBundle().getString("menuItem.onlyThis"), Bundle.getBundle().getString("btn.cancel")};
+                int i = JOptionPane.showOptionDialog(null, Bundle.getBundle().getString("msg.multipleDocumentsOpened"), Bundle.getBundle().getString("msg.multipleDocumentsOpenedTitle"), JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 if (i == 0) {
                     assinarLote(signatureSettings);
                 } else if (i == 1) {
@@ -1974,13 +2023,13 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
                 assinarDocumento(document, true, true);
             }
         } else {
-            JOptionPane.showMessageDialog(mainWindow, "SmartCard não encontrado!", "Erro", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("noSmartcardFound"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
             changeCard(CardEnum.SIGN_PANEL, false);
         }
     }//GEN-LAST:event_btnApplySignatureActionPerformed
 
     private void cbVisibleSignatureActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbVisibleSignatureActionPerformed
-        btnImage.setVisible(cbVisibleSignature.isSelected());
+        btnAddBackground.setVisible(cbVisibleSignature.isSelected());
         lblText.setVisible(cbVisibleSignature.isSelected());
         jScrollPane1.setVisible(cbVisibleSignature.isSelected());
         btnChangeAppearance.setVisible(cbVisibleSignature.isSelected());
@@ -2022,10 +2071,10 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     }//GEN-LAST:event_jSplitPane1PropertyChange
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         jtValidation.clearSelection();
         hideRightPanel();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnCloseActionPerformed
 
     private void jsPageNumberStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jsPageNumberStateChanged
         if ((Integer) jsPageNumber.getValue() < 1) {
@@ -2036,9 +2085,9 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
         imagePanel.setPageNumber((Integer) jsPageNumber.getValue() - 1);
     }//GEN-LAST:event_jsPageNumberStateChanged
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnRevalidateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRevalidateActionPerformed
         startValidationThread();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btnRevalidateActionPerformed
 
     private void lblRevisionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblRevisionMouseClicked
         if (SwingUtilities.isLeftMouseButton(evt)) {
@@ -2072,14 +2121,17 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToolBar bottomToolbar;
+    private javax.swing.JButton btnAddBackground;
     private javax.swing.JButton btnApplySignature;
+    private javax.swing.JButton btnCancel;
     private javax.swing.JButton btnChangeAppearance;
     private javax.swing.JButton btnCheckAliasCertificate;
     private javax.swing.JButton btnCheckCertificate;
-    private javax.swing.JButton btnImage;
+    private javax.swing.JButton btnClose;
     private javax.swing.JButton btnPageBackward;
     private javax.swing.JButton btnPageForward;
     private javax.swing.JButton btnRefresh;
+    private javax.swing.JButton btnRevalidate;
     private javax.swing.JButton btnSign;
     private javax.swing.JButton btnValidate;
     private javax.swing.JButton btnZoomIn;
@@ -2091,22 +2143,7 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private javax.swing.JPanel clSign;
     private javax.swing.JPanel clValidate;
     private view.ImagePanel imagePanel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuBar jMenuBar1;
@@ -2121,18 +2158,30 @@ public class WorkspacePanel extends javax.swing.JPanel implements SignatureClick
     private javax.swing.JScrollPane jsImagePanel;
     private javax.swing.JSpinner jsPageNumber;
     private javax.swing.JTree jtValidation;
+    private javax.swing.JLabel lbChangesAllowed;
+    private javax.swing.JLabel lbDate;
+    private javax.swing.JLabel lbInfo;
+    private javax.swing.JLabel lbLocation;
+    private javax.swing.JLabel lbLtv;
+    private javax.swing.JLabel lbReason;
+    private javax.swing.JLabel lbRevision;
     private javax.swing.JLabel lbTimestamp;
     private javax.swing.JLabel lblAdditionalInfo;
     private javax.swing.JLabel lblAllowsChanges;
     private javax.swing.JLabel lblDate;
     private javax.swing.JLabel lblLTV;
     private javax.swing.JLabel lblLocation;
+    private javax.swing.JLabel lblLocation1;
     private javax.swing.JLabel lblPage;
     private javax.swing.JLabel lblReason;
+    private javax.swing.JLabel lblReason1;
     private javax.swing.JLabel lblRevision;
+    private javax.swing.JLabel lblSignaturePanel;
+    private javax.swing.JLabel lblSignatureType;
     private javax.swing.JLabel lblText;
     private javax.swing.JLabel lblTip;
     private javax.swing.JLabel lblTotalPageNumber;
+    private javax.swing.JLabel lblValidationPanel;
     private javax.swing.JPanel leftPanel;
     private javax.swing.JPanel panelSignatureDetails;
     private javax.swing.JPanel panelValidationResult;

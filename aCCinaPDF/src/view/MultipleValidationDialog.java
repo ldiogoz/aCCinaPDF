@@ -22,6 +22,7 @@ package view;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
+import controller.Bundle;
 import controller.CCInstance;
 import exception.RevisionExtractionException;
 import java.awt.event.WindowAdapter;
@@ -32,7 +33,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.security.GeneralSecurityException;
-import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -58,6 +58,7 @@ import model.TreeNodeWithState;
 import model.ValidationFileListEntry;
 import model.FileListTreeCellRenderer;
 import model.ValidationTreeCellRenderer;
+import org.apache.commons.lang3.text.WordUtils;
 import org.icepdf.ri.common.ComponentKeyBinding;
 import org.icepdf.ri.common.SwingController;
 import org.icepdf.ri.common.SwingViewBuilder;
@@ -82,14 +83,16 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
 
+        updateText();
+
         this.setSize(1024, 768);
         lblRevision.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         final DefaultMutableTreeNode dmtn = new DefaultMutableTreeNode(null);
         panelSignatureDetails.setVisible(false);
-        btnGuardar.setEnabled(false);
+        btnSaveInFile.setEnabled(false);
         jtValidation.setModel(null);
         jtValidation.setVisible(false);
-        progressBar.setString("A Validar Ficheiro 1 de " + files.size());
+        progressBar.setString(Bundle.getBundle().getString("pb.validating") + " 1 " + Bundle.getBundle().getString("of") + " " + files.size());
         progressBar.setMaximum(files.size());
         final ValidationListener vl = new ValidationListener() {
             int numParsed = 1;
@@ -110,12 +113,10 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                         } else {
                             tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
                         }
+                    } else if (sv.isValid()) {
+                        tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.ALL_OK);
                     } else {
-                        if (sv.isValid()) {
-                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.ALL_OK);
-                        } else {
-                            tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
-                        }
+                        tempEntry.getKey().setValidationStatus(ValidationFileListEntry.ValidationStatus.INVALID);
                     }
                     tempEntry.getValue().add(sv);
                 }
@@ -136,24 +137,24 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                         dmtn.insert(new DefaultMutableTreeNode(vfle), 0);
                     } catch (IOException | DocumentException | GeneralSecurityException ex) {
                         if (ex.getLocalizedMessage().contains("keystore\\aCCinaPDF_cacerts")) {
-                            JOptionPane.showMessageDialog(MultipleValidationDialog.this, "Não foi possível encontrar o ficheiro keystore/aCCinaPDF_cacerts ", "Erro", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(MultipleValidationDialog.this, Bundle.getBundle().getString("errorDefaultKeystore"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
                         } else {
-                            JOptionPane.showMessageDialog(MultipleValidationDialog.this, "Erro desconhecido - ver log", "Erro", JOptionPane.ERROR_MESSAGE);
+                            JOptionPane.showMessageDialog(MultipleValidationDialog.this, Bundle.getBundle().getString("unknownErrorLog"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
                             controller.Logger.getLogger().addEntry(ex);
                         }
                         break;
                     }
                     numParsed++;
                     progressBar.setValue(numParsed);
-                    progressBar.setString("A Validar Ficheiro " + numParsed + " de " + files.size());
+                    progressBar.setString(Bundle.getBundle().getString("pb.validating") + " " + numParsed + " " + Bundle.getBundle().getString("of") + " " + files.size());
 
                     TreeModel tm = new DefaultTreeModel(dmtn);
                     jtFiles.setModel(tm);
                 }
-                progressBar.setString("Validação Concluída");
+                progressBar.setString(Bundle.getBundle().getString("pb.validationComplete"));
                 if (numParsed > 0) {
                     jtFiles.setSelectionRow(0);
-                    btnGuardar.setEnabled(true);
+                    btnSaveInFile.setEnabled(true);
                 }
             }
         };
@@ -171,37 +172,51 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         jtValidation.setCellRenderer(renderer);
     }
 
+    private void updateText() {
+        lbRevision.setText(WordUtils.capitalize(Bundle.getBundle().getString("revision")) + ":");
+        lbDate.setText(Bundle.getBundle().getString("date") + ":");
+        lbReason.setText(Bundle.getBundle().getString("reason") + ":");
+        lbLocation.setText(Bundle.getBundle().getString("location") + ":");
+        lbLtv.setText(Bundle.getBundle().getString("isLtv") + ":");
+        lbAllowsChanges.setText(Bundle.getBundle().getString("allowsChanges") + ":");
+        lbAdditionalInfo.setText(Bundle.getBundle().getString("extraInfo") + ":");
+        lblAdditionalInfo.setText(Bundle.getBundle().getString("extraInfoNone"));
+        btnShowCertificateDetails.setText(Bundle.getBundle().getString("label.certificateDetails"));
+        btnSaveInFile.setText(Bundle.getBundle().getString("btn.saveInFile"));
+        btnClose.setText(Bundle.getBundle().getString("btn.close"));
+    }
+
     private void showSignatureValidationDetails(SignatureValidation sv) {
         if (null == sv) {
             panelSignatureDetails.setVisible(false);
         } else {
-            lblRevision.setText("<html><u>" + sv.getRevision() + " de " + sv.getNumRevisions() + " (Clique para extrair a revisão)</u></html>");
-            final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            lblRevision.setText("<html><u>" + sv.getRevision() + " " + Bundle.getBundle().getString("of") + " " + sv.getNumRevisions() + " (" + Bundle.getBundle().getString("label.clickToExtractRevision") + ")</u></html>");
+            final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             SimpleDateFormat sdf = new SimpleDateFormat("Z");
             if (sv.getSignature().getTimeStampToken() == null) {
                 Calendar cal = sv.getSignature().getSignDate();
-                String date = df.format(cal.getTime());
-                lblDate.setText(date + " " + sdf.format(cal.getTime()) + " (hora do computador do signatário)");
+                String date = df.format(cal.getTime().toLocaleString());
+                lblDate.setText(date + " " + sdf.format(cal.getTime()) + " (" + Bundle.getBundle().getString("signerDateTimeSmall") + ")");
             } else {
                 Calendar ts = sv.getSignature().getTimeStampDate();
                 String date = df.format(ts.getTime());
                 lblDate.setText(date + " " + sdf.format(ts.getTime()));
             }
             boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);
-            lblLTV.setText(ltv ? "Sim" : "Não");
+            lblLTV.setText(ltv ? Bundle.getBundle().getString("yes") : Bundle.getBundle().getString("no"));
             String reason = sv.getSignature().getReason();
             if (reason == null) {
-                lblReason.setText("Não definida");
+                lblReason.setText(Bundle.getBundle().getString("notDefined"));
             } else if (reason.isEmpty()) {
-                lblReason.setText("Não definida");
+                lblReason.setText(Bundle.getBundle().getString("notDefined"));
             } else {
                 lblReason.setText(reason);
             }
             String location = sv.getSignature().getLocation();
             if (location == null) {
-                lblLocation.setText("Não definido");
+                lblLocation.setText(Bundle.getBundle().getString("notDefined"));
             } else if (location.isEmpty()) {
-                lblLocation.setText("Não definido");
+                lblLocation.setText(Bundle.getBundle().getString("notDefined"));
             } else {
                 lblLocation.setText(location);
             }
@@ -209,28 +224,28 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             try {
                 int certLevel = CCInstance.getInstance().getCertificationLevel(sv.getFilename());
                 if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING) {
-                    lblAllowsChanges.setText("Apenas anotações");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("onlyAnnotations"));
                 } else if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS) {
-                    lblAllowsChanges.setText("Preenchimento de formulário e anotações");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("annotationsFormFilling"));
                 } else if (certLevel == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
-                    lblAllowsChanges.setText("Não");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("no"));
                 } else {
-                    lblAllowsChanges.setText("Sim");
+                    lblAllowsChanges.setText(Bundle.getBundle().getString("yes"));
                 }
             } catch (IOException ex) {
                 controller.Logger.getLogger().addEntry(ex);
             }
 
             if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                msg = ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                        + (sv.getSignature().getTimeStampToken() != null ? "\nO carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
-                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                msg = (Bundle.getBundle().getString("validationCheck1") + " "
+                        + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? Bundle.getBundle().getString("validationCheck2") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " " + Bundle.getBundle().getString("at") + " " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                        + (sv.getSignature().getTimeStampToken() != null ? Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                lblAdditionalInfo.setText("<html><u>" + Bundle.getBundle().getString("label.clickToView") + "</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             } else if (sv.getSignature().getTimeStampToken() != null) {
-                msg = ("O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
-                lblAdditionalInfo.setText("<html><u>Clique aqui para ver</u></html>");
+                msg = (Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                lblAdditionalInfo.setText("<html><u>" + Bundle.getBundle().getString("label.clickToView") + "</u></html>");
                 lblAdditionalInfo.setForeground(new java.awt.Color(0, 0, 255));
                 lblAdditionalInfo.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
             } else {
@@ -267,8 +282,8 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             sc.openDocument(filePath);
             file.deleteOnExit();
         } else {
-            JOptionPane.showMessageDialog(this, "O Ficheiro extraído está corrompido e não pôde ser aberto", "Erro", JOptionPane.ERROR_MESSAGE);
-            controller.Logger.getLogger().addEntry("O Ficheiro está corrompido");
+            JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("msg.fileCorruptedNotOpened"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
+            controller.Logger.getLogger().addEntry(Bundle.getBundle().getString("msg.fileCorrupted"));
         }
     }
 
@@ -301,24 +316,24 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         jsp2 = new javax.swing.JScrollPane();
         jtValidation = new javax.swing.JTree();
         panelSignatureDetails = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
+        btnShowCertificateDetails = new javax.swing.JButton();
+        lbRevision = new javax.swing.JLabel();
+        lbLtv = new javax.swing.JLabel();
+        lbDate = new javax.swing.JLabel();
         lblRevision = new javax.swing.JLabel();
         lblDate = new javax.swing.JLabel();
         lblLTV = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        lbReason = new javax.swing.JLabel();
+        lbLocation = new javax.swing.JLabel();
         lblReason = new javax.swing.JLabel();
         lblLocation = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
+        lbAllowsChanges = new javax.swing.JLabel();
         lblAllowsChanges = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
+        lbAdditionalInfo = new javax.swing.JLabel();
         lblAdditionalInfo = new javax.swing.JLabel();
-        btnFechar = new javax.swing.JButton();
+        btnClose = new javax.swing.JButton();
         progressBar = new javax.swing.JProgressBar();
-        btnGuardar = new javax.swing.JButton();
+        btnSaveInFile = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         addWindowListener(new java.awt.event.WindowAdapter() {
@@ -356,23 +371,23 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         });
         jsp2.setViewportView(jtValidation);
 
-        jButton1.setText("Mostrar Certificado");
-        jButton1.setToolTipText("Abre uma janela com os detalhes dos certificado contidos nesta assinatura");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnShowCertificateDetails.setText("Mostrar Certificado");
+        btnShowCertificateDetails.setToolTipText("Abre uma janela com os detalhes dos certificado contidos nesta assinatura");
+        btnShowCertificateDetails.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnShowCertificateDetailsActionPerformed(evt);
             }
         });
 
-        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel1.setText("Revisão:");
+        lbRevision.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbRevision.setText("Revisão:");
 
-        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel2.setText("Habilitada para validação a longo termo:");
-        jLabel2.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
+        lbLtv.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbLtv.setText("Habilitada para validação a longo termo:");
+        lbLtv.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
-        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel4.setText("Data:");
+        lbDate.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbDate.setText("Data:");
 
         lblRevision.setForeground(new java.awt.Color(0, 0, 255));
         lblRevision.setText(" ");
@@ -387,23 +402,23 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         lblLTV.setText(" ");
         lblLTV.setToolTipText("Referente a se a assinatura contém toda a informação necessária para validar todos os certificados nela contidos");
 
-        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel3.setText("Razão:");
+        lbReason.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbReason.setText("Razão:");
 
-        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel5.setText("Local:");
+        lbLocation.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbLocation.setText("Local:");
 
         lblReason.setText(" ");
 
         lblLocation.setText(" ");
 
-        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel6.setText("Permite alterações:");
+        lbAllowsChanges.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbAllowsChanges.setText("Permite alterações:");
 
         lblAllowsChanges.setText(" ");
 
-        jLabel7.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
-        jLabel7.setText("Informação adicional:");
+        lbAdditionalInfo.setFont(new java.awt.Font("Tahoma", 1, 13)); // NOI18N
+        lbAdditionalInfo.setText("Informação adicional:");
 
         lblAdditionalInfo.setText("Nenhuma");
         lblAdditionalInfo.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -419,36 +434,36 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnShowCertificateDetails, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
                         .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                .addComponent(jLabel1)
+                                .addComponent(lbRevision)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblRevision))
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                .addComponent(jLabel4)
+                                .addComponent(lbDate)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblDate))
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                .addComponent(jLabel3)
+                                .addComponent(lbReason)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblReason))
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                .addComponent(jLabel5)
+                                .addComponent(lbLocation)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblLocation))
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                                .addComponent(jLabel7)
+                                .addComponent(lbAdditionalInfo)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblAdditionalInfo))
                             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
                                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, panelSignatureDetailsLayout.createSequentialGroup()
-                                        .addComponent(jLabel6)
+                                        .addComponent(lbAllowsChanges)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(lblAllowsChanges, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                    .addComponent(jLabel2))
+                                    .addComponent(lbLtv))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(lblLTV)))
                         .addGap(0, 0, Short.MAX_VALUE)))
@@ -457,34 +472,34 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         panelSignatureDetailsLayout.setVerticalGroup(
             panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(panelSignatureDetailsLayout.createSequentialGroup()
-                .addComponent(jButton1)
+                .addComponent(btnShowCertificateDetails)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(lbRevision)
                     .addComponent(lblRevision))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
+                    .addComponent(lbDate)
                     .addComponent(lblDate))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel3)
+                    .addComponent(lbReason)
                     .addComponent(lblReason))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
+                    .addComponent(lbLocation)
                     .addComponent(lblLocation))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
+                    .addComponent(lbLtv)
                     .addComponent(lblLTV))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
+                    .addComponent(lbAllowsChanges)
                     .addComponent(lblAllowsChanges))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(panelSignatureDetailsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
+                    .addComponent(lbAdditionalInfo)
                     .addComponent(lblAdditionalInfo))
                 .addContainerGap())
         );
@@ -506,20 +521,20 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
 
         jSplitPane1.setRightComponent(jPanel1);
 
-        btnFechar.setText("Fechar");
-        btnFechar.addActionListener(new java.awt.event.ActionListener() {
+        btnClose.setText("Fechar");
+        btnClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnFecharActionPerformed(evt);
+                btnCloseActionPerformed(evt);
             }
         });
 
         progressBar.setStringPainted(true);
 
-        btnGuardar.setText("Guardar em ficheiro");
-        btnGuardar.setToolTipText("Guarda o resultado da validação de todos os documentos num ficheiro de texto");
-        btnGuardar.addActionListener(new java.awt.event.ActionListener() {
+        btnSaveInFile.setText("Guardar em ficheiro");
+        btnSaveInFile.setToolTipText("Guarda o resultado da validação de todos os documentos num ficheiro de texto");
+        btnSaveInFile.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnGuardarActionPerformed(evt);
+                btnSaveInFileActionPerformed(evt);
             }
         });
 
@@ -534,9 +549,9 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnGuardar)
+                        .addComponent(btnSaveInFile)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnFechar)))
+                        .addComponent(btnClose)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -546,8 +561,8 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                 .addComponent(jSplitPane1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnFechar)
-                    .addComponent(btnGuardar)
+                    .addComponent(btnClose)
+                    .addComponent(btnSaveInFile)
                     .addComponent(progressBar, javax.swing.GroupLayout.DEFAULT_SIZE, 25, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -555,9 +570,9 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnFecharActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFecharActionPerformed
+    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         this.dispose();
-    }//GEN-LAST:event_btnFecharActionPerformed
+    }//GEN-LAST:event_btnCloseActionPerformed
 
     private void jtValidationValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jtValidationValueChanged
         if (jtValidation.getSelectionRows().length == 0) {
@@ -607,7 +622,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         }
         if (svList.isEmpty()) {
             panelSignatureDetails.setVisible(false);
-            DefaultMutableTreeNode noSignatures = new TreeNodeWithState("O Documento não está assinado", TreeNodeWithState.State.NOT_SIGNED);
+            DefaultMutableTreeNode noSignatures = new TreeNodeWithState(Bundle.getBundle().getString("notSigned"), TreeNodeWithState.State.NOT_SIGNED);
             top.add(noSignatures);
             TreeModel tm = new DefaultTreeModel(top);
             jtValidation.setModel(tm);
@@ -621,45 +636,43 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             if (sv.isCertification()) {
                 if (sv.isValid()) {
                     if (sv.isChanged() || !sv.isCoversEntireDocument()) {
-                        childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela certificação não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.CERTIFIED_WARNING);
+                        childChanged = new TreeNodeWithState("<html>" + Bundle.getBundle().getString("tn.1") + "<br>" + Bundle.getBundle().getString("tn.2") + "</html>", TreeNodeWithState.State.CERTIFIED_WARNING);
                     } else {
-                        childChanged = new TreeNodeWithState("O Documento está certificado e não foi modificado", TreeNodeWithState.State.CERTIFIED);
+                        childChanged = new TreeNodeWithState(Bundle.getBundle().getString("certifiedOk"), TreeNodeWithState.State.CERTIFIED);
                     }
                 } else {
-                    childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta certificação", TreeNodeWithState.State.INVALID);
+                    childChanged = new TreeNodeWithState(Bundle.getBundle().getString("changedAfterCertified"), TreeNodeWithState.State.INVALID);
+                }
+            } else if (sv.isValid()) {
+                if (sv.isChanged()) {
+                    childChanged = new TreeNodeWithState("<html>" + Bundle.getBundle().getString("tn.3") + "<br>" + Bundle.getBundle().getString("tn.4") + "</html>", TreeNodeWithState.State.VALID_WARNING);
+                } else {
+                    childChanged = new TreeNodeWithState(Bundle.getBundle().getString("signedOk"), TreeNodeWithState.State.VALID);
                 }
             } else {
-                if (sv.isValid()) {
-                    if (sv.isChanged()) {
-                        childChanged = new TreeNodeWithState("<html>A revisão do documento que é coberto pela assinatura não foi alterada<br>No entanto, ocorreram alterações posteriores ao documento</html>", TreeNodeWithState.State.VALID_WARNING);
-                    } else {
-                        childChanged = new TreeNodeWithState("O Documento está assinado e não foi modificado", TreeNodeWithState.State.VALID);
-                    }
-                } else {
-                    childChanged = new TreeNodeWithState("O Documento foi alterado ou corrompido desde que foi aplicada esta assinatura", TreeNodeWithState.State.INVALID);
-                }
+                childChanged = new TreeNodeWithState(Bundle.getBundle().getString("signedChangedOrCorrupted"), TreeNodeWithState.State.INVALID);
             }
 
             TreeNodeWithState childVerified = null;
             if (sv.getOcspCertificateStatus().equals(CertificateStatus.OK) || sv.getCrlCertificateStatus().equals(CertificateStatus.OK)) {
-                childVerified = new TreeNodeWithState("O Certificado inerente a esta assinatura foi verificado e é válido", TreeNodeWithState.State.VALID);
+                childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certOK"), TreeNodeWithState.State.VALID);
             } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
-                childVerified = new TreeNodeWithState("O Certificado inerente a esta assinatura foi revogado", TreeNodeWithState.State.INVALID);
+                childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certRevoked"), TreeNodeWithState.State.INVALID);
             } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHECKED) && sv.getCrlCertificateStatus().equals(CertificateStatus.UNCHECKED)) {
-                childVerified = new TreeNodeWithState("Não foi feita a verificação da revogação de certificados durante a assinatura", TreeNodeWithState.State.WARNING);
+                childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certNotVerified"), TreeNodeWithState.State.WARNING);
             } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHAINED)) {
-                childVerified = new TreeNodeWithState("O Certificado não está encadeado a um certificado designado como âncora confiável", TreeNodeWithState.State.WARNING);
+                childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certNotChained"), TreeNodeWithState.State.WARNING);
             } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.EXPIRED)) {
-                childVerified = new TreeNodeWithState("O Certificado expirou", TreeNodeWithState.State.WARNING);
+                childVerified = new TreeNodeWithState(Bundle.getBundle().getString("certExpired"), TreeNodeWithState.State.WARNING);
             } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.CHAINED_LOCALLY)) {
-                childVerified = new TreeNodeWithState("<html>A assinatura não contém a âncora completa nem verificações de revogação.<br>No entanto, o certificado do assinante foi emitido por um certificado na âncora confiável</html>", TreeNodeWithState.State.VALID_WARNING);
+                childVerified = new TreeNodeWithState("<html>" + Bundle.getBundle().getString("tn.5") + "<br>" + Bundle.getBundle().getString("tn.6") + "</html>", TreeNodeWithState.State.VALID_WARNING);
             }
 
             TreeNodeWithState childTimestamp = null;
             if (sv.isValidTimeStamp()) {
-                childTimestamp = new TreeNodeWithState("A Assinatura inclui um carimbo de Data e Hora válido", TreeNodeWithState.State.VALID);
+                childTimestamp = new TreeNodeWithState(Bundle.getBundle().getString("validTimestamp"), TreeNodeWithState.State.VALID);
             } else {
-                childTimestamp = new TreeNodeWithState("A Data e Hora da assinatura são do relógio do computador do signatário", TreeNodeWithState.State.WARNING);
+                childTimestamp = new TreeNodeWithState(Bundle.getBundle().getString("signerDateTime"), TreeNodeWithState.State.WARNING);
             }
 
             sig.add(childChanged);
@@ -675,7 +688,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_jtFilesValueChanged
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnShowCertificateDetailsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowCertificateDetailsActionPerformed
         DefaultMutableTreeNode dtn = (DefaultMutableTreeNode) jtValidation.getLastSelectedPathComponent();
         SignatureValidation sv = null;
         if (dtn.isLeaf()) {
@@ -687,7 +700,7 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         CertificatePropertiesDialog cpd = new CertificatePropertiesDialog((MainWindow) this.getParent(), true, sv.getSignature().getSignCertificateChain());
         cpd.setLocationRelativeTo(null);
         cpd.setVisible(true);
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnShowCertificateDetailsActionPerformed
 
     private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
         if (window != null) {
@@ -721,139 +734,135 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_lblRevisionMouseClicked
 
-    private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
+    private void btnSaveInFileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveInFileActionPerformed
         String toWrite = "";
         String newLine = System.getProperty("line.separator");
         if (hmValidation.size() > 0) {
             for (Map.Entry<ValidationFileListEntry, ArrayList<SignatureValidation>> entry : hmValidation.entrySet()) {
-                toWrite += "Ficheiro: " + entry.getKey().getFilename() + " (";
+                toWrite += WordUtils.capitalize(Bundle.getBundle().getString("file")) + ": " + entry.getKey().getFilename() + " (";
                 int numSigs = entry.getKey().getNumSignatures();
                 if (numSigs == 0) {
-                    toWrite += "Sem assinaturas";
+                    toWrite += Bundle.getBundle().getString("noSignatures");
                 } else if (numSigs == 1) {
-                    toWrite += "1 assinatura";
+                    toWrite += "1 " + Bundle.getBundle().getString("signature");
                 } else {
-                    toWrite += numSigs + " assinaturas";
+                    toWrite += numSigs + " " + Bundle.getBundle().getString("signatures");
                 }
                 toWrite += ")" + newLine;
 
                 for (SignatureValidation sv : entry.getValue()) {
                     toWrite += "\t" + sv.getName() + " - ";
-                    toWrite += (sv.isCertification() ? "Certificado" : "Assinado") + " por " + sv.getSignerName();
+                    toWrite += (sv.isCertification() ? WordUtils.capitalize(Bundle.getBundle().getString("certificate")) : WordUtils.capitalize(Bundle.getBundle().getString("signed"))) + " " + Bundle.getBundle().getString("by") + " " + sv.getSignerName();
                     toWrite += newLine + "\t\t";
                     if (sv.isChanged()) {
-                        toWrite += "O Documento foi alterado ou corrompido desde que foi certificado";
-                    } else {
-                        if (sv.isCertification()) {
-                            if (sv.isValid()) {
-                                if (sv.isChanged() || !sv.isCoversEntireDocument()) {
-                                    toWrite += "A revisão do documento que é coberto pela certificação não foi alterada. No entanto, ocorreram alterações posteriores ao documento";
-                                } else {
-                                    toWrite += "O Documento está certificado e não foi modificado";
-                                }
+                        toWrite += Bundle.getBundle().getString("certifiedChangedOrCorrupted");
+                    } else if (sv.isCertification()) {
+                        if (sv.isValid()) {
+                            if (sv.isChanged() || !sv.isCoversEntireDocument()) {
+                                toWrite += Bundle.getBundle().getString("certifiedButChanged");
                             } else {
-                                toWrite += "O Documento foi alterado ou corrompido desde que foi aplicada esta certificação";
+                                toWrite += Bundle.getBundle().getString("certifiedOk");
                             }
                         } else {
-                            if (sv.isValid()) {
-                                if (sv.isChanged()) {
-                                    toWrite += "A revisão do documento que é coberto pela assinatura não foi alterada. No entanto, ocorreram alterações posteriores ao documento";
-                                } else {
-                                    toWrite += "O Documento está assinado e não foi modificado";
-                                }
-                            } else {
-                                toWrite += "O Documento foi alterado ou corrompido desde que foi aplicada esta assinatura";
-                            }
+                            toWrite += Bundle.getBundle().getString("changedAfterCertified");
                         }
+                    } else if (sv.isValid()) {
+                        if (sv.isChanged()) {
+                            toWrite += Bundle.getBundle().getString("signedButChanged");
+                        } else {
+                            toWrite += Bundle.getBundle().getString("signedOk");
+                        }
+                    } else {
+                        toWrite += Bundle.getBundle().getString("signedChangedOrCorrupted");
                     }
                     toWrite += newLine + "\t\t";
                     if (sv.getOcspCertificateStatus().equals(CertificateStatus.OK) || sv.getCrlCertificateStatus().equals(CertificateStatus.OK)) {
-                        toWrite += "O Certificado inerente a esta assinatura foi verificado e é válido";
+                        toWrite += Bundle.getBundle().getString("certOK");
                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
-                        toWrite += "O Certificado inerente a esta assinatura foi revogado";
+                        toWrite += Bundle.getBundle().getString("certRevoked");
                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHECKED) && sv.getCrlCertificateStatus().equals(CertificateStatus.UNCHECKED)) {
-                        toWrite += "Não foi feita a verificação da revogação de certificados durante a assinatura";
+                        toWrite += Bundle.getBundle().getString("certNotVerified");
                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHAINED)) {
-                        toWrite += "O Certificado não está encadeado a um certificado designado como âncora confiável";
+                        toWrite += Bundle.getBundle().getString("certNotChained");
                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.EXPIRED)) {
-                        toWrite += "O Certificado expirou";
+                        toWrite += Bundle.getBundle().getString("certExpired");
                     } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.CHAINED_LOCALLY)) {
-                        toWrite += "A assinatura não contém a âncora completa nem verificações de revogação. No entanto, o certificado do assinante foi emitido por um certificado na âncora confiável";
+                        toWrite += Bundle.getBundle().getString("certChainedLocally");
                     }
                     toWrite += newLine + "\t\t";
                     if (sv.isValidTimeStamp()) {
-                        toWrite += "A Assinatura inclui um carimbo de Data e Hora válido";
+                        toWrite += Bundle.getBundle().getString("validTimestamp");
                     } else {
-                        toWrite += "A Data e Hora da assinatura são do relógio do computador do signatário";
+                        toWrite += Bundle.getBundle().getString("signerDateTime");
                     }
                     toWrite += newLine + "\t\t";
 
-                    toWrite += "Revisão: " + sv.getRevision() + " de " + sv.getNumRevisions();
+                    toWrite += WordUtils.capitalize(Bundle.getBundle().getString("revision")) + ": " + sv.getRevision() + " " + Bundle.getBundle().getString("of") + " " + sv.getNumRevisions();
                     toWrite += newLine + "\t\t";
-                    final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                    final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                     final SimpleDateFormat sdf = new SimpleDateFormat("Z");
                     if (sv.getSignature().getTimeStampToken() == null) {
                         Calendar cal = sv.getSignature().getSignDate();
-                        String date = df.format(cal.getTime());
-                        toWrite += (date + " " + sdf.format(cal.getTime()) + " (hora do computador do signatário)");
+                        String date = sdf.format(cal.getTime().toLocaleString());
+                        toWrite += date + " " + sdf.format(cal.getTime()) + " (" + Bundle.getBundle().getString("signerDateTimeSmall") + ")";
                     } else {
                         Calendar ts = sv.getSignature().getTimeStampDate();
                         String date = df.format(ts.getTime());
-                        toWrite += "Data: " + date + " " + sdf.format(ts.getTime());
+                        toWrite += Bundle.getBundle().getString("date") + " " + date + " " + sdf.format(ts.getTime());
                     }
                     toWrite += newLine + "\t\t";
                     boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);
-                    toWrite += "Habilitada para validação a longo termo: " + (ltv ? "Sim" : "Não");
+                    toWrite += Bundle.getBundle().getString("isLtv") + ": " + (ltv ? Bundle.getBundle().getString("yes") : Bundle.getBundle().getString("no"));
                     String reason = sv.getSignature().getReason();
                     toWrite += newLine + "\t\t";
-                    toWrite += "Razão: ";
+                    toWrite += Bundle.getBundle().getString("reason") + ": ";
                     if (reason == null) {
-                        toWrite += "Não definida";
+                        toWrite += Bundle.getBundle().getString("notDefined");;
                     } else if (reason.isEmpty()) {
-                        toWrite += "Não definida";
+                        toWrite += Bundle.getBundle().getString("notDefined");
                     } else {
                         toWrite += reason;
                     }
                     String location = sv.getSignature().getLocation();
                     toWrite += newLine + "\t\t";
-                    toWrite += "Localização: : ";
+                    toWrite += Bundle.getBundle().getString("location") + ": ";
                     if (location == null) {
-                        toWrite += "Não definido";
+                        toWrite += Bundle.getBundle().getString("notDefined");
                     } else if (location.isEmpty()) {
-                        toWrite += "Não definido";
+                        toWrite += Bundle.getBundle().getString("notDefined");
                     } else {
                         toWrite += location;
                     }
                     toWrite += newLine + "\t\t";
-                    toWrite += "Permite alterações: ";
+                    toWrite += Bundle.getBundle().getString("allowsChanges") + ": ";
                     try {
                         int certLevel = CCInstance.getInstance().getCertificationLevel(sv.getFilename());
                         if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING) {
-                            toWrite += "Apenas anotações";
+                            toWrite += Bundle.getBundle().getString("onlyAnnotations");
                         } else if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS) {
-                            toWrite += "Preenchimento de formulário e anotações";
+                            toWrite += Bundle.getBundle().getString("annotationsFormFilling");
                         } else if (certLevel == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
-                            toWrite += "Não";
+                            toWrite += Bundle.getBundle().getString("no");
                         } else {
-                            toWrite += "Sim";
+                            toWrite += Bundle.getBundle().getString("yes");
                         }
                     } catch (IOException ex) {
                         controller.Logger.getLogger().addEntry(ex);
                     }
                     toWrite += newLine + "\t\t";
                     if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                        toWrite += ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                                + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                                + (sv.getSignature().getTimeStampToken() != null ? "O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                        toWrite += (Bundle.getBundle().getString("validationCheck1") + " "
+                                + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? Bundle.getBundle().getString("validationCheck2") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " " + Bundle.getBundle().getString("at") + " " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                                + (sv.getSignature().getTimeStampToken() != null ? Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
                     } else if (sv.getSignature().getTimeStampToken() != null) {
-                        toWrite += ("O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                        toWrite += (Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
                     }
                     toWrite += newLine;
                 }
             }
             writeToFile(toWrite);
         }
-    }//GEN-LAST:event_btnGuardarActionPerformed
+    }//GEN-LAST:event_btnSaveInFileActionPerformed
 
     private void lblAdditionalInfoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblAdditionalInfoMouseClicked
         if (SwingUtilities.isLeftMouseButton(evt)) {
@@ -865,11 +874,11 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
 
     private void writeToFile(String str) {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Guardar como");
+        fileChooser.setDialogTitle(Bundle.getBundle().getString("title.saveAs"));
         boolean validPath = false;
-        FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter("Ficheiro de texto (*.txt)", "txt");
+        FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter(Bundle.getBundle().getString("filter.textFiles") + " (*.txt)", "txt");
         fileChooser.setFileFilter(pdfFilter);
-        File preferedFile = new File("relatorioValidacao.txt");
+        File preferedFile = new File(Bundle.getBundle().getString("validationReport") + ".txt");
         fileChooser.setSelectedFile(preferedFile);
 
         while (!validPath) {
@@ -880,8 +889,8 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
             if (userSelection == JFileChooser.APPROVE_OPTION) {
                 String dest = fileChooser.getSelectedFile().getAbsolutePath();
                 if (new File(dest).exists()) {
-                    String msg = "Já existe um ficheiro na directoria seleccionada com o mesmo nome.\nPretende substituí-lo ou escolher um destino novo?";
-                    Object[] options = {"Substituir", "Escolher destino novo", "Cancelar"};
+                    String msg = Bundle.getBundle().getString("msg.reportFileNameAlreadyExists");
+                    Object[] options = {Bundle.getBundle().getString("btn.overwrite"), Bundle.getBundle().getString("btn.chooseNewPath"), Bundle.getBundle().getString("btn.cancel")};
                     int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                     if (opt == JOptionPane.YES_OPTION) {
                         validPath = true;
@@ -895,10 +904,10 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
                 if (validPath) {
                     try (PrintStream out = new PrintStream(new FileOutputStream(dest))) {
                         out.print(str);
-                        JOptionPane.showMessageDialog(null, "Relatório de validação guardado com sucesso!", "", JOptionPane.INFORMATION_MESSAGE);
+                        JOptionPane.showMessageDialog(null, Bundle.getBundle().getString("msg.reportSavedSuccessfully"), "", JOptionPane.INFORMATION_MESSAGE);
                     } catch (FileNotFoundException ex) {
                         controller.Logger.getLogger().addEntry(ex);
-                        JOptionPane.showMessageDialog(null, "Erro ao guardar o relatório de validação!\nVer log para mais informação", "", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(null, Bundle.getBundle().getString("msg.reportSaveFailed"), "", JOptionPane.ERROR_MESSAGE);
                     }
                     break;
                 }
@@ -948,22 +957,22 @@ public class MultipleValidationDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnFechar;
-    private javax.swing.JButton btnGuardar;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
+    private javax.swing.JButton btnClose;
+    private javax.swing.JButton btnSaveInFile;
+    private javax.swing.JButton btnShowCertificateDetails;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JScrollPane jsp1;
     private javax.swing.JScrollPane jsp2;
     private javax.swing.JTree jtFiles;
     private javax.swing.JTree jtValidation;
+    private javax.swing.JLabel lbAdditionalInfo;
+    private javax.swing.JLabel lbAllowsChanges;
+    private javax.swing.JLabel lbDate;
+    private javax.swing.JLabel lbLocation;
+    private javax.swing.JLabel lbLtv;
+    private javax.swing.JLabel lbReason;
+    private javax.swing.JLabel lbRevision;
     private javax.swing.JLabel lblAdditionalInfo;
     private javax.swing.JLabel lblAllowsChanges;
     private javax.swing.JLabel lblDate;

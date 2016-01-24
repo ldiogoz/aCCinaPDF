@@ -20,6 +20,7 @@
 package view;
 
 import com.itextpdf.text.pdf.PdfReader;
+import controller.Bundle;
 import controller.CCInstance;
 import java.awt.Desktop;
 import java.awt.Image;
@@ -40,6 +41,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
@@ -64,8 +66,10 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import model.FileListTreeCellRenderer;
 import model.FileSystemModel;
+import model.Settings;
 import model.TooltipTreeCellRenderer;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.icepdf.ri.common.SwingController;
 
 /**
@@ -84,6 +88,8 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     public MainWindow() {
         initComponents();
 
+        updateText();
+
         List<Image> icons = new ArrayList<>();
         icons.add(new ImageIcon(getClass().getResource("/image/aCCinaPDF_logo_icon32.png")).getImage());
         this.setIconImages(icons);
@@ -92,7 +98,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         workspacePanel.setParent((MainWindow) this);
         populateDriveComboBox();
 
-        dmtn = new DefaultMutableTreeNode("0 Documentos em lote");
+        dmtn = new DefaultMutableTreeNode("0 " + Bundle.getBundle().getString("tn.documentsLoaded"));
         TreeModel tm = new DefaultTreeModel(dmtn);
         jtOpenedDocuments.setModel(tm);
         setupTreePopups();
@@ -125,7 +131,24 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         manager.addKeyEventDispatcher((MainWindow) this);
         refreshTree(null);
 
-        ctrl.setPrintMenuItem(jMenuItem2);
+        ctrl.setPrintMenuItem(menuItemPrint);
+    }
+
+    private void updateText() {
+        lblOpenedDocuments.setText("0 " + Bundle.getBundle().getString("tn.documentsLoaded"));
+        menuFile.setText(Bundle.getBundle().getString("menu.file"));
+        menuOptions.setText(Bundle.getBundle().getString("menu.options"));
+        menuHelp.setText(Bundle.getBundle().getString("menu.help"));
+        menuItemOpen.setText(Bundle.getBundle().getString("menuItem.open"));
+        menuItemPrint.setText(Bundle.getBundle().getString("menuItem.print"));
+        menuItemExit.setText(Bundle.getBundle().getString("menuItem.exit"));
+        menuItemCertificateManagement.setText(Bundle.getBundle().getString("menuItem.certificateManagement"));
+        menuItemPreferences.setText(Bundle.getBundle().getString("menuItem.preferences"));
+        menuItemViewLog.setText(Bundle.getBundle().getString("menuItem.viewLog"));
+        menuItemShortcuts.setText(Bundle.getBundle().getString("menuItem.shortcuts"));
+        menuItemAbout.setText(Bundle.getBundle().getString("menuItem.about"));
+        btnRefreshTree.setText(Bundle.getBundle().getString("btn.refresh"));
+        lblLookFor.setText(Bundle.getBundle().getString("label.lookFor"));
     }
 
     public WorkspacePanel getWorkspacePanel() {
@@ -208,23 +231,23 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                         };
 
                         if (!openedFile.equals(getSelectedFile(jtOpenedDocuments))) {
-                            m = new JMenuItem("Abrir");
+                            m = new JMenuItem(Bundle.getBundle().getString("menuItem.open"));
                             m.addActionListener(open);
                             popup.add(m);
                         }
-                        m = new JMenuItem(getSelectedOpenedFiles().size() > 1 ? "Remover estes documentos do lote" : "Remover este documento do lote");
+                        m = new JMenuItem(getSelectedOpenedFiles().size() > 1 ? Bundle.getBundle().getString("menuItem.removeTheseLoadedDocuments") : Bundle.getBundle().getString("menuItem.removeThisLoadedDocument"));
                         m.addActionListener(remove);
                         popup.add(m);
                         if (getOpenedFiles().size() > 1) {
-                            m = new JMenuItem("Remover os outros documentos do lote");
+                            m = new JMenuItem(Bundle.getBundle().getString("menuItem.removeOtherLoadedDocuments"));
                             m.addActionListener(removeOthers);
                             popup.add(m);
-                            m = new JMenuItem("Remover todos os documentos do lote");
+                            m = new JMenuItem(Bundle.getBundle().getString("menuItem.removeAllLoadedDocuments"));
                             m.addActionListener(removeAll);
                             popup.add(m);
                         }
                         if (getSelectedOpenedFiles().size() == 1) {
-                            m = new JMenuItem("Mostrar localização no explorador");
+                            m = new JMenuItem(Bundle.getBundle().getString("menuItem.showInExplorer"));
                             m.addActionListener(show);
                             popup.add(m);
                         }
@@ -324,20 +347,20 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                             if (jtExplorer.getSelectionRows().length <= 1) {
                                 File f = getSelectedFile(jtExplorer);
                                 if (f.isDirectory()) {
-                                    m = new JMenuItem("Abrir Documentos nesta Pasta");
+                                    m = new JMenuItem(Bundle.getBundle().getString("menuItem.openDocumentsInThisFolder"));
                                     m.addActionListener(loadFolder);
                                     popup.add(m);
-                                    m = new JMenuItem("Abrir Documentos nesta Pasta e nas Subpastas");
+                                    m = new JMenuItem(Bundle.getBundle().getString("menuItem.openDocumentsThisFolderRecursive"));
                                     m.addActionListener(loadFolderRecursively);
                                     popup.add(m);
-                                    m = new JMenuItem("Mostrar no explorador");
+                                    m = new JMenuItem(Bundle.getBundle().getString("menuItem.showInExplorer"));
                                     m.addActionListener(show);
                                     popup.add(m);
                                 } else {
-                                    m = new JMenuItem("Abrir Documento");
+                                    m = new JMenuItem(Bundle.getBundle().getString("menuItem.openDocument"));
                                     m.addActionListener(loadFile);
                                     popup.add(m);
-                                    m = new JMenuItem("Mostrar localização no explorador");
+                                    m = new JMenuItem(Bundle.getBundle().getString("menuItem.showInExplorer"));
                                     m.addActionListener(show);
                                     popup.add(m);
                                 }
@@ -354,11 +377,11 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                                 }
                                 if (allSame) {
                                     if (file) {
-                                        m = new JMenuItem("Abrir Documentos");
+                                        m = new JMenuItem(Bundle.getBundle().getString("menuItem.openDocuments"));
                                         m.addActionListener(loadFile);
                                         popup.add(m);
                                     } else {
-                                        m = new JMenuItem("Abrir Documentos nestas Pastas");
+                                        m = new JMenuItem(Bundle.getBundle().getString("menuItem.openDocumentsInTheseFolders"));
                                         m.addActionListener(loadFolder);
                                         popup.add(m);
                                     }
@@ -367,22 +390,20 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                         } else {
                             File f = getSelectedFile(jtExplorer);
                             if (f.isDirectory()) {
-                                m = new JMenuItem("Abrir Documentos nesta Pasta");
+                                m = new JMenuItem(Bundle.getBundle().getString("menuItem.openDocumentsInThisFolder"));
                                 m.addActionListener(loadFolder);
                                 popup.add(m);
-                                m = new JMenuItem("Abrir Documentos nesta Pasta e nas Subpastas");
+                                m = new JMenuItem(Bundle.getBundle().getString("menuItem.openDocumentsThisFolderRecursive"));
                                 m.addActionListener(loadFolderRecursively);
                                 popup.add(m);
+                            } else if (files.contains(getSelectedFile(jtExplorer))) {
+                                m = new JMenuItem(Bundle.getBundle().getString("menuItem.removeFromLoadedDocuments"));
+                                m.addActionListener(remove);
+                                popup.add(m);
                             } else {
-                                if (files.contains(getSelectedFile(jtExplorer))) {
-                                    m = new JMenuItem("Remover do lote");
-                                    m.addActionListener(remove);
-                                    popup.add(m);
-                                } else {
-                                    m = new JMenuItem("Juntar ao lote");
-                                    m.addActionListener(loadFile);
-                                    popup.add(m);
-                                }
+                                m = new JMenuItem(Bundle.getBundle().getString("menuItem.addToLoadedDocuments"));
+                                m.addActionListener(loadFile);
+                                popup.add(m);
                             }
                         }
                         popup.show(e.getComponent(), e.getX(), e.getY());
@@ -443,7 +464,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                     dcbm.addElement(root.getAbsolutePath());
                 }
                 dcbm.addElement(System.getProperty("user.name"));
-                dcbm.addElement("Ambiente de Trabalho");
+                dcbm.addElement(Bundle.getBundle().getString("desktop"));
                 jtExplorer.setModel(new FileSystemModel(new File(roots[0].getAbsolutePath()), null));
             }
         } else {
@@ -473,7 +494,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         jScrollPane2 = new javax.swing.JScrollPane();
         jtExplorer = new javax.swing.JTree();
         tfProcurar = new javax.swing.JTextField();
-        jLabel1 = new javax.swing.JLabel();
+        lblLookFor = new javax.swing.JLabel();
         cbVolume = new view.WideDropDownComboBox();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -482,17 +503,17 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         rightPanel = new javax.swing.JPanel();
         workspacePanel = new view.WorkspacePanel();
         jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jMenu4 = new javax.swing.JMenu();
-        jMenuItem6 = new javax.swing.JMenuItem();
-        jMenuItem7 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
+        menuFile = new javax.swing.JMenu();
+        menuItemOpen = new javax.swing.JMenuItem();
+        menuItemPrint = new javax.swing.JMenuItem();
+        menuItemExit = new javax.swing.JMenuItem();
+        menuOptions = new javax.swing.JMenu();
+        menuItemCertificateManagement = new javax.swing.JMenuItem();
+        menuItemPreferences = new javax.swing.JMenuItem();
+        menuHelp = new javax.swing.JMenu();
+        menuItemViewLog = new javax.swing.JMenuItem();
+        menuItemShortcuts = new javax.swing.JMenuItem();
+        menuItemAbout = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("aCCinaPDF");
@@ -547,9 +568,9 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         tfProcurar.setToolTipText("Pesquisar por pastas ou documentos por nome");
         tfProcurar.setMinimumSize(new java.awt.Dimension(0, 22));
 
-        jLabel1.setText("Procurar por:");
-        jLabel1.setToolTipText("Pesquisar por pastas ou documentos por nome");
-        jLabel1.setMinimumSize(new java.awt.Dimension(0, 16));
+        lblLookFor.setText("Procurar por:");
+        lblLookFor.setToolTipText("Pesquisar por pastas ou documentos por nome");
+        lblLookFor.setMinimumSize(new java.awt.Dimension(0, 16));
 
         cbVolume.setToolTipText("");
         cbVolume.addActionListener(new java.awt.event.ActionListener() {
@@ -571,7 +592,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                         .addComponent(btnRefreshTree, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jScrollPane2)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblLookFor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tfProcurar, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -586,7 +607,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tfProcurar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblLookFor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 602, Short.MAX_VALUE)
                 .addContainerGap())
@@ -672,77 +693,77 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
         jSplitPane1.setRightComponent(rightPanel);
 
-        jMenu1.setText("Ficheiro");
+        menuFile.setText("Ficheiro");
 
-        jMenuItem4.setText("Abrir");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+        menuItemOpen.setText("Abrir");
+        menuItemOpen.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
+                menuItemOpenActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem4);
+        menuFile.add(menuItemOpen);
 
-        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem2.setText("Imprimir");
-        jMenu1.add(jMenuItem2);
+        menuItemPrint.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_P, java.awt.event.InputEvent.ALT_MASK | java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        menuItemPrint.setText("Imprimir");
+        menuFile.add(menuItemPrint);
 
-        jMenuItem1.setText("Sair");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        menuItemExit.setText("Sair");
+        menuItemExit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+                menuItemExitActionPerformed(evt);
             }
         });
-        jMenu1.add(jMenuItem1);
+        menuFile.add(menuItemExit);
 
-        jMenuBar1.add(jMenu1);
+        jMenuBar1.add(menuFile);
 
-        jMenu3.setText("Opções");
+        menuOptions.setText("Opções");
 
-        jMenuItem5.setText("Gestão de Certificados");
-        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+        menuItemCertificateManagement.setText("Gestão de Certificados");
+        menuItemCertificateManagement.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem5ActionPerformed(evt);
+                menuItemCertificateManagementActionPerformed(evt);
             }
         });
-        jMenu3.add(jMenuItem5);
+        menuOptions.add(menuItemCertificateManagement);
 
-        jMenuItem3.setText("Preferências");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+        menuItemPreferences.setText("Preferências");
+        menuItemPreferences.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem3ActionPerformed(evt);
+                menuItemPreferencesActionPerformed(evt);
             }
         });
-        jMenu3.add(jMenuItem3);
+        menuOptions.add(menuItemPreferences);
 
-        jMenuBar1.add(jMenu3);
+        jMenuBar1.add(menuOptions);
 
-        jMenu4.setText("Ajuda");
+        menuHelp.setText("Ajuda");
 
-        jMenuItem6.setText("Ver Log");
-        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+        menuItemViewLog.setText("Ver Log");
+        menuItemViewLog.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem6ActionPerformed(evt);
+                menuItemViewLogActionPerformed(evt);
             }
         });
-        jMenu4.add(jMenuItem6);
+        menuHelp.add(menuItemViewLog);
 
-        jMenuItem7.setText("Teclas de Atalho");
-        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+        menuItemShortcuts.setText("Teclas de Atalho");
+        menuItemShortcuts.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem7ActionPerformed(evt);
+                menuItemShortcutsActionPerformed(evt);
             }
         });
-        jMenu4.add(jMenuItem7);
+        menuHelp.add(menuItemShortcuts);
 
-        jMenuItem8.setText("Sobre");
-        jMenuItem8.addActionListener(new java.awt.event.ActionListener() {
+        menuItemAbout.setText("Sobre");
+        menuItemAbout.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem8ActionPerformed(evt);
+                menuItemAboutActionPerformed(evt);
             }
         });
-        jMenu4.add(jMenuItem8);
+        menuHelp.add(menuItemAbout);
 
-        jMenuBar1.add(jMenu4);
+        jMenuBar1.add(menuHelp);
 
         setJMenuBar(jMenuBar1);
 
@@ -772,7 +793,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         if (SystemUtils.IS_OS_WINDOWS) {
             if (volume.equals(System.getProperty("user.name"))) {
                 path = System.getProperty("user.home");
-            } else if (volume.equals("Ambiente de Trabalho")) {
+            } else if (volume.equals(Bundle.getBundle().getString("desktop"))) {
                 path = System.getProperty("user.home") + System.getProperty("file.separator") + "Desktop";
             } else {
                 path = volume;
@@ -846,11 +867,11 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
             if (showCloseDialog) {
                 String msg;
                 if (jtOpenedDocuments.getSelectionRows().length == 1) {
-                    msg = "Tem a certeza que quer fechar o documento seleccionado?";
+                    msg = Bundle.getBundle().getString("msg.closeSelectedDocument");
                 } else {
-                    msg = "Tem a certeza que quer fechar todos os documentos seleccionados do lote?";
+                    msg = Bundle.getBundle().getString("msg.closeSelectedDocuments");
                 }
-                Object[] options = {"Sim", "Não"};
+                Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
                 opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             }
             boolean closedOpenedDocument = false;
@@ -877,10 +898,10 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 }
                 int numOpened = dmtn.getChildCount();
                 if (1 == numOpened) {
-                    lblOpenedDocuments.setText("1 Documento em lote:");
+                    lblOpenedDocuments.setText("1 " + Bundle.getBundle().getString("tn.documentLoaded") + " :");
                     dmtn.setUserObject(null);
                 } else {
-                    lblOpenedDocuments.setText(numOpened + " Documentos em lote:");
+                    lblOpenedDocuments.setText(numOpened + " " + Bundle.getBundle().getString("tn.documentsLoaded") + ":");
                     dmtn.setUserObject(null);
                 }
                 TreeModel tm = new DefaultTreeModel(dmtn);
@@ -899,8 +920,8 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     public void closeDocuments(ArrayList<File> listaD, boolean showCloseDialog) {
         if (workspacePanel.getStatus().equals(WorkspacePanel.Status.SIGNING)) {
             if (listaD.contains(openedFile)) {
-                String msg = "Ainda não aplicou a assinatura em curso\nDeseja cancelá-la e fechar " + (listaD.size() == 1 ? "o documento pretendido?" : "os documentos pretendidos?");
-                Object[] options = {"Sim", "Não"};
+                String msg = Bundle.getBundle().getString("msg.cancelSignatureAndClose1") + " " + (listaD.size() == 1 ? Bundle.getBundle().getString("msg.cancelSignatureAndClose2") : Bundle.getBundle().getString("msg.cancelSignatureAndClose3"));
+                Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
                 int opt = JOptionPane.showOptionDialog(this, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 if (opt != JOptionPane.YES_OPTION) {
                     return;
@@ -913,12 +934,12 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
             if (showCloseDialog) {
                 String msg;
                 if (listaD.size() == 1) {
-                    msg = "Tem a certeza que quer fechar o documento seleccionado?";
+                    msg = Bundle.getBundle().getString("msg.closeSelectedDocument");
                 } else {
-                    msg = "Tem a certeza que quer fechar todos os documentos seleccionados do lote?";
+                    msg = Bundle.getBundle().getString("msg.closeSelectedDocuments");
                 }
 
-                Object[] options = {"Sim", "Não"};
+                Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
                 opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             }
             if (!showCloseDialog || opt == JOptionPane.YES_OPTION) {
@@ -952,10 +973,10 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 }
                 int numOpened = files.size();
                 if (1 == numOpened) {
-                    lblOpenedDocuments.setText("1 Documento em lote:");
+                    lblOpenedDocuments.setText("1 " + Bundle.getBundle().getString("tn.documentLoaded") + ":");
                     dmtn.setUserObject(null);
                 } else {
-                    lblOpenedDocuments.setText(numOpened + " Documentos em lote:");
+                    lblOpenedDocuments.setText(numOpened + " " + Bundle.getBundle().getString("tn.documentsLoaded") + ":");
                     dmtn.setUserObject(null);
                 }
                 TreeModel tm = new DefaultTreeModel(dmtn);
@@ -990,15 +1011,15 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
     }//GEN-LAST:event_jSplitPane1MouseReleased
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+    private void menuItemExitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemExitActionPerformed
         System.exit(0);
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    }//GEN-LAST:event_menuItemExitActionPerformed
 
-    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+    private void menuItemViewLogActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemViewLogActionPerformed
         LogWindow lw = new LogWindow();
         lw.setLocationRelativeTo(null);
         lw.setVisible(true);
-    }//GEN-LAST:event_jMenuItem6ActionPerformed
+    }//GEN-LAST:event_menuItemViewLogActionPerformed
 
     private void jtOpenedDocumentsMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jtOpenedDocumentsMousePressed
         if (evt.getClickCount() == 2) {
@@ -1032,23 +1053,28 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         }
     }//GEN-LAST:event_jtOpenedDocumentsMousePressed
 
-    private void jMenuItem8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem8ActionPerformed
+    private void menuItemAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemAboutActionPerformed
         AboutDialog ad = new AboutDialog(this, true);
         ad.setLocationRelativeTo(null);
         ad.setVisible(true);
-    }//GEN-LAST:event_jMenuItem8ActionPerformed
+    }//GEN-LAST:event_menuItemAboutActionPerformed
 
-    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+    private void menuItemPreferencesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemPreferencesActionPerformed
+        Locale tempLocale = Bundle.getBundle().getCurrentLocale();
         SettingsDialog sd = new SettingsDialog(this, true);
         sd.setLocationRelativeTo(null);
         sd.setVisible(true);
-    }//GEN-LAST:event_jMenuItem3ActionPerformed
+        if (!Bundle.getBundle().getCurrentLocale().equals(tempLocale)) {
+            updateText();
+            workspacePanel.updateText();
+        }
+    }//GEN-LAST:event_menuItemPreferencesActionPerformed
 
     private File lastOpenedFilePath;
 
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+    private void menuItemOpenActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemOpenActionPerformed
         JFileChooser jfc = new JFileChooser();
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Documentos PDF (*.pdf)", "pdf");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter(Bundle.getBundle().getString("filter.pdfDocuments") + " (*.pdf)", "pdf");
         File path;
         if (lastOpenedFilePath == null) {
             path = new File(System.getProperty("user.home"));
@@ -1068,26 +1094,17 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 controller.Logger.getLogger().addEntry(e);
             }
         }
-    }//GEN-LAST:event_jMenuItem4ActionPerformed
+    }//GEN-LAST:event_menuItemOpenActionPerformed
 
-    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
-        String msg = "CTRL + W -> Fecha o documento actualmente aberto\n"
-                + "CTRL + ALT + SHIFT + P -> Imprimir documento aberto\n"
-                + "CTRL + ‘+’ ou CTRL + roda do rato para cima -> Zoom in no documento aberto\n"
-                + "CTRL + ‘-’ ou CTRL + roda do rato para baixo -> Zoom out no documento aberto\n"
-                + "CTRL + seta direccional direita ou baixo -> Mostra a próxima página do documento aberto\n"
-                + "CTRL + seta direccional esquerda ou cima -> Mostra a página anterior do documento\n"
-                + "CTRL + SHIFT + S -> Assinar documento\n"
-                + "CTRL + SHIFT + V -> Validar assinaturas do documento";
+    private void menuItemShortcutsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemShortcutsActionPerformed
+        JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("help.shortcuts"), Bundle.getBundle().getString("shortcuts"), JOptionPane.INFORMATION_MESSAGE);
+    }//GEN-LAST:event_menuItemShortcutsActionPerformed
 
-        JOptionPane.showMessageDialog(this, msg, "Teclas de Atalho", JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_jMenuItem7ActionPerformed
-
-    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+    private void menuItemCertificateManagementActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemCertificateManagementActionPerformed
         CertificateManagementDialog cmd = new CertificateManagementDialog(this, true);
         cmd.setLocationRelativeTo(null);
         cmd.setVisible(true);
-    }//GEN-LAST:event_jMenuItem5ActionPerformed
+    }//GEN-LAST:event_menuItemCertificateManagementActionPerformed
 
     private LoadingDialog loadingDialog;
 
@@ -1195,19 +1212,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnRefreshTree;
     private view.WideDropDownComboBox cbVolume;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
@@ -1216,8 +1221,20 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTree jtExplorer;
     private javax.swing.JTree jtOpenedDocuments;
+    private javax.swing.JLabel lblLookFor;
     private javax.swing.JLabel lblOpenedDocuments;
     private javax.swing.JPanel leftPanel;
+    private javax.swing.JMenu menuFile;
+    private javax.swing.JMenu menuHelp;
+    private javax.swing.JMenuItem menuItemAbout;
+    private javax.swing.JMenuItem menuItemCertificateManagement;
+    private javax.swing.JMenuItem menuItemExit;
+    private javax.swing.JMenuItem menuItemOpen;
+    private javax.swing.JMenuItem menuItemPreferences;
+    private javax.swing.JMenuItem menuItemPrint;
+    private javax.swing.JMenuItem menuItemShortcuts;
+    private javax.swing.JMenuItem menuItemViewLog;
+    private javax.swing.JMenu menuOptions;
     private javax.swing.JPanel rightPanel;
     private javax.swing.JTextField tfProcurar;
     private view.WorkspacePanel workspacePanel;
@@ -1230,7 +1247,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
             if (selectedFile.isFile() && selectedFile.exists()) {
                 try {
                     if (null == dmtn) {
-                        lblOpenedDocuments.setText("0 Documentos em lote");
+                        lblOpenedDocuments.setText("0 " + Bundle.getBundle().getString("tn.documentsLoaded"));
                         dmtn = new DefaultMutableTreeNode(null);
                     }
                     boolean exists = false;
@@ -1253,10 +1270,10 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                             // jtOpenedDocuments.setSelectionRow(1);
                             int numOpened = dmtn.getChildCount();
                             if (1 == numOpened) {
-                                lblOpenedDocuments.setText("1 Documento em lote:");
+                                lblOpenedDocuments.setText("1 " + Bundle.getBundle().getString("tn.documentLoaded") + ":");
                                 dmtn.setUserObject(null);
                             } else {
-                                lblOpenedDocuments.setText(numOpened + " Documentos em lote:");
+                                lblOpenedDocuments.setText(numOpened + " " + Bundle.getBundle().getString("tn.documentsLoaded") + ":");
                                 dmtn.setUserObject(null);
                             }
 
@@ -1273,8 +1290,8 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                                 jtOpenedDocuments.setSelectionRow(1);
                                 jtOpenedDocuments.scrollRowToVisible(1);
                                 if (showOpenDialog) {
-                                    String msg = "Deseja abrir o documento carregado ou apenas adicioná-lo ao lote e manter o que está actualmente aberto?";
-                                    Object[] options = {"Sim", "Apenas adicionar ao lote"};
+                                    String msg = Bundle.getBundle().getString("msg.openNewOrKeepCurrent");
+                                    Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("opt.justAdd")};
                                     int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                                     if (opt == JOptionPane.YES_OPTION) {
                                         jtOpenedDocuments.setSelectionRow(0);
@@ -1369,16 +1386,14 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                         if (recursively) {
                             iterateFolder(fileEntry, true);
                         }
-                    } else {
-                        if (fileEntry.getAbsolutePath().endsWith(".pdf")) {
-                            if (testPdf(fileEntry)) {
-                                if (!files.contains(fileEntry)) {
-                                    tempFiles.add(new File(fileEntry.getAbsolutePath()));
-                                    loadingDialog.incrementFileCounter();
-                                }
-                            } else {
-                                errorList.add(fileEntry.getAbsolutePath());
+                    } else if (fileEntry.getAbsolutePath().endsWith(".pdf")) {
+                        if (testPdf(fileEntry)) {
+                            if (!files.contains(fileEntry)) {
+                                tempFiles.add(new File(fileEntry.getAbsolutePath()));
+                                loadingDialog.incrementFileCounter();
                             }
+                        } else {
+                            errorList.add(fileEntry.getAbsolutePath());
                         }
                     }
                 }
@@ -1396,7 +1411,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
     private void refreshOpenedDocumentsList() {
         int tempCount = dmtn.getChildCount();
-        lblOpenedDocuments.setText("0 Documentos em lote");
+        lblOpenedDocuments.setText("0 " + Bundle.getBundle().getString("tn.documentsLoaded"));
         dmtn = new DefaultMutableTreeNode(null);
         int num = 0;
         if (!files.isEmpty()) {
@@ -1416,10 +1431,10 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
 
                 int opened = dmtn.getChildCount();
                 if (opened == 1) {
-                    lblOpenedDocuments.setText("1 Documento em lote:");
+                    lblOpenedDocuments.setText("1 " + Bundle.getBundle().getString("tn.documentLoaded") + ":");
                     dmtn.setUserObject(null);
                 } else {
-                    lblOpenedDocuments.setText(opened + " Documentos em lote:");
+                    lblOpenedDocuments.setText(opened + " " + Bundle.getBundle().getString("tn.documentsLoaded") + ":");
                     dmtn.setUserObject(null);
                 }
 
@@ -1427,41 +1442,39 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 jtOpenedDocuments.setModel(tm);
                 jtOpenedDocuments.setSelectionRow(0);
                 jtOpenedDocuments.scrollRowToVisible(0);
-            } else {
-                if (tempCount != dmtn.getChildCount()) {
-                    String msg = "Deseja abrir o primeiro dos documentos carregados ou apenas adicioná-los ao lote e manter o que está actualmente aberto?";
-                    Object[] options = {"Sim", "Apenas adicionar ao lote"};
-                    int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-                    if (opt == JOptionPane.YES_OPTION) {
-                        ctrl.openDocument(last.getAbsolutePath());
-                        workspacePanel.setDocument(ctrl.getDocument());
-                        openedFile = last;
-                        int opened = dmtn.getChildCount();
-                        if (opened == 1) {
-                            lblOpenedDocuments.setText("1 Documento em lote:");
-                            dmtn.setUserObject(null);
-                        } else {
-                            lblOpenedDocuments.setText(opened + " Documentos em lote:");
-                            dmtn.setUserObject(null);
-                        }
-                        TreeModel tm = new DefaultTreeModel(dmtn);
-                        jtOpenedDocuments.setModel(tm);
-                        jtOpenedDocuments.setSelectionRow(0);
-                        jtOpenedDocuments.scrollRowToVisible(0);
+            } else if (tempCount != dmtn.getChildCount()) {
+                String msg = Bundle.getBundle().getString("msg.openNewOrKeepCurrent2");
+                Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("opt.justAdd")};
+                int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+                if (opt == JOptionPane.YES_OPTION) {
+                    ctrl.openDocument(last.getAbsolutePath());
+                    workspacePanel.setDocument(ctrl.getDocument());
+                    openedFile = last;
+                    int opened = dmtn.getChildCount();
+                    if (opened == 1) {
+                        lblOpenedDocuments.setText("1 " + Bundle.getBundle().getString("tn.documentLoaded") + ":");
+                        dmtn.setUserObject(null);
                     } else {
-                        int opened = dmtn.getChildCount();
-                        if (opened == 1) {
-                            lblOpenedDocuments.setText("1 Documento em lote:");
-                            dmtn.setUserObject(null);
-                        } else {
-                            lblOpenedDocuments.setText(opened + " Documentos em lote:");
-                            dmtn.setUserObject(null);
-                        }
-                        TreeModel tm = new DefaultTreeModel(dmtn);
-                        jtOpenedDocuments.setModel(tm);
-                        jtOpenedDocuments.setSelectionRow(num);
-                        jtOpenedDocuments.scrollRowToVisible(num);
+                        lblOpenedDocuments.setText(opened + " " + Bundle.getBundle().getString("tn.documentsLoaded") + ":");
+                        dmtn.setUserObject(null);
                     }
+                    TreeModel tm = new DefaultTreeModel(dmtn);
+                    jtOpenedDocuments.setModel(tm);
+                    jtOpenedDocuments.setSelectionRow(0);
+                    jtOpenedDocuments.scrollRowToVisible(0);
+                } else {
+                    int opened = dmtn.getChildCount();
+                    if (opened == 1) {
+                        lblOpenedDocuments.setText("1 " + Bundle.getBundle().getString("tn.documentLoaded") + ":");
+                        dmtn.setUserObject(null);
+                    } else {
+                        lblOpenedDocuments.setText(opened + " " + Bundle.getBundle().getString("tn.documentsLoaded") + ":");
+                        dmtn.setUserObject(null);
+                    }
+                    TreeModel tm = new DefaultTreeModel(dmtn);
+                    jtOpenedDocuments.setModel(tm);
+                    jtOpenedDocuments.setSelectionRow(num);
+                    jtOpenedDocuments.scrollRowToVisible(num);
                 }
             }
 
@@ -1475,13 +1488,13 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     private void showErrors() {
         if (!errorList.isEmpty()) {
             if (1 == errorList.size()) {
-                JOptionPane.showMessageDialog(this, "O seguinte ficheiro não foi carregado pois não é suportado ou está corrompido:\n" + errorList.get(0));
+                JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("msg.errorFollowingFile") + "\n" + errorList.get(0));
             } else {
                 String errors = "";
                 for (String error : errorList) {
                     errors += error + "\n";
                 }
-                JOptionPane.showMessageDialog(this, "Os seguintes ficheiros não foram carregados pois não são suportados ou estão corrompidos:\n" + errors);
+                JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("msg.errorFollowingFiles") + "\n" + errors);
             }
             errorList.clear();
         }

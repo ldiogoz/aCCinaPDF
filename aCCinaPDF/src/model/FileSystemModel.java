@@ -47,7 +47,10 @@ public class FileSystemModel implements TreeModel {
                 ff = new FilenameFilter() {
                     @Override
                     public boolean accept(File dir, String name) {
-                        return name.toLowerCase().contains(match.toLowerCase());
+                        if (name.endsWith(".pdf")) {
+                            return name.toLowerCase().contains(match.toLowerCase());
+                        }
+                        return false;
                     }
                 };
             } else {
@@ -103,11 +106,9 @@ public class FileSystemModel implements TreeModel {
             }
         };
         if (!folders.isEmpty()) {
-            //folders.sort(strCompare);
             Collections.sort(folders, strCompare);
         }
         if (!files.isEmpty()) {
-            //files.sort(strCompare);
             Collections.sort(files, strCompare);
         }
 

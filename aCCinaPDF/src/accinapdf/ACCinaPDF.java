@@ -21,6 +21,7 @@ package accinapdf;
 
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.pdf.PdfSignatureAppearance;
+import controller.Bundle;
 import controller.CCInstance;
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
@@ -38,6 +39,7 @@ import model.CCSignatureSettings;
 import model.CertificateStatus;
 import model.SignatureValidation;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import view.SplashScreen;
 
 /**
@@ -52,151 +54,153 @@ public class ACCinaPDF {
     public static void main(String[] args) {
 
         controller.Logger.create();
+        controller.Bundle.getBundle();
 
         if (GraphicsEnvironment.isHeadless()) {
             // Headless
             // Erro 
             String fich;
             if (args.length != 1) {
-                System.err.println("Args inválidos! > java -jar AssinaturasDigitaisCC.jar <ficheiro a validar>");
+                System.err.println(Bundle.getBundle().getString("invalidArgs"));
                 return;
             } else {
                 fich = args[0];
             }
 
             try {
-                System.out.println("A validar as assinaturas no documento: " + fich);
+                System.out.println(Bundle.getBundle().getString("validating") + " " + fich);
                 ArrayList<SignatureValidation> alSv = CCInstance.getInstance().validatePDF(fich, null);
                 if (alSv.isEmpty()) {
-                    System.out.println("O documento não está assinado.");
+                    System.out.println(Bundle.getBundle().getString("notSigned"));
                 } else {
                     String newLine = System.getProperty("line.separator");
                     String toWrite = "(";
                     int numSigs = alSv.size();
                     if (numSigs == 1) {
-                        toWrite += "1 assinatura";
+                        toWrite += "1 " + Bundle.getBundle().getString("signature");
                     } else {
-                        toWrite += numSigs + " assinaturas";
+                        toWrite += numSigs + " " + Bundle.getBundle().getString("signatures");
                     }
                     toWrite += ")" + newLine;
                     for (SignatureValidation sv : alSv) {
                         toWrite += "\t" + sv.getName() + " - ";
-                        toWrite += (sv.isCertification() ? "Certificado" : "Assinado") + " por " + sv.getSignerName();
+                        toWrite += (sv.isCertification() ? WordUtils.capitalize(Bundle.getBundle().getString("certificate")) : WordUtils.capitalize(Bundle.getBundle().getString("signed"))) + " " + Bundle.getBundle().getString("by") + " " + sv.getSignerName();
                         toWrite += newLine + "\t\t";
                         if (sv.isChanged()) {
-                            toWrite += "O Documento foi alterado ou corrompido desde que foi certificado";
+                            toWrite += Bundle.getBundle().getString("certifiedChangedOrCorrupted");
                         } else {
                             if (sv.isCertification()) {
                                 if (sv.isValid()) {
                                     if (sv.isChanged() || !sv.isCoversEntireDocument()) {
-                                        toWrite += "A revisão do documento que é coberto pela certificação não foi alterada. No entanto, ocorreram alterações posteriores ao documento";
+                                        toWrite += Bundle.getBundle().getString("certifiedButChanged");
                                     } else {
-                                        toWrite += "O Documento está certificado e não foi modificado";
+                                        toWrite += Bundle.getBundle().getString("certifiedOk");
                                     }
                                 } else {
-                                    toWrite += "O Documento foi alterado ou corrompido desde que foi aplicada esta certificação";
+                                    toWrite += Bundle.getBundle().getString("changedAfterCertified");
                                 }
                             } else {
                                 if (sv.isValid()) {
                                     if (sv.isChanged()) {
-                                        toWrite += "A revisão do documento que é coberto pela assinatura não foi alterada. No entanto, ocorreram alterações posteriores ao documento";
+                                        toWrite += Bundle.getBundle().getString("signedButChanged");
                                     } else {
-                                        toWrite += "O Documento está assinado e não foi modificado";
+                                        toWrite += Bundle.getBundle().getString("signedOk");
                                     }
                                 } else {
-                                    toWrite += "O Documento foi alterado ou corrompido desde que foi aplicada esta assinatura";
+                                    toWrite += Bundle.getBundle().getString("signedChangedOrCorrupted");
                                 }
                             }
                         }
                         toWrite += newLine + "\t\t";
                         if (sv.getOcspCertificateStatus().equals(CertificateStatus.OK) || sv.getCrlCertificateStatus().equals(CertificateStatus.OK)) {
-                            toWrite += "O Certificado inerente a esta assinatura foi verificado e é válido";
+                            toWrite += Bundle.getBundle().getString("certOK");
                         } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.REVOKED) || sv.getCrlCertificateStatus().equals(CertificateStatus.REVOKED)) {
-                            toWrite += "O Certificado inerente a esta assinatura foi revogado";
+                            toWrite += Bundle.getBundle().getString("certRevoked");
                         } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHECKED) && sv.getCrlCertificateStatus().equals(CertificateStatus.UNCHECKED)) {
-                            toWrite += "Não foi feita a verificação da revogação de certificados durante a assinatura";
+                            toWrite += Bundle.getBundle().getString("certNotVerified");
                         } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.UNCHAINED)) {
-                            toWrite += "O Certificado não está encadeado a um certificado designado como âncora confiável";
+                            toWrite += Bundle.getBundle().getString("certNotChained");
                         } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.EXPIRED)) {
-                            toWrite += "O Certificado expirou";
+                            toWrite += Bundle.getBundle().getString("certExpired");
                         } else if (sv.getOcspCertificateStatus().equals(CertificateStatus.CHAINED_LOCALLY)) {
-                            toWrite += "A assinatura não contém a âncora completa nem verificações de revogação. No entanto, o certificado do assinante foi emitido por um certificado na âncora confiável";
+                            toWrite += Bundle.getBundle().getString("certChainedLocally");
                         }
                         toWrite += newLine + "\t\t";
                         if (sv.isValidTimeStamp()) {
-                            toWrite += "A Assinatura inclui um carimbo de Data e Hora válido";
+                            toWrite += Bundle.getBundle().getString("validTimestamp");
                         } else {
-                            toWrite += "A Data e Hora da assinatura são do relógio do computador do signatário";
+                            toWrite += Bundle.getBundle().getString("signerDateTime");
                         }
                         toWrite += newLine + "\t\t";
 
-                        toWrite += "Revisão: " + sv.getRevision() + " de " + sv.getNumRevisions();
+                        toWrite += WordUtils.capitalize(Bundle.getBundle().getString("revision")) + ": " + sv.getRevision() + " " + Bundle.getBundle().getString("of") + " " + sv.getNumRevisions();
                         toWrite += newLine + "\t\t";
-                        final DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+                        final DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                        final SimpleDateFormat sdf = new SimpleDateFormat("Z");
                         if (sv.getSignature().getTimeStampToken() == null) {
                             Calendar cal = sv.getSignature().getSignDate();
-                            String date = df.format(cal.getTime());
-                            toWrite += (date + " (hora do computador do signatário)");
+                            String date = sdf.format(cal.getTime().toLocaleString());
+                            toWrite += date + " " + sdf.format(cal.getTime()) + " (" + Bundle.getBundle().getString("signerDateTimeSmall") + ")";
                         } else {
                             Calendar ts = sv.getSignature().getTimeStampDate();
                             String date = df.format(ts.getTime());
-                            toWrite += "Data: " + (date + " +" + (ts.getTimeZone().getRawOffset() < 10 ? "0" : "") + ts.getTimeZone().getRawOffset());
+                            toWrite += Bundle.getBundle().getString("date") + " " + date + " " + sdf.format(ts.getTime());
                         }
                         toWrite += newLine + "\t\t";
                         boolean ltv = (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK);
-                        toWrite += "Habilitada para validação a longo termo: " + (ltv ? "Sim" : "Não");
+                        toWrite += Bundle.getBundle().getString("isLtv") + ": " + (ltv ? Bundle.getBundle().getString("yes") : Bundle.getBundle().getString("no"));
                         String reason = sv.getSignature().getReason();
                         toWrite += newLine + "\t\t";
-                        toWrite += "Razão: ";
+                        toWrite += Bundle.getBundle().getString("reason") + ": ";
                         if (reason == null) {
-                            toWrite += "Não definida";
+                            toWrite += Bundle.getBundle().getString("notDefined");
                         } else if (reason.isEmpty()) {
-                            toWrite += "Não definida";
+                            toWrite += Bundle.getBundle().getString("notDefined");
                         } else {
                             toWrite += reason;
                         }
                         String location = sv.getSignature().getLocation();
                         toWrite += newLine + "\t\t";
-                        toWrite += "Localização: : ";
+                        toWrite += Bundle.getBundle().getString("location") + ": ";
                         if (location == null) {
-                            toWrite += "Não definido";
+                            toWrite += Bundle.getBundle().getString("notDefined");
                         } else if (location.isEmpty()) {
-                            toWrite += "Não definido";
+                            toWrite += Bundle.getBundle().getString("notDefined");
                         } else {
                             toWrite += location;
                         }
                         toWrite += newLine + "\t\t";
-                        toWrite += "Permite alterações: ";
+                        toWrite += Bundle.getBundle().getString("allowsChanges") + ": ";
                         try {
                             int certLevel = CCInstance.getInstance().getCertificationLevel(sv.getFilename());
                             if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING) {
-                                toWrite += "Apenas anotações";
+                                toWrite += Bundle.getBundle().getString("onlyAnnotations");
                             } else if (certLevel == PdfSignatureAppearance.CERTIFIED_FORM_FILLING_AND_ANNOTATIONS) {
-                                toWrite += "Preenchimento de formulário e anotações";
+                                toWrite += Bundle.getBundle().getString("annotationsFormFilling");
                             } else if (certLevel == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
-                                toWrite += "Não";
+                                toWrite += Bundle.getBundle().getString("no");
                             } else {
-                                toWrite += "Sim";
+                                toWrite += Bundle.getBundle().getString("yes");
                             }
                         } catch (IOException ex) {
                             controller.Logger.getLogger().addEntry(ex);
                         }
                         toWrite += newLine + "\t\t";
                         if (sv.getOcspCertificateStatus() == CertificateStatus.OK || sv.getCrlCertificateStatus() == CertificateStatus.OK) {
-                            toWrite += ("O estado de revogação do certificado inerente a esta assinatura foi verificado com recurso a "
-                                    + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? "OCSP pela entidade: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " em " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
-                                    + (sv.getSignature().getTimeStampToken() != null ? "O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
+                            toWrite += (Bundle.getBundle().getString("validationCheck1") + " "
+                                    + (sv.getOcspCertificateStatus() == CertificateStatus.OK ? Bundle.getBundle().getString("validationCheck2") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getOcsp().getCerts()[0].getSubject(), "CN") + " " + Bundle.getBundle().getString("at") + " " + df.format(sv.getSignature().getOcsp().getProducedAt()) : (sv.getCrlCertificateStatus() == CertificateStatus.OK ? "CRL" : ""))
+                                    + (sv.getSignature().getTimeStampToken() != null ? Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O") : ""));
                         } else if (sv.getSignature().getTimeStampToken() != null) {
-                            toWrite += ("O carimbo de data e hora é válido e foi assinado por: " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
+                            toWrite += (Bundle.getBundle().getString("validationCheck3") + ": " + CCInstance.getInstance().getCertificateProperty(sv.getSignature().getTimeStampToken().getSID().getIssuer(), "O"));
                         }
                         toWrite += newLine;
                     }
 
                     System.out.println(toWrite);
-                    System.out.println("Validação concluída");
+                    System.out.println(Bundle.getBundle().getString("validationFinished"));
                 }
             } catch (IOException | DocumentException | GeneralSecurityException ex) {
-                System.err.println("Ocorreu um erro durante a validação!");
+                System.err.println(Bundle.getBundle().getString("validationError"));
                 Logger.getLogger(ACCinaPDF.class.getName()).log(Level.SEVERE, null, ex);
             }
 

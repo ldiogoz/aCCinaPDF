@@ -19,6 +19,7 @@
  */
 package model;
 
+import controller.Bundle;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.Icon;
@@ -58,13 +59,13 @@ public class ValidationTreeCellRenderer extends DefaultTreeCellRenderer {
                         } else {
                             setIcon(iconCertified);
                         }
-                        setText(getText() + " - Certificado por " + sv.getSignerName());
+                        setText(getText() + " - " + Bundle.getBundle().getString("certifiedBy") + " " + sv.getSignerName());
                         if (!sel) {
                             setForeground(Color.BLUE);
                         }
                     } else {
                         setIcon(iconInvalid);
-                        setText(getText() + " - Certificação inválida por " + sv.getSignerName());
+                        setText(getText() + " - " + Bundle.getBundle().getString("certifiedInvalidBy") + " " + sv.getSignerName());
                         if (!sel) {
                             setForeground(Color.RED);
                         }
@@ -79,13 +80,13 @@ public class ValidationTreeCellRenderer extends DefaultTreeCellRenderer {
                         if (!sel) {
                             setForeground(new Color(0, 170, 20));
                         }
-                        setText(getText() + " - Assinado por " + sv.getSignerName());
+                        setText(getText() + " - " + Bundle.getBundle().getString("signedBy") + " " + sv.getSignerName());
                     } else {
                         setIcon(iconInvalid);
                         if (!sel) {
                             setForeground(Color.RED);
                         }
-                        setText(getText() + " - Assinatura inválida por " + sv.getSignerName());
+                        setText(getText() + " - " + Bundle.getBundle().getString("signedInvalidBy") + " " + sv.getSignerName());
                     }
                 }
             }

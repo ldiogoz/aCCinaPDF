@@ -47,7 +47,7 @@ public final class Logger {
 
     public void addEntry(final String entry) {
         Calendar calendar = GregorianCalendar.getInstance();
-        String now = calendar.getTime().toGMTString();
+        String now = calendar.getTime().toLocaleString();
         this.log += now + " | " + entry + "\n";
     }
 
@@ -57,7 +57,7 @@ public final class Logger {
         String stackTrace = sw.toString();
 
         Calendar calendar = GregorianCalendar.getInstance();
-        String now = calendar.getTime().toGMTString();
+        String now = calendar.getTime().toLocaleString();
 
         this.log += now + " | " + stackTrace + "\n";
     }

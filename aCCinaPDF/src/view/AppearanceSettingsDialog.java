@@ -20,6 +20,7 @@
 package view;
 
 import com.itextpdf.text.FontFactory;
+import controller.Bundle;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontFormatException;
@@ -45,6 +46,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import model.CCSignatureSettings;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.text.WordUtils;
 
 /**
  *
@@ -66,6 +68,8 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.signatureSettings = signatureSettings;
+
+        updateText();
 
         // Pastas conforme o SO
         ArrayList<String> dirs = new ArrayList<>();
@@ -108,16 +112,16 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
         switch (align) {
             case 0:
-                cbBoxAlign.setSelectedIndex(0);
+                cbAlign.setSelectedIndex(0);
                 break;
             case 1:
-                cbBoxAlign.setSelectedIndex(1);
+                cbAlign.setSelectedIndex(1);
                 break;
             case 2:
-                cbBoxAlign.setSelectedIndex(2);
+                cbAlign.setSelectedIndex(2);
                 break;
             default:
-                cbBoxAlign.setSelectedIndex(0);
+                cbAlign.setSelectedIndex(0);
         }
 
         previewPanel1.setReason(signatureSettings.getReason());
@@ -126,7 +130,7 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         if (signatureSettings.getCcAlias() != null) {
             previewPanel1.setAliasName(signatureSettings.getCcAlias().getName());
         } else {
-            previewPanel1.setAliasName("Nome");
+            previewPanel1.setAliasName(Bundle.getBundle().getString("name"));
         }
 
         if (!signatureSettings.getLocation().isEmpty()) {
@@ -154,17 +158,17 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         colorChooser.setPreviewPanel(new JPanel());
         Color color = signatureSettings.getAppearance().getFontColor();
         colorChooser.setColor(color);
-        lblSignature.setForeground(color);
+        lblSampleText.setForeground(color);
         cbShowReason.setSelected(showReason);
         cbShowLocation.setSelected(showLocation);
-        cbShowDate.setSelected(showDate);
+        cbShowDateTime.setSelected(showDate);
 
         ColorSelectionModel model = colorChooser.getSelectionModel();
         ChangeListener changeListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent changeEvent) {
                 Color newForegroundColor = colorChooser.getColor();
-                lblSignature.setForeground(newForegroundColor);
+                lblSampleText.setForeground(newForegroundColor);
             }
         };
         model.addChangeListener(changeListener);
@@ -182,26 +186,23 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                 } else {
                     font = newFont.deriveFont(Font.PLAIN, 36);
                 }
-                lblSignature.setFont(font);
-            } catch (FontFormatException ex) {
-                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IOException ex) {
-                Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
+                lblSampleText.setFont(font);
+            } catch (FontFormatException | IOException ex) {
             }
         } else {
             if (italic && bold) {
-                lblSignature.setFont(new Font(fontLocation, Font.ITALIC + Font.BOLD, 36));
+                lblSampleText.setFont(new Font(fontLocation, Font.ITALIC + Font.BOLD, 36));
             } else if (italic && !bold) {
-                lblSignature.setFont(new Font(fontLocation, Font.ITALIC, 36));
+                lblSampleText.setFont(new Font(fontLocation, Font.ITALIC, 36));
             } else if (!italic && bold) {
-                lblSignature.setFont(new Font(fontLocation, Font.BOLD, 36));
+                lblSampleText.setFont(new Font(fontLocation, Font.BOLD, 36));
             } else {
-                lblSignature.setFont(new Font(fontLocation, Font.PLAIN, 36));
+                lblSampleText.setFont(new Font(fontLocation, Font.PLAIN, 36));
             }
         }
 
-        checkBoxBold.setSelected(bold);
-        checkBoxItalic.setSelected(italic);
+        cbBold.setSelected(bold);
+        cbItalic.setSelected(italic);
 
         updateSettings(fontLocation, bold, italic);
 
@@ -217,7 +218,28 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         return hmFonts;
     }
 
-    ;
+    private void updateText() {
+        panelSignatureSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.getBundle().getString("panel.signatureSettings")));
+        panelFontSettings.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.getBundle().getString("panel.fontSettings")));
+        lblShow.setText(Bundle.getBundle().getString("label.show"));
+        cbShowName.setText(Bundle.getBundle().getString("name"));
+        cbShowReason.setText(Bundle.getBundle().getString("reason"));
+        cbShowLocation.setText(Bundle.getBundle().getString("location"));
+        cbShowDateTime.setText(Bundle.getBundle().getString("dateAndTime"));
+        lblAlign.setText(Bundle.getBundle().getString("label.align"));
+        DefaultComboBoxModel dcbm = new DefaultComboBoxModel();
+        dcbm.addElement(WordUtils.capitalize(Bundle.getBundle().getString("left")));
+        dcbm.addElement(WordUtils.capitalize(Bundle.getBundle().getString("center")));
+        dcbm.addElement(WordUtils.capitalize(Bundle.getBundle().getString("right")));
+        cbAlign.setModel(dcbm);
+        lblSampleText.setText(Bundle.getBundle().getString("label.sampleText"));
+        lblFontType.setText(Bundle.getBundle().getString("label.fontType"));
+        cbBold.setText(Bundle.getBundle().getString("label.bold"));
+        cbItalic.setText(Bundle.getBundle().getString("label.italic"));
+        cbSetAsDefault.setText(Bundle.getBundle().getString("label.setAsDefault"));
+        btnAccept.setText(Bundle.getBundle().getString("btn.accept"));
+        btnCancel.setText(Bundle.getBundle().getString("btn.cancel"));
+    }
 
     private void getFontsFromFolder(File folder, HashMap<com.itextpdf.text.Font, String> fontList) {
         if (folder.exists()) {
@@ -253,8 +275,8 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             }
         }
 
-        checkBoxBold.setSelected(bold);
-        checkBoxItalic.setSelected(italic);
+        cbBold.setSelected(bold);
+        cbItalic.setSelected(italic);
     }
 
     /**
@@ -267,49 +289,49 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
-        jPanel1 = new javax.swing.JPanel();
-        lblSignature = new javax.swing.JLabel();
-        checkBoxBold = new javax.swing.JCheckBox();
-        checkBoxItalic = new javax.swing.JCheckBox();
-        jLabel2 = new javax.swing.JLabel();
+        panelFontSettings = new javax.swing.JPanel();
+        lblSampleText = new javax.swing.JLabel();
+        cbBold = new javax.swing.JCheckBox();
+        cbItalic = new javax.swing.JCheckBox();
+        lblFontType = new javax.swing.JLabel();
         cbFontType = new javax.swing.JComboBox();
         colorChooser = new javax.swing.JColorChooser();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jPanel2 = new javax.swing.JPanel();
+        btnCancel = new javax.swing.JButton();
+        btnAccept = new javax.swing.JButton();
+        panelSignatureSettings = new javax.swing.JPanel();
         cbShowReason = new javax.swing.JCheckBox();
         cbShowLocation = new javax.swing.JCheckBox();
         previewPanel1 = new view.PreviewPanel();
-        cbShowDate = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
+        cbShowDateTime = new javax.swing.JCheckBox();
+        lblShow = new javax.swing.JLabel();
         cbShowName = new javax.swing.JCheckBox();
-        jLabel3 = new javax.swing.JLabel();
-        cbBoxAlign = new javax.swing.JComboBox();
-        checkBoxGuardar = new javax.swing.JCheckBox();
+        lblAlign = new javax.swing.JLabel();
+        cbAlign = new javax.swing.JComboBox();
+        cbSetAsDefault = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Definições da Fonte"));
+        panelFontSettings.setBorder(javax.swing.BorderFactory.createTitledBorder("Definições da Fonte"));
 
-        lblSignature.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblSignature.setText("Texto Exemplo");
-        lblSignature.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+        lblSampleText.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblSampleText.setText("Texto Exemplo");
+        lblSampleText.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        checkBoxBold.setText("Negrito");
-        checkBoxBold.addItemListener(new java.awt.event.ItemListener() {
+        cbBold.setText("Negrito");
+        cbBold.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                checkBoxBoldItemStateChanged(evt);
+                cbBoldItemStateChanged(evt);
             }
         });
 
-        checkBoxItalic.setText("Itálico");
-        checkBoxItalic.addItemListener(new java.awt.event.ItemListener() {
+        cbItalic.setText("Itálico");
+        cbItalic.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                checkBoxItalicItemStateChanged(evt);
+                cbItalicItemStateChanged(evt);
             }
         });
 
-        jLabel2.setText("Tipo de letra:");
+        lblFontType.setText("Tipo de Letra:");
 
         cbFontType.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -323,59 +345,59 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelFontSettingsLayout = new javax.swing.GroupLayout(panelFontSettings);
+        panelFontSettings.setLayout(panelFontSettingsLayout);
+        panelFontSettingsLayout.setHorizontalGroup(
+            panelFontSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelFontSettingsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblSignature, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
+                .addGroup(panelFontSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblSampleText, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(panelFontSettingsLayout.createSequentialGroup()
+                        .addComponent(lblFontType)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbFontType, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(checkBoxBold)
+                    .addGroup(panelFontSettingsLayout.createSequentialGroup()
+                        .addComponent(cbBold)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(checkBoxItalic)
+                        .addComponent(cbItalic)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        panelFontSettingsLayout.setVerticalGroup(
+            panelFontSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelFontSettingsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lblSignature, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lblSampleText, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
+                .addGroup(panelFontSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblFontType)
                     .addComponent(cbFontType, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(checkBoxBold)
-                    .addComponent(checkBoxItalic))
+                .addGroup(panelFontSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbBold)
+                    .addComponent(cbItalic))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, 254, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jButton1.setText("Cancelar");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnCancel.setText("Cancelar");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnCancelActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Aceitar");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnAccept.setText("Aceitar");
+        btnAccept.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnAcceptActionPerformed(evt);
             }
         });
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Definições da Assinatura"));
+        panelSignatureSettings.setBorder(javax.swing.BorderFactory.createTitledBorder("Definições da Assinatura"));
 
         cbShowReason.setSelected(true);
         cbShowReason.setText("Razão");
@@ -406,15 +428,15 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             .addGap(0, 97, Short.MAX_VALUE)
         );
 
-        cbShowDate.setSelected(true);
-        cbShowDate.setText("Data e Hora");
-        cbShowDate.addItemListener(new java.awt.event.ItemListener() {
+        cbShowDateTime.setSelected(true);
+        cbShowDateTime.setText("Data e Hora");
+        cbShowDateTime.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbShowDateItemStateChanged(evt);
+                cbShowDateTimeItemStateChanged(evt);
             }
         });
 
-        jLabel1.setText("Mostrar:");
+        lblShow.setText("Mostrar:");
 
         cbShowName.setSelected(true);
         cbShowName.setText("Nome");
@@ -424,25 +446,25 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             }
         });
 
-        jLabel3.setText("Alinhar:");
+        lblAlign.setText("Alinhar:");
 
-        cbBoxAlign.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Esquerda", "Centro", "Direita" }));
-        cbBoxAlign.addItemListener(new java.awt.event.ItemListener() {
+        cbAlign.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Esquerda", "Centro", "Direita" }));
+        cbAlign.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cbBoxAlignItemStateChanged(evt);
+                cbAlignItemStateChanged(evt);
             }
         });
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelSignatureSettingsLayout = new javax.swing.GroupLayout(panelSignatureSettings);
+        panelSignatureSettings.setLayout(panelSignatureSettingsLayout);
+        panelSignatureSettingsLayout.setHorizontalGroup(
+            panelSignatureSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSignatureSettingsLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(panelSignatureSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(previewPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel2Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                    .addGroup(panelSignatureSettingsLayout.createSequentialGroup()
+                        .addComponent(lblShow)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cbShowName)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -450,33 +472,33 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(cbShowLocation)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(cbShowDate)
+                        .addComponent(cbShowDateTime)
                         .addGap(45, 45, 45)
-                        .addComponent(jLabel3)
+                        .addComponent(lblAlign)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbBoxAlign, 0, 157, Short.MAX_VALUE)))
+                        .addComponent(cbAlign, 0, 157, Short.MAX_VALUE)))
                 .addContainerGap())
         );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
+        panelSignatureSettingsLayout.setVerticalGroup(
+            panelSignatureSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSignatureSettingsLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(previewPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(18, 18, 18)
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(panelSignatureSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelSignatureSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(cbShowReason)
-                        .addComponent(jLabel1)
+                        .addComponent(lblShow)
                         .addComponent(cbShowName))
-                    .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addGroup(panelSignatureSettingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(cbShowLocation)
-                        .addComponent(cbShowDate)
-                        .addComponent(jLabel3)
-                        .addComponent(cbBoxAlign, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cbShowDateTime)
+                        .addComponent(lblAlign)
+                        .addComponent(cbAlign, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
 
-        checkBoxGuardar.setText("Definir como definições padrão");
+        cbSetAsDefault.setText("Definir como definições padrão");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -485,49 +507,49 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelFontSettings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(checkBoxGuardar)
+                        .addComponent(cbSetAsDefault)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton2)
+                        .addComponent(btnAccept)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton1))
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(btnCancel))
+                    .addComponent(panelSignatureSettings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(19, 19, 19)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(panelSignatureSettings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(panelFontSettings, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(checkBoxGuardar)
-                    .addComponent(jButton1)
-                    .addComponent(jButton2))
+                    .addComponent(cbSetAsDefault)
+                    .addComponent(btnCancel)
+                    .addComponent(btnAccept))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         this.dispose();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
     private void cbFontTypeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbFontTypeItemStateChanged
         changeLabel();
     }//GEN-LAST:event_cbFontTypeItemStateChanged
 
-    private void checkBoxBoldItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkBoxBoldItemStateChanged
+    private void cbBoldItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbBoldItemStateChanged
         changeLabel();
-    }//GEN-LAST:event_checkBoxBoldItemStateChanged
+    }//GEN-LAST:event_cbBoldItemStateChanged
 
-    private void checkBoxItalicItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_checkBoxItalicItemStateChanged
+    private void cbItalicItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbItalicItemStateChanged
         changeLabel();
-    }//GEN-LAST:event_checkBoxItalicItemStateChanged
+    }//GEN-LAST:event_cbItalicItemStateChanged
 
     private void cbShowReasonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbShowReasonItemStateChanged
         previewPanel1.setShowReason(cbShowReason.isSelected());
@@ -541,43 +563,43 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
 
     }//GEN-LAST:event_colorChooserMousePressed
 
-    private void cbShowDateItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbShowDateItemStateChanged
-        previewPanel1.setShowDate(cbShowDate.isSelected());
-    }//GEN-LAST:event_cbShowDateItemStateChanged
+    private void cbShowDateTimeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbShowDateTimeItemStateChanged
+        previewPanel1.setShowDate(cbShowDateTime.isSelected());
+    }//GEN-LAST:event_cbShowDateTimeItemStateChanged
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        if (checkBoxGuardar.isSelected()) {
+    private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
+        if (cbSetAsDefault.isSelected()) {
             writeFile();
         }
 
         signatureSettings.getAppearance().setShowName(cbShowName.isSelected());
         signatureSettings.getAppearance().setShowReason(cbShowReason.isSelected());
         signatureSettings.getAppearance().setShowLocation(cbShowLocation.isSelected());
-        signatureSettings.getAppearance().setShowDate(cbShowDate.isSelected());
+        signatureSettings.getAppearance().setShowDate(cbShowDateTime.isSelected());
         signatureSettings.getAppearance().setFontColor(colorChooser.getColor());
-        signatureSettings.getAppearance().setBold(checkBoxBold.isSelected());
-        signatureSettings.getAppearance().setItalic(checkBoxItalic.isSelected());
+        signatureSettings.getAppearance().setBold(cbBold.isSelected());
+        signatureSettings.getAppearance().setItalic(cbItalic.isSelected());
         String fontLocation = getFontLocationByName((String) cbFontType.getSelectedItem());
         signatureSettings.getAppearance().setFontLocation(fontLocation);
-        signatureSettings.getAppearance().setAlign(cbBoxAlign.getSelectedIndex());
+        signatureSettings.getAppearance().setAlign(cbAlign.getSelectedIndex());
 
         this.dispose();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btnAcceptActionPerformed
 
     private void cbShowNameItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbShowNameItemStateChanged
         previewPanel1.setShowName(cbShowName.isSelected());
     }//GEN-LAST:event_cbShowNameItemStateChanged
 
-    private void cbBoxAlignItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbBoxAlignItemStateChanged
-        if (cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("esquerda")) {
+    private void cbAlignItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbAlignItemStateChanged
+        if (cbAlign.getSelectedItem().toString().equalsIgnoreCase(Bundle.getBundle().getString("left"))) {
             previewPanel1.setAlign(0);
-        } else if (cbBoxAlign.getSelectedItem().toString().equalsIgnoreCase("centro")) {
+        } else if (cbAlign.getSelectedItem().toString().equalsIgnoreCase(Bundle.getBundle().getString("center"))) {
             previewPanel1.setAlign(1);
         } else {
             previewPanel1.setAlign(2);
         }
         previewPanel1.repaint();
-    }//GEN-LAST:event_cbBoxAlignItemStateChanged
+    }//GEN-LAST:event_cbAlignItemStateChanged
 
     private String getFontLocationByName(String name) {
         Set<Map.Entry<com.itextpdf.text.Font, String>> entries = hmFonts.entrySet();
@@ -600,13 +622,13 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
                 FileOutputStream fileOut;
                 properties.setProperty("fontLocation", getFontLocationByName(cbFontType.getSelectedItem().toString()));
                 properties.setProperty("fontColor", String.valueOf(colorChooser.getColor().getRGB()));
-                properties.setProperty("fontItalic", String.valueOf(checkBoxItalic.isSelected()));
-                properties.setProperty("fontBold", String.valueOf(checkBoxBold.isSelected()));
+                properties.setProperty("fontItalic", String.valueOf(cbItalic.isSelected()));
+                properties.setProperty("fontBold", String.valueOf(cbBold.isSelected()));
                 properties.setProperty("showName", String.valueOf(cbShowName.isSelected()));
                 properties.setProperty("showReason", String.valueOf(cbShowReason.isSelected()));
                 properties.setProperty("showLocation", String.valueOf(cbShowLocation.isSelected()));
-                properties.setProperty("showDate", String.valueOf(cbShowDate.isSelected()));
-                switch (cbBoxAlign.getSelectedIndex()) {
+                properties.setProperty("showDate", String.valueOf(cbShowDateTime.isSelected()));
+                switch (cbAlign.getSelectedIndex()) {
                     case 0:
                         properties.setProperty("textAlign", "0");
                         break;
@@ -636,16 +658,16 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             Font newFont = Font.createFont(Font.TRUETYPE_FONT, new File(getFontLocationByName(fontLocation)));
             Font font = null;
 
-            if (checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
+            if (cbBold.isSelected() && cbItalic.isSelected()) {
                 font = newFont.deriveFont(Font.ITALIC + Font.BOLD, 36);
-            } else if (checkBoxBold.isSelected() && !checkBoxItalic.isSelected()) {
+            } else if (cbBold.isSelected() && !cbItalic.isSelected()) {
                 font = newFont.deriveFont(Font.BOLD, 36);
-            } else if (!checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
+            } else if (!cbBold.isSelected() && cbItalic.isSelected()) {
                 font = newFont.deriveFont(Font.ITALIC, 36);
             } else {
                 font = newFont.deriveFont(Font.PLAIN, 36);
             }
-            lblSignature.setFont(font);
+            lblSampleText.setFont(font);
             return;
         } catch (FontFormatException ex) {
             Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
@@ -653,14 +675,14 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
             Logger.getLogger(AppearanceSettingsDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        if (checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(fontLocation, Font.BOLD + Font.ITALIC, 36));
-        } else if (checkBoxBold.isSelected() && !checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(fontLocation, Font.BOLD, 36));
-        } else if (!checkBoxBold.isSelected() && checkBoxItalic.isSelected()) {
-            lblSignature.setFont(new Font(fontLocation, Font.ITALIC, (Integer) 36));
+        if (cbBold.isSelected() && cbItalic.isSelected()) {
+            lblSampleText.setFont(new Font(fontLocation, Font.BOLD + Font.ITALIC, 36));
+        } else if (cbBold.isSelected() && !cbItalic.isSelected()) {
+            lblSampleText.setFont(new Font(fontLocation, Font.BOLD, 36));
+        } else if (!cbBold.isSelected() && cbItalic.isSelected()) {
+            lblSampleText.setFont(new Font(fontLocation, Font.ITALIC, (Integer) 36));
         } else {
-            lblSignature.setFont(new Font(cbFontType.getSelectedItem().toString(), Font.PLAIN, (Integer) 36));
+            lblSampleText.setFont(new Font(cbFontType.getSelectedItem().toString(), Font.PLAIN, (Integer) 36));
         }
     }
 
@@ -709,25 +731,25 @@ public class AppearanceSettingsDialog extends javax.swing.JDialog {
         });
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox cbBoxAlign;
+    private javax.swing.JButton btnAccept;
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JComboBox cbAlign;
+    private javax.swing.JCheckBox cbBold;
     private javax.swing.JComboBox cbFontType;
-    private javax.swing.JCheckBox cbShowDate;
+    private javax.swing.JCheckBox cbItalic;
+    private javax.swing.JCheckBox cbSetAsDefault;
+    private javax.swing.JCheckBox cbShowDateTime;
     private javax.swing.JCheckBox cbShowLocation;
     private javax.swing.JCheckBox cbShowName;
     private javax.swing.JCheckBox cbShowReason;
-    private javax.swing.JCheckBox checkBoxBold;
-    private javax.swing.JCheckBox checkBoxGuardar;
-    private javax.swing.JCheckBox checkBoxItalic;
     private javax.swing.JColorChooser colorChooser;
     private javax.swing.Box.Filler filler1;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JLabel lblSignature;
+    private javax.swing.JLabel lblAlign;
+    private javax.swing.JLabel lblFontType;
+    private javax.swing.JLabel lblSampleText;
+    private javax.swing.JLabel lblShow;
+    private javax.swing.JPanel panelFontSettings;
+    private javax.swing.JPanel panelSignatureSettings;
     private view.PreviewPanel previewPanel1;
     // End of variables declaration//GEN-END:variables
 }

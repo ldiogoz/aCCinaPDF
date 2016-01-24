@@ -19,6 +19,7 @@
  */
 package view;
 
+import controller.Bundle;
 import controller.CCInstance;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -80,7 +81,7 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
         super(parent, modal);
         this.parent = parent;
         initComponents();
-
+        updateText();
         jTextField1.setEditable(false);
         jTextField2.setEditable(false);
         jTextField3.setEditable(false);
@@ -111,13 +112,12 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
      * @param parent
      * @param modal
      * @param certificateChain
-     * @param index
      */
     public CertificatePropertiesDialog(java.awt.Frame parent, boolean modal, Certificate[] certificateChain) {
         super(parent, modal);
         this.parent = parent;
         initComponents();
-
+        updateText();
         jTextField1.setEditable(false);
         jTextField2.setEditable(false);
         jTextField3.setEditable(false);
@@ -134,6 +134,27 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
         setCertificateProperties((X509Certificate) certificateChain[0]);
         jTree1.setSelectionRow(jTree1.getRowCount() - 1);
         lastSelectedRow = (jTree1.getRowCount() - 1);
+    }
+
+    private void updateText() {
+        lblCertificateChain.setText(Bundle.getBundle().getString("label.certificateChain"));
+        btnExportCertificate.setText(Bundle.getBundle().getString("btn.exportCertificate"));
+        panelSubject.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.getBundle().getString("panel.certificateSubject")));
+        panelIssuer.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.getBundle().getString("panel.certificateIssuedBy")));
+        panelValidity.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.getBundle().getString("panel.validity")));
+        panelUse.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.getBundle().getString("panel.use")));
+        lblSubjectCN.setText(Bundle.getBundle().getString("cert.cn") + ":");
+        lblSubjectOU1.setText(Bundle.getBundle().getString("cert.ou") + ":");
+        lblSubjectOU2.setText(Bundle.getBundle().getString("cert.ou") + ":");
+        lblSubjectO.setText(Bundle.getBundle().getString("cert.o") + ":");
+        lblSubjectC.setText(Bundle.getBundle().getString("cert.c") + ":");
+        lblIssuerCN.setText(Bundle.getBundle().getString("cert.cn") + ":");
+        lblIssuerOU.setText(Bundle.getBundle().getString("cert.ou") + ":");
+        lblIssuerO.setText(Bundle.getBundle().getString("cert.o") + ":");
+        lblIssuerC.setText(Bundle.getBundle().getString("cert.c") + ":");
+        lblValidSince.setText(Bundle.getBundle().getString("cert.v1") + ":");
+        lblValidUntil.setText(Bundle.getBundle().getString("cert.v2") + ":");
+        btnClose.setText(Bundle.getBundle().getString("btn.close"));
     }
 
     private void setCertificateProperties(X509Certificate x509Certificate) {
@@ -232,23 +253,23 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
             boolean encipherOnly = usage[7];
             boolean decipherOnly = usage[8];
 
-            String uso = (digitalSignature ? "Assinatura Digital, " : "")
-                    + (nonRepudiation ? "Não repúdio, " : "")
-                    + (keyEncipherment ? "Cifrar Chaves, " : "")
-                    + (dataEncipherment ? "Cifrar Dados, " : "")
-                    + (keyAgreement ? "Acordo de Chaves, " : "")
-                    + (keyCertSign ? "Certificado de assinatura (CA), " : "")
-                    + (cRLSign ? "Assinar CRL, " : "")
-                    + (encipherOnly ? "Apenas Cifrar, " : "")
-                    + (decipherOnly ? "Apenas Decifrar, " : "");
+            String uso = (digitalSignature ? Bundle.getBundle().getString("digitalSignature") + ", " : "")
+                    + (nonRepudiation ? Bundle.getBundle().getString("nonRepudiation") + ", " : "")
+                    + (keyEncipherment ? Bundle.getBundle().getString("keyEncipherment") + ", " : "")
+                    + (dataEncipherment ? Bundle.getBundle().getString("dataEncipherment") + ", " : "")
+                    + (keyAgreement ? Bundle.getBundle().getString("keyAgreement") + ", " : "")
+                    + (keyCertSign ? Bundle.getBundle().getString("keyCertSign") + ", " : "")
+                    + (cRLSign ? Bundle.getBundle().getString("cRLSign") + ", " : "")
+                    + (encipherOnly ? Bundle.getBundle().getString("encipherOnly") + ", " : "")
+                    + (decipherOnly ? Bundle.getBundle().getString("decipherOnly") + ", " : "");
 
             if (uso.length() == 0) {
-                lblUso.setText("Nenhum");
+                lblUso.setText(Bundle.getBundle().getString("label.none"));
             } else if (uso.endsWith(", ")) {
                 lblUso.setText(uso.substring(0, uso.length() - 2));
             }
         } else {
-            lblUso.setText("Desconhecido");
+            lblUso.setText(Bundle.getBundle().getString("unknown"));
         }
 
     }
@@ -280,13 +301,11 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
                     if (CCInstance.getInstance().isTrustedCertificate((X509Certificate) certificateChain[i])) {
                         dmtn[i] = new DefaultMutableTreeNode(getCertificateCN(certificateChain[i]));
                         needCheck = false;
+                    } else if (CCInstance.getInstance().hasTrustedIssuerCertificate((X509Certificate) certificateChain[i]) != null) {
+                        dmtn[i] = new DefaultMutableTreeNode(getCertificateCN(certificateChain[i]));
                     } else {
-                        if (CCInstance.getInstance().hasTrustedIssuerCertificate((X509Certificate) certificateChain[i]) != null) {
-                            dmtn[i] = new DefaultMutableTreeNode(getCertificateCN(certificateChain[i]));
-                        } else {
-                            dmtn[i] = new DefaultMutableTreeNode("(!)" + getCertificateCN(certificateChain[i]));
+                        dmtn[i] = new DefaultMutableTreeNode("(!)" + getCertificateCN(certificateChain[i]));
 
-                        }
                     }
                     if (i < (certificateChain.length - 1)) {
                         dmtn[i + 1].add(dmtn[i]);
@@ -348,45 +367,45 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
+        btnClose = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTree1 = new javax.swing.JTree();
-        jPanel6 = new javax.swing.JPanel();
+        panelUse = new javax.swing.JPanel();
         lblUso = new javax.swing.JLabel();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel11 = new javax.swing.JLabel();
-        jLabel12 = new javax.swing.JLabel();
+        panelValidity = new javax.swing.JPanel();
+        lblValidSince = new javax.swing.JLabel();
+        lblValidUntil = new javax.swing.JLabel();
         jTextField11 = new javax.swing.JTextField();
         jTextField12 = new javax.swing.JTextField();
-        jPanel4 = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel10 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
+        panelIssuer = new javax.swing.JPanel();
+        lblIssuerO = new javax.swing.JLabel();
+        lblIssuerC = new javax.swing.JLabel();
+        lblIssuerCN = new javax.swing.JLabel();
+        lblIssuerOU = new javax.swing.JLabel();
         jTextField6 = new javax.swing.JTextField();
         jTextField7 = new javax.swing.JTextField();
         jTextField9 = new javax.swing.JTextField();
         jTextField10 = new javax.swing.JTextField();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
+        panelSubject = new javax.swing.JPanel();
+        lblSubjectCN = new javax.swing.JLabel();
+        lblSubjectOU1 = new javax.swing.JLabel();
+        lblSubjectOU2 = new javax.swing.JLabel();
+        lblSubjectO = new javax.swing.JLabel();
+        lblSubjectC = new javax.swing.JLabel();
         jTextField1 = new javax.swing.JTextField();
         jTextField2 = new javax.swing.JTextField();
         jTextField3 = new javax.swing.JTextField();
         jTextField4 = new javax.swing.JTextField();
         jTextField5 = new javax.swing.JTextField();
-        jButton2 = new javax.swing.JButton();
-        jLabel8 = new javax.swing.JLabel();
+        btnExportCertificate = new javax.swing.JButton();
+        lblCertificateChain = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
-        jButton1.setText("Fechar");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        btnClose.setText("Fechar");
+        btnClose.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                btnCloseActionPerformed(evt);
             }
         });
 
@@ -402,191 +421,191 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
         });
         jScrollPane1.setViewportView(jTree1);
 
-        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder("Uso"));
+        panelUse.setBorder(javax.swing.BorderFactory.createTitledBorder("Uso"));
 
         lblUso.setText(" ");
 
-        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
-        jPanel6.setLayout(jPanel6Layout);
-        jPanel6Layout.setHorizontalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel6Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelUseLayout = new javax.swing.GroupLayout(panelUse);
+        panelUse.setLayout(panelUseLayout);
+        panelUseLayout.setHorizontalGroup(
+            panelUseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelUseLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(lblUso, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
-        jPanel6Layout.setVerticalGroup(
-            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+        panelUseLayout.setVerticalGroup(
+            panelUseLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelUseLayout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(lblUso)
                 .addContainerGap())
         );
 
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Validade"));
+        panelValidity.setBorder(javax.swing.BorderFactory.createTitledBorder("Validade"));
 
-        jLabel11.setText("Desde:");
+        lblValidSince.setText("Desde:");
 
-        jLabel12.setText("Até:");
+        lblValidUntil.setText("Até:");
 
-        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
-        jPanel5.setLayout(jPanel5Layout);
-        jPanel5Layout.setHorizontalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelValidityLayout = new javax.swing.GroupLayout(panelValidity);
+        panelValidity.setLayout(panelValidityLayout);
+        panelValidityLayout.setHorizontalGroup(
+            panelValidityLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelValidityLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel11)
+                .addGroup(panelValidityLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelValidityLayout.createSequentialGroup()
+                        .addComponent(lblValidSince)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField11, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel5Layout.createSequentialGroup()
-                        .addComponent(jLabel12)
+                    .addGroup(panelValidityLayout.createSequentialGroup()
+                        .addComponent(lblValidUntil)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField12, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
-        jPanel5Layout.setVerticalGroup(
-            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel5Layout.createSequentialGroup()
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel11)
+        panelValidityLayout.setVerticalGroup(
+            panelValidityLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelValidityLayout.createSequentialGroup()
+                .addGroup(panelValidityLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblValidSince)
                     .addComponent(jTextField11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel12)
+                .addGroup(panelValidityLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblValidUntil)
                     .addComponent(jTextField12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Emitido por"));
+        panelIssuer.setBorder(javax.swing.BorderFactory.createTitledBorder("Emitido por"));
 
-        jLabel7.setText("Organização (O):");
+        lblIssuerO.setText("Organização (O):");
 
-        jLabel6.setText("País (C):");
+        lblIssuerC.setText("País (C):");
 
-        jLabel10.setText("Nome Comum (CN):");
+        lblIssuerCN.setText("Nome Comum (CN):");
 
-        jLabel9.setText("Unidade Organizacional (OU):");
+        lblIssuerOU.setText("Unidade Organizacional (OU):");
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelIssuerLayout = new javax.swing.GroupLayout(panelIssuer);
+        panelIssuer.setLayout(panelIssuerLayout);
+        panelIssuerLayout.setHorizontalGroup(
+            panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelIssuerLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel6)
+                .addGroup(panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelIssuerLayout.createSequentialGroup()
+                        .addComponent(lblIssuerC)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField10, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addComponent(jLabel7)
+                    .addGroup(panelIssuerLayout.createSequentialGroup()
+                        .addComponent(lblIssuerO)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField9, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel9)
-                            .addComponent(jLabel10))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelIssuerLayout.createSequentialGroup()
+                        .addGroup(panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblIssuerOU)
+                            .addComponent(lblIssuerCN))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel4Layout.createSequentialGroup()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel10)
+        panelIssuerLayout.setVerticalGroup(
+            panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelIssuerLayout.createSequentialGroup()
+                .addGroup(panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblIssuerCN)
                     .addComponent(jTextField6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel9)
+                .addGroup(panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblIssuerOU)
                     .addComponent(jTextField7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel7)
+                .addGroup(panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblIssuerO)
                     .addComponent(jTextField9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel6)
+                .addGroup(panelIssuerLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblIssuerC)
                     .addComponent(jTextField10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(0, 0, 0))
         );
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Emitido para"));
+        panelSubject.setBorder(javax.swing.BorderFactory.createTitledBorder("Emitido para"));
 
-        jLabel1.setText("Nome Comum (CN):");
+        lblSubjectCN.setText("Nome Comum (CN):");
 
-        jLabel2.setText("Unidade Organizacional (OU):");
+        lblSubjectOU1.setText("Unidade Organizacional (OU):");
 
-        jLabel3.setText("Unidade Organizacional (OU):");
+        lblSubjectOU2.setText("Unidade Organizacional (OU):");
 
-        jLabel4.setText("Organização (O):");
+        lblSubjectO.setText("Organização (O):");
 
-        jLabel5.setText("País (C):");
+        lblSubjectC.setText("País (C):");
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelSubjectLayout = new javax.swing.GroupLayout(panelSubject);
+        panelSubject.setLayout(panelSubjectLayout);
+        panelSubjectLayout.setHorizontalGroup(
+            panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSubjectLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                .addGroup(panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelSubjectLayout.createSequentialGroup()
+                        .addComponent(lblSubjectCN)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel5)
+                    .addGroup(panelSubjectLayout.createSequentialGroup()
+                        .addComponent(lblSubjectC)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
+                    .addGroup(panelSubjectLayout.createSequentialGroup()
+                        .addComponent(lblSubjectO)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel3)
+                    .addGroup(panelSubjectLayout.createSequentialGroup()
+                        .addComponent(lblSubjectOU2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jLabel2)
+                    .addGroup(panelSubjectLayout.createSequentialGroup()
+                        .addComponent(lblSubjectOU1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, 289, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+        panelSubjectLayout.setVerticalGroup(
+            panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelSubjectLayout.createSequentialGroup()
+                .addGroup(panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSubjectCN)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2)
+                .addGroup(panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblSubjectOU1)
                     .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel3)
+                .addGroup(panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblSubjectOU2)
                     .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel4)
+                .addGroup(panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSubjectO)
                     .addComponent(jTextField4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel5)
+                .addGroup(panelSubjectLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblSubjectC)
                     .addComponent(jTextField5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         );
 
-        jButton2.setText("Exportar Certificado");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnExportCertificate.setText("Exportar Certificado");
+        btnExportCertificate.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnExportCertificateActionPerformed(evt);
             }
         });
 
-        jLabel8.setText("Cadeia de Certificados:");
+        lblCertificateChain.setText("Cadeia de Certificados:");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -595,19 +614,19 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
+                    .addComponent(btnExportCertificate, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE)
                     .addComponent(jScrollPane1)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel8)
+                        .addComponent(lblCertificateChain)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jButton1))
+                        .addComponent(panelIssuer, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panelSubject, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panelValidity, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panelUse, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnClose))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -616,21 +635,21 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel8)
+                        .addComponent(lblCertificateChain)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jScrollPane1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jButton1)
-                            .addComponent(jButton2)))
+                            .addComponent(btnClose)
+                            .addComponent(btnExportCertificate)))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelSubject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelIssuer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelValidity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(panelUse, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(0, 32, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -638,17 +657,17 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void btnCloseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCloseActionPerformed
         this.dispose();
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_btnCloseActionPerformed
 
     private int lastSelectedRow;
 
     private void export(X509Certificate x509c) {
         try {
             JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Guardar como");
-            FileNameExtensionFilter cerFilter = new FileNameExtensionFilter("Ficheiro de Certificado (*.cer)", "cer");
+            fileChooser.setDialogTitle(Bundle.getBundle().getString("title.saveAs"));
+            FileNameExtensionFilter cerFilter = new FileNameExtensionFilter(Bundle.getBundle().getString("filter.certificateFiles") + " (*.cer)", "cer");
             fileChooser.setFileFilter(cerFilter);
             File preferedFile = new File(getCertificateCN(x509c) + ".cer");
             fileChooser.setSelectedFile(preferedFile);
@@ -665,26 +684,26 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
 
                 Writer wr = new OutputStreamWriter(os, Charset.forName("UTF-8"));
                 wr.write(new sun.misc.BASE64Encoder().encode(buf));
-                JOptionPane.showMessageDialog(this, "Certificado exportado com sucesso!", "", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("certSuccessfullyExported"), "", JOptionPane.INFORMATION_MESSAGE);
             }
         } catch (CertificateEncodingException ex) {
-            JOptionPane.showMessageDialog(this, "Exportação de certificado falhou!\nO certificado não tem uma codificação válida", "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("certExportFailed") + "\n" + Bundle.getBundle().getString("certInvalidEncoding"), "", JOptionPane.ERROR_MESSAGE);
             //Logger.getLogger(CertificatePropertiesDialog.class.getName()).log(Level.SEVERE, null, ex);
         } catch (FileNotFoundException ex) {
-            JOptionPane.showMessageDialog(this, "Exportação de certificado falhou!\nNão tem permissões de escrita na directoria destino", "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("certExportFailed") + "\n" + Bundle.getBundle().getString("noWritePermissions"), "", JOptionPane.ERROR_MESSAGE);
             //Logger.getLogger(CertificatePropertiesDialog.class.getName()).log(Level.SEVERE, null, ex);
             export(x509c);
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Exportação de certificado falhou!\nNão foi possível criar o ficheiro de saída", "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("certExportFailed") + "\n" + Bundle.getBundle().getString("errorCreatingOutputFile"), "", JOptionPane.ERROR_MESSAGE);
             //Logger.getLogger(CertificatePropertiesDialog.class.getName()).log(Level.SEVERE, null, ex);
             export(x509c);
         }
     }
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnExportCertificateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnExportCertificateActionPerformed
         X509Certificate x509c = certChainList.get(jTree1.getSelectionRows()[0]);
         export(x509c);
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btnExportCertificateActionPerformed
 
     private void jTree1ValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_jTree1ValueChanged
         refreshSelectedCertificate();
@@ -748,24 +767,8 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
+    private javax.swing.JButton btnClose;
+    private javax.swing.JButton btnExportCertificate;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JTextField jTextField10;
@@ -779,6 +782,22 @@ public class CertificatePropertiesDialog extends javax.swing.JDialog {
     private javax.swing.JTextField jTextField7;
     private javax.swing.JTextField jTextField9;
     private javax.swing.JTree jTree1;
+    private javax.swing.JLabel lblCertificateChain;
+    private javax.swing.JLabel lblIssuerC;
+    private javax.swing.JLabel lblIssuerCN;
+    private javax.swing.JLabel lblIssuerO;
+    private javax.swing.JLabel lblIssuerOU;
+    private javax.swing.JLabel lblSubjectC;
+    private javax.swing.JLabel lblSubjectCN;
+    private javax.swing.JLabel lblSubjectO;
+    private javax.swing.JLabel lblSubjectOU1;
+    private javax.swing.JLabel lblSubjectOU2;
     private javax.swing.JLabel lblUso;
+    private javax.swing.JLabel lblValidSince;
+    private javax.swing.JLabel lblValidUntil;
+    private javax.swing.JPanel panelIssuer;
+    private javax.swing.JPanel panelSubject;
+    private javax.swing.JPanel panelUse;
+    private javax.swing.JPanel panelValidity;
     // End of variables declaration//GEN-END:variables
 }

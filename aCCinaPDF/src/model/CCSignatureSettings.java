@@ -21,6 +21,7 @@ package model;
 
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfWriter;
+import controller.Bundle;
 import controller.CCInstance;
 import java.awt.Color;
 import java.awt.Image;
@@ -32,11 +33,13 @@ import java.io.IOException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Locale;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import view.AppearanceSettingsDialog;
+import view.InitialConfigDialog;
 
 /**
  *
@@ -71,6 +74,7 @@ public final class CCSignatureSettings {
             createConfigFile();
         }
         try {
+            String languageStr = getConfigParameter("language");
             String pdfVersionStr = getConfigParameter("pdfversion");
             String renderQualityStr = getConfigParameter("renderQuality");
             String prefixStr = getConfigParameter("prefix");
@@ -84,7 +88,7 @@ public final class CCSignatureSettings {
             String fontColorStr = getConfigParameter("fontColor");
             String textAlignStr = getConfigParameter("textAlign");
 
-            if (pdfVersionStr == null || renderQualityStr == null || prefixStr == null || boldStr == null || italicStr == null || fontLocationStr == null
+            if (languageStr == null || pdfVersionStr == null || renderQualityStr == null || prefixStr == null || boldStr == null || italicStr == null || fontLocationStr == null
                     || showNameStr == null || showDateStr == null || showReasonStr == null || showLocationStr == null || fontColorStr == null || textAlignStr == null) {
                 new File(SETTINGS_FILE).delete();
                 createConfigFile();
@@ -93,6 +97,9 @@ public final class CCSignatureSettings {
 
             String keystoreStr = getConfigParameter("keystore");
             if (keystoreStr == null) {
+                CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
+                Settings.getSettings().setKeystorePath(null);
+            } else if (keystoreStr.isEmpty()) {
                 CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
                 Settings.getSettings().setKeystorePath(null);
             } else {
@@ -104,7 +111,7 @@ public final class CCSignatureSettings {
                     properties.load(new FileInputStream(configFile));
                     properties.remove("keystore");
                     Settings.getSettings().setKeystorePath(null);
-                    JOptionPane.showMessageDialog(null, "O caminho da KeyStore indicado no ficheiro de configuração não corresponde a um ficheiro KeyStore válido!\nA usar a KeyStore padrão.", "", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(null, Bundle.getBundle().getString("usingDefaultKeystoreError"), "", JOptionPane.WARNING_MESSAGE);
                     try {
                         FileOutputStream fileOut = new FileOutputStream(configFile);
                         properties.store(fileOut, "Settings");
@@ -116,7 +123,16 @@ public final class CCSignatureSettings {
                     Settings.getSettings().setKeystorePath(keystoreStr);
                 }
             }
-
+            switch (languageStr) {
+                case "en-US":
+                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
+                    break;
+                case "pt-PT":
+                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.Portugues);
+                    break;
+                default:
+                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
+            }
             Settings.getSettings().setPdfVersion(pdfVersionStr);
             Settings.getSettings().setRenderImageQuality(Integer.valueOf(renderQualityStr));
             setPrefix(prefixStr);
@@ -135,10 +151,24 @@ public final class CCSignatureSettings {
     }
 
     private void createConfigFile() {
+        InitialConfigDialog icd = new InitialConfigDialog(null, true);
+        icd.setLocationRelativeTo(null);
+        icd.setVisible(true);
+        Locale locale = icd.getSelectedLocale();
         String fsettings = "aCCinaPDF.cfg";
         Properties propertiesWrite = new Properties();
         FileOutputStream fileOut;
         try {
+            if (locale.equals(Bundle.getBundle().getLocale(Bundle.Locales.Portugues))) {
+                propertiesWrite.setProperty("language", "pt-PT");
+                Bundle.getBundle().setCurrentLocale(Bundle.Locales.Portugues);
+            } else if (locale.equals(Bundle.getBundle().getLocale(Bundle.Locales.English))) {
+                propertiesWrite.setProperty("language", "en-US");
+                Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
+            } else {
+                propertiesWrite.setProperty("language", "en-US");
+                Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
+            }
             propertiesWrite.setProperty("renderQuality", String.valueOf(2));
             propertiesWrite.setProperty("pdfversion", "/1.7");
             propertiesWrite.setProperty("prefix", "aCCinatura");
@@ -166,6 +196,7 @@ public final class CCSignatureSettings {
     }
 
     private void loadDefaults() {
+        Bundle.getBundle().setCurrentLocale(Bundle.Locales.Portugues);
         Settings.getSettings().setPdfVersion("/1.7");
         Settings.getSettings().setRenderImageQuality(Image.SCALE_SMOOTH);
         CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
@@ -181,7 +212,7 @@ public final class CCSignatureSettings {
         appearance.setAlign(0);
 
         if (!createdNewSettings) {
-            JOptionPane.showMessageDialog(null, "O ficheiro de configurações está corrompido ou pertence a uma versão antiga\nFoi criado um novo ficheiro de configurações", "", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, Bundle.getBundle().getString("configFileCorrupted"), "", JOptionPane.INFORMATION_MESSAGE);
         }
     }
 

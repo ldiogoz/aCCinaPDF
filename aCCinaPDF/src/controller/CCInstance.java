@@ -98,6 +98,7 @@ import java.security.cert.X509Certificate;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -109,12 +110,19 @@ import javax.naming.ldap.Rdn;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.smartcardio.Card;
+import javax.smartcardio.CardChannel;
+import javax.smartcardio.CardTerminal;
+import javax.smartcardio.CommandAPDU;
+import javax.smartcardio.ResponseAPDU;
+import javax.smartcardio.TerminalFactory;
 import javax.swing.JFileChooser;
 import listener.SignatureListener;
 import listener.ValidationListener;
 import model.CertificateStatus;
 import model.SignatureValidation;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.text.WordUtils;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -147,6 +155,7 @@ public class CCInstance {
     private static final String KEYSTORE_PATH = "/keystore/aCCinaPDF_cacerts";
 
     private KeyStore ks;
+    private KeyStore pkcs11ks;
     private SunPKCS11 pkcs11Provider;
     private final ArrayList<CCAlias> aliasList = new ArrayList<>();
 
@@ -176,23 +185,21 @@ public class CCInstance {
         }
 
         if (null == path) {
-            throw new LibraryNotLoadedException("Sistema Operativo desconhecido!");
+            throw new LibraryNotLoadedException(Bundle.getBundle().getString("unknownOS"));
+        } else if (new File(path).exists()) {
+            pkcs11config += path;
         } else {
-            if (new File(path).exists()) {
-                pkcs11config += path;
-            } else {
-                String res = userLoadLibraryPKCS11();
-                if (null != res) {
-                    pkcs11config += res;
-                }
-                throw new LibraryNotFoundException("A biblioteca não foi encontrada!");
+            String res = userLoadLibraryPKCS11();
+            if (null != res) {
+                pkcs11config += res;
             }
+            throw new LibraryNotFoundException(Bundle.getBundle().getString("libraryNotFound"));
         }
         final byte[] pkcs11configBytes;
         try {
             pkcs11configBytes = pkcs11config.getBytes();
         } catch (Exception eiie) {
-            throw new LibraryNotFoundException("A biblioteca não existe!");
+            throw new LibraryNotFoundException(Bundle.getBundle().getString("libraryDoesNotExist"));
         }
         final ByteArrayInputStream configStream = new ByteArrayInputStream(pkcs11configBytes);
         try {
@@ -209,31 +216,52 @@ public class CCInstance {
                 }
             });
         } catch (Exception eiie) {
-            throw new LibraryNotLoadedException("Não foi possível carregar a biblioteca!");
+            throw new LibraryNotLoadedException(Bundle.getBundle().getString("libraryNotLoaded"));
         }
 
         Security.addProvider(pkcs11Provider);
 
         try {
-            ks = KeyStore.getInstance("PKCS11");
-            ks.load(null, null);
-            //String filename = this.keystoreFile;
-            //FileInputStream fis = new FileInputStream(filename);
-            //this.ks.load(fis, null);
+            pkcs11ks = KeyStore.getInstance("PKCS11");
+            pkcs11ks.load(null, null);
         } catch (Exception e) {
-            throw new KeyStoreNotLoadedException("Keystore não foi carregada com sucesso!");
+            throw new KeyStoreNotLoadedException(Bundle.getBundle().getString("keystoreNotLoaded"));
         }
 
-        final Enumeration aliasesEnum = ks.aliases();
+        final Enumeration aliasesEnum = pkcs11ks.aliases();
         aliasList.clear();
+        try {
+            // show the list of available terminals
+            TerminalFactory factory = TerminalFactory.getDefault();
+            List<CardTerminal> terminals = factory.terminals().list();
+            System.out.println("Terminals: " + terminals);
+            // get the first terminal
+            CardTerminal terminal = terminals.get(0);
+            // establish a connection with the card
+            Card card = terminal.connect("T=0");
+            System.out.println("card: " + card.getProtocol());
+            CardChannel channel = card.getBasicChannel();
+            byte[] c1 = new byte[]{0x00, (byte) 0xA4, 0x00, 0x0C};
+            ResponseAPDU r = channel.transmit(new CommandAPDU(c1));
+            if (r.getSW() == 0x9000) {
+                System.out.println("response: " + (Arrays.toString(r.getBytes())));
+            } else {
+                System.err.println("response error");
+            }
+
+            // disconnect
+            card.disconnect(false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         while (aliasesEnum.hasMoreElements()) {
             final String alias = (String) aliasesEnum.nextElement();
             if (null != alias) {
                 if (alias.isEmpty()) {
-                    throw new AliasException("Alias está em branco");
+                    throw new AliasException(Bundle.getBundle().getString("blankAlias"));
                 } else {
-                    final Certificate[] certChain = ks.getCertificateChain(alias);
+                    final Certificate[] certChain = pkcs11ks.getCertificateChain(alias);
                     if (null != certChain) {
                         if (CCAlias.ASSINATURA.equals(alias)) {
                             if (1 == certChain.length) {
@@ -245,12 +273,12 @@ public class CCInstance {
                                         aliasList.add(ccAliasTemp);
                                     }
                                 } catch (CertificateExpiredException cee) {
-                                    throw new CertificateException("O Certificado do alias " + alias + " expirou!");
+                                    throw new CertificateException(Bundle.getBundle().getString("aliasCertificate") + " " + alias + " " + Bundle.getBundle().getString("expired") + "!");
                                 } catch (CertificateNotYetValidException cee) {
-                                    throw new CertificateException("O Certificado do alias " + alias + " ainda não é válido!");
+                                    throw new CertificateException(Bundle.getBundle().getString("aliasCertificate") + " " + alias + " " + Bundle.getBundle().getString("notYetValid") + "!");
                                 }
                             } else {
-                                throw new CertificateException("A Cadeia de Certificados tem um formato inválido!");
+                                throw new CertificateException(Bundle.getBundle().getString("chainInvalidFormat"));
                             }
                         }
                     }
@@ -266,7 +294,7 @@ public class CCInstance {
 
     private PrivateKey getPrivateKeyFromAlias(final String alias) {
         try {
-            final PrivateKey pkey = (PrivateKey) ks.getKey(alias, null);
+            final PrivateKey pkey = (PrivateKey) pkcs11ks.getKey(alias, null);
             return pkey;
         } catch (KeyStoreException e) {
             controller.Logger.getLogger().addEntry(e);
@@ -311,7 +339,7 @@ public class CCInstance {
         pk = getPrivateKeyFromAlias(settings.getCcAlias().getAlias());
 
         if (getCertificationLevel(pdfPath) == PdfSignatureAppearance.CERTIFIED_NO_CHANGES_ALLOWED) {
-            String message = "O ficheiro não permite alterações!";
+            String message = Bundle.getBundle().getString("fileDoesNotAllowChanges");
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
             }
@@ -323,7 +351,7 @@ public class CCInstance {
         }
 
         if (null == pk) {
-            String message = "Erro! Não foi encontrado nenhum SmartCard!";
+            String message = Bundle.getBundle().getString("noSmartcardFound");
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
             }
@@ -331,16 +359,16 @@ public class CCInstance {
         }
 
         final Certificate[] certChain;
-        if (null == ks.getCertificateChain(settings.getCcAlias().getAlias())) {
-            String message = "O Certificado contém uma cadeia nula!";
+        if (null == pkcs11ks.getCertificateChain(settings.getCcAlias().getAlias())) {
+            String message = Bundle.getBundle().getString("certificateNullChain");
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
             }
             throw new CertificateException(message);
         }
-        final Certificate owner = ks.getCertificateChain(settings.getCcAlias().getAlias())[0];
-        if (null == owner || 1 < ks.getCertificateChain(settings.getCcAlias().getAlias()).length) {
-            String message = "Não foi possível obter o nome do titular do certificado!";
+        final Certificate owner = pkcs11ks.getCertificateChain(settings.getCcAlias().getAlias())[0];
+        if (null == owner || 1 < pkcs11ks.getCertificateChain(settings.getCcAlias().getAlias()).length) {
+            String message = Bundle.getBundle().getString("certificateNameUnknown");
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
             }
@@ -356,7 +384,7 @@ public class CCInstance {
         try {
             os = new FileOutputStream(destination);
         } catch (FileNotFoundException e) {
-            String message = "Erro a abrir o ficheiro de saída!";
+            String message = Bundle.getBundle().getString("outputFileError");
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
             }
@@ -388,13 +416,7 @@ public class CCInstance {
                 pdfVersion = PdfWriter.VERSION_1_7;
         }
 
-        final PdfStamper stamper;
-        if (getNumberOfSignatures(pdfPath) == 0) {
-            stamper = PdfStamper.createSignature(reader, os, pdfVersion);
-        } else {
-            stamper = PdfStamper.createSignature(reader, os, pdfVersion, null, true);
-            //PdfContentByte t = stamper.getOverContent(settings.getPageNumber());
-        }
+        final PdfStamper stamper = (getNumberOfSignatures(pdfPath) == 0 ? PdfStamper.createSignature(reader, os, pdfVersion) : PdfStamper.createSignature(reader, os, pdfVersion, null, true));
 
         final PdfSignatureAppearance appearance = stamper.getSignatureAppearance();
         appearance.setSignDate(now);
@@ -443,8 +465,9 @@ public class CCInstance {
                 }
             }
             if (settings.getAppearance().isShowDate()) {
-                DateFormat df = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-                text += df.format(now.getTime()) + " +" + (now.getTimeZone().getRawOffset() < 10 ? "0" : "") + now.getTimeZone().getRawOffset() + "\n";
+                DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+                SimpleDateFormat sdf = new SimpleDateFormat("Z");
+                text += df.format(now.getTime()) + " " + sdf.format(now.getTime()) + "\n";
             }
             if (!settings.getText().isEmpty()) {
                 text += settings.getText();
@@ -506,18 +529,18 @@ public class CCInstance {
             os.close();
             new File(destination).delete();
             if ("sun.security.pkcs11.wrapper.PKCS11Exception: CKR_FUNCTION_CANCELED".equals(e.getMessage())) {
-                throw new SignatureFailedException("Acção cancelada pelo utilizador!");
+                throw new SignatureFailedException(Bundle.getBundle().getString("userCanceled"));
             } else if ("sun.security.pkcs11.wrapper.PKCS11Exception: CKR_GENERAL_ERROR".equals(e.getMessage())) {
-                throw new SignatureFailedException("Não foi possível aplicar a assinatura.\nCertifique-se que tem permissões de escrita no ficheiro: feche outras aplicações de assinatura digital, reabra o aCCinaPDF e tente de novo!");
+                throw new SignatureFailedException(Bundle.getBundle().getString("noPermissions"));
             } else if (e instanceof ExceptionConverter) {
-                String message = "TimeStamp falhou: Não tem ligação à Internet ou o URL de Servidor de TimeStamp é inválido!";
+                String message = Bundle.getBundle().getString("timestampFailed");
                 if (sl != null) {
                     sl.onSignatureComplete(pdfPath, false, message);
                 }
                 throw new SignatureFailedException(message);
             } else {
                 if (sl != null) {
-                    sl.onSignatureComplete(pdfPath, false, "Erro desconhecido - Ver log");
+                    sl.onSignatureComplete(pdfPath, false, Bundle.getBundle().getString("unknownErrorLog"));
                 }
                 controller.Logger.getLogger().addEntry(e);
             }
@@ -545,8 +568,6 @@ public class CCInstance {
 
     public final ArrayList<SignatureValidation> validatePDF(final String file, final ValidationListener vl) throws IOException, DocumentException, GeneralSecurityException {
         this.validating = true;
-        final KeyStore keystore = KeyStoreUtil.loadCacertsKeyStore();
-        keystore.load(null, null);
 
         final PdfReader reader = new PdfReader(file);
         final AcroFields af = reader.getAcroFields();
@@ -565,11 +586,9 @@ public class CCInstance {
             }
 
             final String name = (String) o;
-            final PdfPKCS7 pk = af.verifySignature(name);
+            final PdfPKCS7 pk = af.verifySignature(name, "BC");
             final Certificate pkc[] = pk.getCertificates();
             x509c = (X509Certificate) pkc[pkc.length - 1];
-
-            System.out.println("Chain: " + pkc.length);
 
             final Certificate[] aL = pkc;//getCompleteCertificateChain(x509c);
 
@@ -584,16 +603,14 @@ public class CCInstance {
                 for (SingleResp singleResp : ocspResp.getResponses()) {
                     if (null == singleResp.getCertStatus()) {
                         ocspCertificateStatus = CertificateStatus.OK;
-                    } else {
-                        if (singleResp.getCertStatus() instanceof RevokedStatus) {
-                            if (ocspResp.getProducedAt().before(((RevokedStatus) singleResp.getCertStatus()).getRevocationTime())) {
-                                ocspCertificateStatus = CertificateStatus.OK;
-                            } else {
-                                ocspCertificateStatus = CertificateStatus.REVOKED;
-                            }
-                        } else if (singleResp.getCertStatus() instanceof UnknownStatus) {
-                            ocspCertificateStatus = CertificateStatus.UNKNOWN;
+                    } else if (singleResp.getCertStatus() instanceof RevokedStatus) {
+                        if (ocspResp.getProducedAt().before(((RevokedStatus) singleResp.getCertStatus()).getRevocationTime())) {
+                            ocspCertificateStatus = CertificateStatus.OK;
+                        } else {
+                            ocspCertificateStatus = CertificateStatus.REVOKED;
                         }
+                    } else if (singleResp.getCertStatus() instanceof UnknownStatus) {
+                        ocspCertificateStatus = CertificateStatus.UNKNOWN;
                     }
                 }
             }
@@ -625,7 +642,7 @@ public class CCInstance {
             boolean validTimestamp = false;
             if (null != tst) {
                 final boolean hasTimestamp = pk.verifyTimestampImprint();
-                validTimestamp = hasTimestamp && CertificateVerification.verifyTimestampCertificates(tst, keystore, null);
+                validTimestamp = hasTimestamp && CertificateVerification.verifyTimestampCertificates(tst, ks, null);
             }
 
             PdfDictionary pdfDic = reader.getAcroFields().getSignatureDictionary(name);
@@ -655,7 +672,7 @@ public class CCInstance {
     public File extractRevision(final String filePath, final String revision) throws IOException, RevisionExtractionException {
         final PdfReader reader = new PdfReader(filePath);
         final AcroFields af = reader.getAcroFields();
-        final File fout = File.createTempFile("temp", " - Revisão: " + revision + ".pdf");
+        final File fout = File.createTempFile("temp", " - " + WordUtils.capitalize(Bundle.getBundle().getString("revision")) + ": " + revision + ".pdf");
         final FileOutputStream os = new FileOutputStream(fout);
         final byte bb[] = new byte[1028];
         final InputStream ip = af.extractRevision(revision);
@@ -673,7 +690,7 @@ public class CCInstance {
 
     private String userLoadLibraryPKCS11() {
         JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setDialogTitle("Abrir Biblioteca");
+        fileChooser.setDialogTitle(Bundle.getBundle().getString("openLibrary"));
         int userSelection = fileChooser.showSaveDialog(null);
         if (userSelection == JFileChooser.APPROVE_OPTION) {
             String dest = fileChooser.getSelectedFile().getAbsolutePath();
@@ -787,20 +804,22 @@ public class CCInstance {
             final String[] parts;
             parts = sigAlgName.split("with");
             if (2 == parts.length) {
-                if ("SHA1".equals(parts[0])) {
+                if ("SHA1".equalsIgnoreCase(parts[0])) {
                     return "SHA-1";
-                } else if ("SHA2".equals(parts[0])) {
+                } else if ("SHA2".equalsIgnoreCase(parts[0])) {
                     return "SHA-2";
-                } else if ("SHA3".equals(parts[0])) {
+                } else if ("SHA3".equalsIgnoreCase(parts[0])) {
                     return "SHA-3";
-                } else if ("SHA128".equals(parts[0])) {
+                } else if ("SHA128".equalsIgnoreCase(parts[0])) {
                     return "SHA-128";
-                } else if ("SHA256".equals(parts[0])) {
+                } else if ("SHA256".equalsIgnoreCase(parts[0])) {
                     return "SHA-256";
-                } else if ("SHA384".equals(parts[0])) {
+                } else if ("SHA384".equalsIgnoreCase(parts[0])) {
                     return "SHA-384";
-                } else if ("SHA512".equals(parts[0])) {
+                } else if ("SHA512".equalsIgnoreCase(parts[0])) {
                     return "SHA-512";
+                } else {
+                    return parts[0];
                 }
             }
         }

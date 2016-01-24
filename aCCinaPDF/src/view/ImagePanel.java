@@ -20,6 +20,7 @@
 package view;
 
 import com.itextpdf.text.pdf.AcroFields;
+import controller.Bundle;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -39,6 +40,7 @@ import java.awt.Cursor;
 import java.io.File;
 import java.io.IOException;
 import model.Settings;
+import org.apache.commons.lang3.text.WordUtils;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.rendering.PDFRenderer;
@@ -220,12 +222,10 @@ public class ImagePanel extends JPanel {
                                                 jp1.setBackground(new Color(0, 0, 0, 0));
                                                 jp1.setBorder(null);
                                                 repaint();
-                                            } else {
-                                                if (!selectedSignature.equals(sv)) {
-                                                    jp1.setBackground(new Color(0, 0, 0, 0));
-                                                    jp1.setBorder(null);
-                                                    repaint();
-                                                }
+                                            } else if (!selectedSignature.equals(sv)) {
+                                                jp1.setBackground(new Color(0, 0, 0, 0));
+                                                jp1.setBorder(null);
+                                                repaint();
                                             }
                                         }
                                     }
@@ -368,8 +368,12 @@ public class ImagePanel extends JPanel {
         }
     }
 
-    private void refreshTitle() {
-        mainWindow.setTitle("aCCinaPDF - " + documentLocation + " - Página " + (pageNumber + 1) + " de " + numberOfPages);
+    public void refreshTitle() {
+        if (mainWindow != null) {
+            if (documentLocation != null) {
+                mainWindow.setTitle(Bundle.getBundle().getString("app.name") + " - " + documentLocation + " - " + WordUtils.capitalize(Bundle.getBundle().getString("page")) + " " + (pageNumber + 1) + " " + Bundle.getBundle().getString("of") + " " + numberOfPages);
+            }
+        }
     }
 
     public Point getImageLocation() {

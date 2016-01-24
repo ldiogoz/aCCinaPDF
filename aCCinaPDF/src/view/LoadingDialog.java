@@ -20,6 +20,7 @@
 package view;
 
 import com.madgag.gif.fmsware.GifDecoder;
+import controller.Bundle;
 import java.awt.Color;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -57,35 +58,43 @@ public class LoadingDialog extends javax.swing.JDialog {
         this.parent = (MainWindow) parent;
         setupListeners();
         initComponents();
+
+        updateText();
+
         this.getContentPane().setBackground(Color.WHITE);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+    }
+
+    private void updateText() {
+        lblLoading.setText(Bundle.getBundle().getString("label.loading"));
+        btnCancel.setText(Bundle.getBundle().getString("btn.cancel"));
     }
 
     public void showDialog(LoadingType type) {
         switch (type) {
             case FILE_SEARCHING:
-                setTitle("A procurar");
-                setText("Documentos encontrados: 0"); 
+                setTitle(Bundle.getBundle().getString("title.searching"));
+                setText(Bundle.getBundle().getString("label.documentsFound") + ": 0");
                 setIcon("/image/search.jpg");
-                btn.setEnabled(true);
+                btnCancel.setEnabled(true);
                 break;
             case SMARTCARD_SEARCHING:
                 setTitle("A procurar");
-                setText("A obter informações do CC...");
+                setText(Bundle.getBundle().getString("label.gettingCcInformation") + "...");
                 setIcon("/image/insertCC.jpg");
-                btn.setEnabled(true);
+                btnCancel.setEnabled(true);
                 break;
             case SIGNING:
                 setTitle("A aplicar assinatura");
-                setText("Aguarde...");
+                setText(Bundle.getBundle().getString("label.wait") + "...");
                 setIcon("/image/signature.jpg");
-                btn.setEnabled(false);
+                btnCancel.setEnabled(false);
                 break;
             case VALIDATING:
                 setTitle("A validar");
-                setText("Aguarde...");
+                setText(Bundle.getBundle().getString("label.wait") + "...");
                 setIcon("/image/validate.jpg");
-                btn.setEnabled(true);
+                btnCancel.setEnabled(true);
                 break;
         }
         this.setVisible(true);
@@ -95,7 +104,7 @@ public class LoadingDialog extends javax.swing.JDialog {
     }
 
     public void setText(String text) {
-        lblText.setText(text);
+        lblLoading.setText(text);
     }
 
     private void setIcon(String path) {
@@ -105,7 +114,7 @@ public class LoadingDialog extends javax.swing.JDialog {
 
     public void incrementFileCounter() {
         fileCounter++;
-        lblText.setText("Documentos encontrados: " + fileCounter);
+        lblLoading.setText(Bundle.getBundle().getString("label.documentsFound") + ": " + fileCounter);
     }
 
     private void setupListeners() {
@@ -175,23 +184,23 @@ public class LoadingDialog extends javax.swing.JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        btn = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
         lblGif = new javax.swing.JLabel();
-        lblText = new javax.swing.JLabel();
+        lblLoading = new javax.swing.JLabel();
         lblImage = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setBackground(new java.awt.Color(255, 255, 255));
         setResizable(false);
 
-        btn.setText("Cancelar");
-        btn.addActionListener(new java.awt.event.ActionListener() {
+        btnCancel.setText("Cancelar");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnActionPerformed(evt);
+                btnCancelActionPerformed(evt);
             }
         });
 
-        lblText.setText("A carregar...");
+        lblLoading.setText("A carregar...");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -203,8 +212,8 @@ public class LoadingDialog extends javax.swing.JDialog {
                     .addComponent(lblGif, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(btn, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblText)
+                            .addComponent(btnCancel, javax.swing.GroupLayout.PREFERRED_SIZE, 192, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblLoading)
                             .addComponent(lblImage))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -213,27 +222,27 @@ public class LoadingDialog extends javax.swing.JDialog {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(lblText)
+                .addComponent(lblLoading)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lblImage)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 120, Short.MAX_VALUE)
                 .addComponent(lblGif, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(btn)
+                .addComponent(btnCancel)
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActionPerformed
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         canceled = true;
         parent.setLoading(false);
         done = true;
         t = null;
         parent.setLoading(false);
         this.setVisible(false);
-    }//GEN-LAST:event_btnActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
     /**
      * @param args the command line arguments
@@ -255,7 +264,7 @@ public class LoadingDialog extends javax.swing.JDialog {
             java.util.logging.Logger.getLogger(LoadingDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
-        
+
         //</editor-fold>
 
         /* Create and display the dialog */
@@ -275,10 +284,10 @@ public class LoadingDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btn;
+    private javax.swing.JButton btnCancel;
     private javax.swing.JLabel lblGif;
     private javax.swing.JLabel lblImage;
-    private javax.swing.JLabel lblText;
+    private javax.swing.JLabel lblLoading;
     // End of variables declaration//GEN-END:variables
 
     public boolean isCanceled() {

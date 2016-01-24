@@ -5,6 +5,7 @@
  */
 package view;
 
+import controller.Bundle;
 import controller.CCInstance;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -66,17 +67,30 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
         initComponents();
         this.parent = parent;
 
+        updateText();
+
         if (keystore.equals(CCInstance.getInstance().getDefaultKeystore())) {
-            jRadioButton1.setSelected(true);
+            rbUseDefaultKeystore.setSelected(true);
         } else {
-            jRadioButton2.setSelected(true);
+            rbUseCustomKeystore.setSelected(true);
             tfCustomKeystore.setText(Settings.getSettings().getKeystorePath());
         }
 
-        btnDetalhes.setEnabled(jList1.getSelectedIndices().length == 1);
+        btnCertificateDetails.setEnabled(jList1.getSelectedIndices().length == 1);
 
         toggleButtons();
         refresh(keystore);
+    }
+
+    private void updateText() {
+        setTitle(Bundle.getBundle().getString("title.ceritificateManagement"));
+        rbUseDefaultKeystore.setText(Bundle.getBundle().getString("label.useDefaultKeystore"));
+        rbUseCustomKeystore.setText(Bundle.getBundle().getString("label.useCustomKeystore"));
+        btnChange.setText(Bundle.getBundle().getString("btn.change"));
+        panelTrustedCertificates.setBorder(javax.swing.BorderFactory.createTitledBorder(Bundle.getBundle().getString("panel.trustedCertificates")));
+        btnCertificateDetails.setText(Bundle.getBundle().getString("label.certificateDetails"));
+        btnAccept.setText(Bundle.getBundle().getString("btn.accept"));
+        btnCancel.setText(Bundle.getBundle().getString("btn.cancel"));
     }
 
     private void refresh(KeyStore ks) {
@@ -168,18 +182,18 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
                 return ks;
             } else {
                 if (showDialog) {
-                    JOptionPane.showMessageDialog(this, "A cadeia de certificados escolhida está vazia!", "", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("emptyChain"), "", JOptionPane.INFORMATION_MESSAGE);
                 }
                 return ks;
             }
         } catch (java.security.cert.CertificateException | NoSuchAlgorithmException | KeyStoreException | FileNotFoundException e) {
             if (showDialog) {
-                JOptionPane.showMessageDialog(this, "O ficheiro não contém uma cadeia de certificados ou está corrompido!", "", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("fileNotKeystoreOrCorrupted"), "", JOptionPane.ERROR_MESSAGE);
             }
             return null;
         } catch (IOException e) {
             if (showDialog) {
-                JOptionPane.showMessageDialog(this, "O ficheiro não contém uma cadeia de certificados ou está corrompido!", "", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("fileNotKeystoreOrCorrupted"), "", JOptionPane.ERROR_MESSAGE);
             }
             return null;
         } finally {
@@ -202,23 +216,23 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
     private void initComponents() {
 
         buttonGroup1 = new javax.swing.ButtonGroup();
-        jPanel1 = new javax.swing.JPanel();
+        panelTrustedCertificates = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jList1 = new javax.swing.JList();
         btnAddCert = new javax.swing.JButton();
         btnRemoveCert = new javax.swing.JButton();
-        btnDetalhes = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
+        btnCertificateDetails = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
+        rbUseDefaultKeystore = new javax.swing.JRadioButton();
+        rbUseCustomKeystore = new javax.swing.JRadioButton();
         tfCustomKeystore = new javax.swing.JTextField();
-        btnChangeCustomKeystorePath = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        btnChange = new javax.swing.JButton();
+        btnAccept = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Gestão de Certificados");
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Certificados Confiáveis"));
+        panelTrustedCertificates.setBorder(javax.swing.BorderFactory.createTitledBorder("Certificados Confiáveis"));
 
         jList1.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -246,86 +260,86 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
             }
         });
 
-        btnDetalhes.setText("Detalhes do Certificado");
-        btnDetalhes.addActionListener(new java.awt.event.ActionListener() {
+        btnCertificateDetails.setText("Detalhes do Certificado");
+        btnCertificateDetails.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnDetalhesActionPerformed(evt);
+                btnCertificateDetailsActionPerformed(evt);
             }
         });
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout panelTrustedCertificatesLayout = new javax.swing.GroupLayout(panelTrustedCertificates);
+        panelTrustedCertificates.setLayout(panelTrustedCertificatesLayout);
+        panelTrustedCertificatesLayout.setHorizontalGroup(
+            panelTrustedCertificatesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTrustedCertificatesLayout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(panelTrustedCertificatesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(panelTrustedCertificatesLayout.createSequentialGroup()
                         .addComponent(jScrollPane2)
                         .addContainerGap())
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGroup(panelTrustedCertificatesLayout.createSequentialGroup()
                         .addComponent(btnAddCert)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnRemoveCert)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnDetalhes, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                        .addComponent(btnCertificateDetails, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
                         .addGap(263, 263, 263))))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        panelTrustedCertificatesLayout.setVerticalGroup(
+            panelTrustedCertificatesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(panelTrustedCertificatesLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 297, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(panelTrustedCertificatesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnAddCert)
                     .addComponent(btnRemoveCert)
-                    .addComponent(btnDetalhes))
+                    .addComponent(btnCertificateDetails))
                 .addContainerGap())
         );
 
-        jButton4.setText("Cancelar");
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
+        btnCancel.setText("Cancelar");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+                btnCancelActionPerformed(evt);
             }
         });
 
-        buttonGroup1.add(jRadioButton1);
-        jRadioButton1.setSelected(true);
-        jRadioButton1.setText("Usar cadeia de certificados do aCCinaPDF");
-        jRadioButton1.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(rbUseDefaultKeystore);
+        rbUseDefaultKeystore.setSelected(true);
+        rbUseDefaultKeystore.setText("Usar cadeia de certificados do aCCinaPDF");
+        rbUseDefaultKeystore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton1ActionPerformed(evt);
+                rbUseDefaultKeystoreActionPerformed(evt);
             }
         });
 
-        buttonGroup1.add(jRadioButton2);
-        jRadioButton2.setText("Usar cadeia de certificados alternativa");
-        jRadioButton2.addChangeListener(new javax.swing.event.ChangeListener() {
+        buttonGroup1.add(rbUseCustomKeystore);
+        rbUseCustomKeystore.setText("Usar cadeia de certificados alternativa");
+        rbUseCustomKeystore.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                jRadioButton2StateChanged(evt);
+                rbUseCustomKeystoreStateChanged(evt);
             }
         });
-        jRadioButton2.addActionListener(new java.awt.event.ActionListener() {
+        rbUseCustomKeystore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jRadioButton2ActionPerformed(evt);
+                rbUseCustomKeystoreActionPerformed(evt);
             }
         });
 
         tfCustomKeystore.setEnabled(false);
 
-        btnChangeCustomKeystorePath.setText("Alterar");
-        btnChangeCustomKeystorePath.addActionListener(new java.awt.event.ActionListener() {
+        btnChange.setText("Alterar");
+        btnChange.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnChangeCustomKeystorePathActionPerformed(evt);
+                btnChangeActionPerformed(evt);
             }
         });
 
-        jButton2.setText("Aceitar");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        btnAccept.setText("Aceitar");
+        btnAccept.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                btnAcceptActionPerformed(evt);
             }
         });
 
@@ -338,65 +352,65 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(14, 14, 14)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jRadioButton1)
-                            .addComponent(jRadioButton2)
+                            .addComponent(rbUseDefaultKeystore)
+                            .addComponent(rbUseCustomKeystore)
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(tfCustomKeystore, javax.swing.GroupLayout.PREFERRED_SIZE, 478, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(btnChangeCustomKeystorePath)))
+                                .addComponent(btnChange)))
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(panelTrustedCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(jButton2)
+                        .addComponent(btnAccept)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButton4)))
+                        .addComponent(btnCancel)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jRadioButton1)
+                .addComponent(rbUseDefaultKeystore)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jRadioButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(rbUseCustomKeystore, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(10, 10, 10)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnChangeCustomKeystorePath)
+                    .addComponent(btnChange)
                     .addComponent(tfCustomKeystore, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(panelTrustedCertificates, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jButton4)
-                    .addComponent(jButton2))
+                    .addComponent(btnCancel)
+                    .addComponent(btnAccept))
                 .addContainerGap())
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
         this.dispose();
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }//GEN-LAST:event_btnCancelActionPerformed
 
-    private void btnChangeCustomKeystorePathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeCustomKeystorePathActionPerformed
+    private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChangeActionPerformed
         loadCustomKeystore();
-    }//GEN-LAST:event_btnChangeCustomKeystorePathActionPerformed
+    }//GEN-LAST:event_btnChangeActionPerformed
 
-    private void jRadioButton2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jRadioButton2StateChanged
+    private void rbUseCustomKeystoreStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbUseCustomKeystoreStateChanged
 
-    }//GEN-LAST:event_jRadioButton2StateChanged
+    }//GEN-LAST:event_rbUseCustomKeystoreStateChanged
 
     private void btnRemoveCertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRemoveCertActionPerformed
         int[] indices = jList1.getSelectedIndices();
         if (indices.length != 0) {
-            String msg = (indices.length == 1 ? "Tem a certeza que quer remover o certificado seleccionado da lista de certificados confiáveis?"
-                    : "Tem a certeza que quer remover os " + indices.length + " certificados seleccionados da lista de certificados confiáveis?");
+            String msg = (indices.length == 1 ? Bundle.getBundle().getString("removeCert1")
+                    : Bundle.getBundle().getString("removeCert2") + " " + indices.length + " " + Bundle.getBundle().getString("removeCert3"));
 
-            Object[] options = {"Sim", "Não"};
+            Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
             int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
             if (opt == JOptionPane.NO_OPTION) {
                 return;
@@ -418,21 +432,21 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_btnRemoveCertActionPerformed
 
     private void jList1ValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_jList1ValueChanged
-        btnRemoveCert.setEnabled(jRadioButton2.isSelected() && jList1.getSelectedIndices().length > 0);
-        btnDetalhes.setEnabled(jList1.getSelectedIndices().length == 1);
+        btnRemoveCert.setEnabled(rbUseCustomKeystore.isSelected() && jList1.getSelectedIndices().length > 0);
+        btnCertificateDetails.setEnabled(jList1.getSelectedIndices().length == 1);
     }//GEN-LAST:event_jList1ValueChanged
 
-    private void jRadioButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton2ActionPerformed
+    private void rbUseCustomKeystoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbUseCustomKeystoreActionPerformed
         toggleButtons();
         refresh(isValidKeystore(new File(tfCustomKeystore.getText()), false));
-    }//GEN-LAST:event_jRadioButton2ActionPerformed
+    }//GEN-LAST:event_rbUseCustomKeystoreActionPerformed
 
-    private void jRadioButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jRadioButton1ActionPerformed
+    private void rbUseDefaultKeystoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbUseDefaultKeystoreActionPerformed
         toggleButtons();
         refresh(CCInstance.getInstance().getDefaultKeystore());
-    }//GEN-LAST:event_jRadioButton1ActionPerformed
+    }//GEN-LAST:event_rbUseDefaultKeystoreActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
         Properties properties = new Properties();
         String configFile = "aCCinaPDF.cfg";
         try {
@@ -441,7 +455,7 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
             Logger.getLogger(CertificateManagementDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        if (jRadioButton1.isSelected()) {
+        if (rbUseDefaultKeystore.isSelected()) {
             if (!CCInstance.getInstance().getKeystore().equals(CCInstance.getInstance().getDefaultKeystore())) {
                 CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
                 Settings.getSettings().setKeystorePath(null);
@@ -460,7 +474,7 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
                     properties.setProperty("keystore", keystorePath);
                 }
             } catch (Exception e) {
-                JOptionPane.showMessageDialog(this, "Seleccione uma keystore válida e volte a tentar", "", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("selectValidKeystore"), "", JOptionPane.INFORMATION_MESSAGE);
                 return;
             }
         }
@@ -470,11 +484,11 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
             properties.store(fileOut, "Settings");
             fileOut.close();
         } catch (IOException ex) {
-            JOptionPane.showMessageDialog(this, "Erro a guardar no ficheiro de configurações!", "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, Bundle.getBundle().getString("errorSavingConfigFile"), "", JOptionPane.ERROR_MESSAGE);
         }
 
         this.dispose();
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_btnAcceptActionPerformed
 
     private void btnAddCertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddCertActionPerformed
         JFileChooser chooser = new JFileChooser();
@@ -502,7 +516,7 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_btnAddCertActionPerformed
 
-    private void btnDetalhesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDetalhesActionPerformed
+    private void btnCertificateDetailsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCertificateDetailsActionPerformed
         if (jList1.getSelectedIndices().length == 1) {
             int index = jList1.getSelectedIndex();
             Certificate cert = alTrusted.get(index);
@@ -510,22 +524,22 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
             cpd.setLocationRelativeTo(null);
             cpd.setVisible(true);
         }
-    }//GEN-LAST:event_btnDetalhesActionPerformed
+    }//GEN-LAST:event_btnCertificateDetailsActionPerformed
 
     private void toggleButtons() {
-        tfCustomKeystore.setVisible(jRadioButton2.isSelected());
-        btnChangeCustomKeystorePath.setVisible(jRadioButton2.isSelected());
-        btnAddCert.setEnabled(jRadioButton2.isSelected());
-        btnRemoveCert.setEnabled(jRadioButton2.isSelected());
+        tfCustomKeystore.setVisible(rbUseCustomKeystore.isSelected());
+        btnChange.setVisible(rbUseCustomKeystore.isSelected());
+        btnAddCert.setEnabled(rbUseCustomKeystore.isSelected());
+        btnRemoveCert.setEnabled(rbUseCustomKeystore.isSelected());
     }
 
     private String getUserInputPassword() {
         JPanel panel = new JPanel();
-        JLabel lblInsertPassword = new JLabel("Introduza a password da cadeia de certificados:");
+        JLabel lblInsertPassword = new JLabel(Bundle.getBundle().getString("insertKeystorePassword"));
         JPasswordField pf = new JPasswordField(10);
         panel.add(lblInsertPassword);
         panel.add(pf);
-        String[] options = new String[]{"OK", "Cancelar"};
+        String[] options = new String[]{Bundle.getBundle().getString("btn.ok"), Bundle.getBundle().getString("btn.cancel")};
         int option = JOptionPane.showOptionDialog(null, panel, null, JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, options, options[1]);
         if (option == JOptionPane.OK_OPTION) {
             char[] password = pf.getPassword();
@@ -648,18 +662,18 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnAccept;
     private javax.swing.JButton btnAddCert;
-    private javax.swing.JButton btnChangeCustomKeystorePath;
-    private javax.swing.JButton btnDetalhes;
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnCertificateDetails;
+    private javax.swing.JButton btnChange;
     private javax.swing.JButton btnRemoveCert;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton4;
     private javax.swing.JList jList1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JPanel panelTrustedCertificates;
+    private javax.swing.JRadioButton rbUseCustomKeystore;
+    private javax.swing.JRadioButton rbUseDefaultKeystore;
     private javax.swing.JTextField tfCustomKeystore;
     // End of variables declaration//GEN-END:variables
 }
