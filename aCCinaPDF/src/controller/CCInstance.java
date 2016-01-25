@@ -199,6 +199,7 @@ public class CCInstance {
         try {
             pkcs11configBytes = pkcs11config.getBytes();
         } catch (Exception eiie) {
+            Logger.getLogger().addEntry(eiie);
             throw new LibraryNotFoundException(Bundle.getBundle().getString("libraryDoesNotExist"));
         }
         final ByteArrayInputStream configStream = new ByteArrayInputStream(pkcs11configBytes);
@@ -216,6 +217,7 @@ public class CCInstance {
                 }
             });
         } catch (Exception eiie) {
+            Logger.getLogger().addEntry(eiie);
             throw new LibraryNotLoadedException(Bundle.getBundle().getString("libraryNotLoaded"));
         }
 
@@ -225,35 +227,12 @@ public class CCInstance {
             pkcs11ks = KeyStore.getInstance("PKCS11");
             pkcs11ks.load(null, null);
         } catch (Exception e) {
+            Logger.getLogger().addEntry(e);
             throw new KeyStoreNotLoadedException(Bundle.getBundle().getString("keystoreNotLoaded"));
         }
 
         final Enumeration aliasesEnum = pkcs11ks.aliases();
         aliasList.clear();
-        try {
-            // show the list of available terminals
-            TerminalFactory factory = TerminalFactory.getDefault();
-            List<CardTerminal> terminals = factory.terminals().list();
-            System.out.println("Terminals: " + terminals);
-            // get the first terminal
-            CardTerminal terminal = terminals.get(0);
-            // establish a connection with the card
-            Card card = terminal.connect("T=0");
-            System.out.println("card: " + card.getProtocol());
-            CardChannel channel = card.getBasicChannel();
-            byte[] c1 = new byte[]{0x00, (byte) 0xA4, 0x00, 0x0C};
-            ResponseAPDU r = channel.transmit(new CommandAPDU(c1));
-            if (r.getSW() == 0x9000) {
-                System.out.println("response: " + (Arrays.toString(r.getBytes())));
-            } else {
-                System.err.println("response error");
-            }
-
-            // disconnect
-            card.disconnect(false);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         while (aliasesEnum.hasMoreElements()) {
             final String alias = (String) aliasesEnum.nextElement();
@@ -264,21 +243,23 @@ public class CCInstance {
                     final Certificate[] certChain = pkcs11ks.getCertificateChain(alias);
                     if (null != certChain) {
                         if (CCAlias.ASSINATURA.equals(alias)) {
-                            if (1 == certChain.length) {
+                            if (0 == certChain.length) {
+                                throw new CertificateException(Bundle.getBundle().getString("chainInvalidFormat"));
+                            } else {
                                 final Certificate cert = certChain[0];
                                 try {
                                     ((X509Certificate) cert).checkValidity();
                                     if (1 <= certChain.length) {
-                                        final CCAlias ccAliasTemp = new CCAlias(alias, cert);
+                                        final CCAlias ccAliasTemp = new CCAlias(alias, certChain);
                                         aliasList.add(ccAliasTemp);
                                     }
                                 } catch (CertificateExpiredException cee) {
+                                    Logger.getLogger().addEntry(cee);
                                     throw new CertificateException(Bundle.getBundle().getString("aliasCertificate") + " " + alias + " " + Bundle.getBundle().getString("expired") + "!");
                                 } catch (CertificateNotYetValidException cee) {
+                                    Logger.getLogger().addEntry(cee);
                                     throw new CertificateException(Bundle.getBundle().getString("aliasCertificate") + " " + alias + " " + Bundle.getBundle().getString("notYetValid") + "!");
                                 }
-                            } else {
-                                throw new CertificateException(Bundle.getBundle().getString("chainInvalidFormat"));
                             }
                         }
                     }
@@ -358,7 +339,6 @@ public class CCInstance {
             throw new CertificateException(message);
         }
 
-        final Certificate[] certChain;
         if (null == pkcs11ks.getCertificateChain(settings.getCcAlias().getAlias())) {
             String message = Bundle.getBundle().getString("certificateNullChain");
             if (sl != null) {
@@ -366,8 +346,11 @@ public class CCInstance {
             }
             throw new CertificateException(message);
         }
-        final Certificate owner = pkcs11ks.getCertificateChain(settings.getCcAlias().getAlias())[0];
-        if (null == owner || 1 < pkcs11ks.getCertificateChain(settings.getCcAlias().getAlias()).length) {
+        final ArrayList<Certificate> embeddedCertificateChain = settings.getCcAlias().getCertificateChain();
+        final Certificate owner = embeddedCertificateChain.get(0);
+        final Certificate lastCert = embeddedCertificateChain.get(embeddedCertificateChain.size() - 1);
+
+        if (null == owner) {
             String message = Bundle.getBundle().getString("certificateNameUnknown");
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, false, message);
@@ -375,9 +358,26 @@ public class CCInstance {
             throw new CertificateException(message);
         }
 
-        final X509Certificate X509C = ((X509Certificate) owner);
+        final X509Certificate X509C = ((X509Certificate) lastCert);
         final Calendar now = Calendar.getInstance();
-        certChain = getCompleteTrustedCertificateChain(X509C);
+        final Certificate[] filledMissingCertsFromChainInTrustedKeystore = getCompleteTrustedCertificateChain(X509C);
+
+        final Certificate[] fullCertificateChain;
+        if (filledMissingCertsFromChainInTrustedKeystore.length < 2) {
+            fullCertificateChain = new Certificate[embeddedCertificateChain.size()];
+            for(int i=0; i< embeddedCertificateChain.size(); i++){
+                fullCertificateChain[i] = embeddedCertificateChain.get(i);
+            }
+        } else {
+            fullCertificateChain = new Certificate[embeddedCertificateChain.size() + filledMissingCertsFromChainInTrustedKeystore.length - 1];
+            int i = 0;
+            for(i=0; i< embeddedCertificateChain.size(); i++){
+                fullCertificateChain[i] = embeddedCertificateChain.get(i);
+            }
+            for(int f=1; f< filledMissingCertsFromChainInTrustedKeystore.length; f++, i++){
+                fullCertificateChain[i] = filledMissingCertsFromChainInTrustedKeystore[f];
+            }
+        }
 
         // Leitor e Stamper
         FileOutputStream os = null;
@@ -519,7 +519,7 @@ public class CCInstance {
         final ExternalDigest digest = new ProviderDigest(pkcs11Provider.getName());
 
         try {
-            MakeSignature.signDetached(appearance, digest, es, certChain, crlList, ocspClient, tsaClient, 0, MakeSignature.CryptoStandard.CMS);
+            MakeSignature.signDetached(appearance, digest, es, fullCertificateChain, crlList, ocspClient, tsaClient, 0, MakeSignature.CryptoStandard.CMS);
             if (sl != null) {
                 sl.onSignatureComplete(pdfPath, true, "");
             }

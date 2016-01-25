@@ -22,6 +22,7 @@ package model;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import org.apache.commons.lang3.text.WordUtils;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -37,23 +38,37 @@ public class CCAlias {
     public static final String ASSINATURA = "CITIZEN SIGNATURE CERTIFICATE";
 
     private final String alias;
-    private final Certificate certificate;
+    private final ArrayList<Certificate> certificateChain = new ArrayList<>();
 
     public CCAlias(String alias, Certificate certificate) {
         this.alias = alias;
-        this.certificate = certificate;
+        this.certificateChain.add(certificate);
+    }
+    
+    public CCAlias(String alias, Certificate[] certificateChain) {
+        this.alias = alias;
+        for(Certificate certificate : certificateChain){
+            this.certificateChain.add(certificate);
+        }
     }
 
     public String getAlias() {
         return alias;
     }
+    
+    public Certificate getMainCertificate(){
+        if(certificateChain.isEmpty()){
+            return null;
+        }
+        return certificateChain.get(0);
+    }
 
-    public Certificate getCertificate() {
-        return certificate;
+    public ArrayList<Certificate> getCertificateChain() {
+        return certificateChain;
     }
 
     private String getCN() throws CertificateEncodingException {
-        X509Certificate x509cert = (X509Certificate) certificate;
+        X509Certificate x509cert = (X509Certificate) getMainCertificate();
         org.bouncycastle.asn1.x500.X500Name x500name = new JcaX509CertificateHolder(x509cert).getSubject();
         RDN rdn = x500name.getRDNs(BCStyle.CN)[0];
 

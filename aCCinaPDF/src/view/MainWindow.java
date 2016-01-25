@@ -21,7 +21,6 @@ package view;
 
 import com.itextpdf.text.pdf.PdfReader;
 import controller.Bundle;
-import controller.CCInstance;
 import java.awt.Desktop;
 import java.awt.Image;
 import java.awt.KeyEventDispatcher;
@@ -66,10 +65,8 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import model.FileListTreeCellRenderer;
 import model.FileSystemModel;
-import model.Settings;
 import model.TooltipTreeCellRenderer;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.text.WordUtils;
 import org.icepdf.ri.common.SwingController;
 
 /**
@@ -880,10 +877,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
                 for (int i = jtOpenedDocuments.getSelectionRows().length - 1; i >= 0; i--) {
                     int index = jtOpenedDocuments.getSelectionRows()[i];
                     String path = jtOpenedDocuments.getPathForRow(index).getPathComponent(1).toString();
-                    // if (index < dmtn.getChildCount()) {
-                    //dmtn.remove(index);
                     files.remove(new File(path));
-                    // }
                     if (null != openedFile) {
                         if (openedFile.equals(new File(path))) {
                             closedOpenedDocument = true;
@@ -1067,6 +1061,9 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
         if (!Bundle.getBundle().getCurrentLocale().equals(tempLocale)) {
             updateText();
             workspacePanel.updateText();
+            if (openedFile != null) {
+                workspacePanel.revalidateSignatures();
+            }
         }
     }//GEN-LAST:event_menuItemPreferencesActionPerformed
 
@@ -1131,6 +1128,7 @@ public class MainWindow extends javax.swing.JFrame implements KeyEventDispatcher
     }
 
     private void clearOpenedDocument() {
+        ctrl.closeDocument();
         workspacePanel.setDocument(null);
         openedFile = null;
     }

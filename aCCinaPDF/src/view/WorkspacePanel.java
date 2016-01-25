@@ -363,6 +363,10 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
 
     final ArrayList<SignatureValidation> svList = new ArrayList<>();
 
+    public void revalidateSignatures() {
+        startValidationThread();
+    }
+
     private void startValidationThread() {
         status = Status.VALIDATING;
         svList.clear();
@@ -509,6 +513,10 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
         cbAlias.removeAllItems();
         cbAlias.setPrototypeDisplayValue("");
         try {
+            ArrayList<CCAlias> list = CCInstance.getInstance().loadKeyStoreAndAliases();
+            if (list.isEmpty()) {
+                return false;
+            }
             tempCCAlias = CCInstance.getInstance().loadKeyStoreAndAliases().get(0);
             ArrayList<CCAlias> aList = CCInstance.getInstance().getAliasList();
             if (!aList.isEmpty()) {
@@ -1645,9 +1653,9 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
         removeTempSignature();
     }//GEN-LAST:event_btnValidateActionPerformed
 
-    private void assinarDocumento(Document document, boolean ocsp, boolean timestamp) {
+    private void signDocument(Document document, boolean ocsp, boolean timestamp) {
         try {
-            if (tempCCAlias.getCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getCertificate().getPublicKey())) {
+            if (tempCCAlias.getMainCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getMainCertificate().getPublicKey())) {
                 try {
                     String path1 = document.getDocumentLocation();
                     String path2 = null;
@@ -1657,7 +1665,7 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
                     }
 
                     JFileChooser fileChooser = new JFileChooser();
-                    fileChooser.setDialogTitle(Bundle.getBundle().getString("saveAs"));
+                    fileChooser.setDialogTitle(Bundle.getBundle().getString("btn.saveAs"));
                     if (null != path2) {
                         boolean validPath = false;
                         FileNameExtensionFilter pdfFilter = new FileNameExtensionFilter(Bundle.getBundle().getString("filter.pdfDocuments") + " (*.pdf)", "pdf");
@@ -1716,7 +1724,7 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
                     } else if (ex.getLocalizedMessage().equals(Bundle.getBundle().getString("outputFileError"))) {
                         JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("msg.failedCreateOutputFile"), Bundle.getBundle().getString("label.signatureFailed"), JOptionPane.ERROR_MESSAGE);
                         controller.Logger.getLogger().addEntry(ex);
-                        assinarDocumento(document, ocsp, timestamp);
+                        signDocument(document, ocsp, timestamp);
                     } else {
                         JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("unknownErrorLog"), Bundle.getBundle().getString("label.signatureFailed"), JOptionPane.ERROR_MESSAGE);
                         controller.Logger.getLogger().addEntry(ex);
@@ -1729,7 +1737,7 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
                         Object[] options = {Bundle.getBundle().getString("yes"), Bundle.getBundle().getString("no")};
                         int opt = JOptionPane.showOptionDialog(null, msg, "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                         if (opt == JOptionPane.YES_OPTION) {
-                            assinarDocumento(document, false, false);
+                            signDocument(document, false, false);
                         }
                     } else {
                         controller.Logger.getLogger().addEntry(ex);
@@ -1746,10 +1754,10 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
 
     }
 
-    public void assinarLote(CCSignatureSettings settings) {
+    public void signBatch(CCSignatureSettings settings) {
         ArrayList<File> toSignList = mainWindow.getOpenedFiles();
         try {
-            if (tempCCAlias.getCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getCertificate().getPublicKey())) {
+            if (tempCCAlias.getMainCertificate().getPublicKey().equals(CCInstance.getInstance().loadKeyStoreAndAliases().get(0).getMainCertificate().getPublicKey())) {
                 String dest = null;
                 Object[] options = {Bundle.getBundle().getString("opt.saveInOriginalFolder"), Bundle.getBundle().getString("msg.choosePath"), Bundle.getBundle().getString("btn.cancel")};
                 int i = JOptionPane.showOptionDialog(null, Bundle.getBundle().getString("msg.chooseSignedPath"), "", JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
@@ -2015,12 +2023,12 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
                 Object[] options = {Bundle.getBundle().getString("menuItem.allDocuments"), Bundle.getBundle().getString("menuItem.onlyThis"), Bundle.getBundle().getString("btn.cancel")};
                 int i = JOptionPane.showOptionDialog(null, Bundle.getBundle().getString("msg.multipleDocumentsOpened"), Bundle.getBundle().getString("msg.multipleDocumentsOpenedTitle"), JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
                 if (i == 0) {
-                    assinarLote(signatureSettings);
+                    signBatch(signatureSettings);
                 } else if (i == 1) {
-                    assinarDocumento(document, true, true);
+                    signDocument(document, true, true);
                 }
             } else {
-                assinarDocumento(document, true, true);
+                signDocument(document, true, true);
             }
         } else {
             JOptionPane.showMessageDialog(mainWindow, Bundle.getBundle().getString("noSmartcardFound"), WordUtils.capitalize(Bundle.getBundle().getString("error")), JOptionPane.ERROR_MESSAGE);
@@ -2042,7 +2050,7 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
 
     private void btnCheckAliasCertificateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCheckAliasCertificateActionPerformed
         if (null != tempCCAlias) {
-            X509Certificate x509c = (X509Certificate) tempCCAlias.getCertificate();
+            X509Certificate x509c = (X509Certificate) tempCCAlias.getMainCertificate();
             if (null != x509c) {
                 CertificatePropertiesDialog cpd = new CertificatePropertiesDialog(mainWindow, true, x509c);
                 cpd.setLocationRelativeTo(null);
@@ -2086,7 +2094,7 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
     }//GEN-LAST:event_jsPageNumberStateChanged
 
     private void btnRevalidateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRevalidateActionPerformed
-        startValidationThread();
+        revalidateSignatures();
     }//GEN-LAST:event_btnRevalidateActionPerformed
 
     private void lblRevisionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblRevisionMouseClicked
