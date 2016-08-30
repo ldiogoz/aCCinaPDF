@@ -26,8 +26,10 @@ public final class Bundle {
     };
 
     public Bundle() {
-        locales.add(new Locale("en", "us"));
-        locales.add(new Locale("pt", "pt"));
+        this.locales.add(new Locale("en", "us"));
+        this.locales.add(new Locale("pt", "pt"));
+        this.setCurrentLocale(Bundle.Locales.English);
+        
     }
 
     public static Bundle getBundle() {

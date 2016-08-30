@@ -234,11 +234,6 @@ public class CertificateManagementDialog extends javax.swing.JDialog {
 
         panelTrustedCertificates.setBorder(javax.swing.BorderFactory.createTitledBorder("Certificados Confiáveis"));
 
-        jList1.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
         jList1.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 jList1ValueChanged(evt);

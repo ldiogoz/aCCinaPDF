@@ -123,6 +123,9 @@ public final class WorkspacePanel extends javax.swing.JPanel implements Signatur
      */
     public WorkspacePanel() {
         initComponents();
+        if (Bundle.getBundle().getCurrentLocale() == null) {
+            Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
+        }
         updateText();
         status = Status.READY;
         cl = (CardLayout) this.rightPanel.getLayout();
