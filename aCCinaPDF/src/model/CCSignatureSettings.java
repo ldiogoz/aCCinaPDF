@@ -95,6 +95,17 @@ public final class CCSignatureSettings {
                 return;
             }
 
+            switch (languageStr) {
+                case "en-US":
+                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
+                    break;
+                case "pt-PT":
+                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.Portugues);
+                    break;
+                default:
+                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
+            }
+
             String keystoreStr = getConfigParameter("keystore");
             if (keystoreStr == null) {
                 CCInstance.getInstance().setKeystore(CCInstance.getInstance().getDefaultKeystore());
@@ -122,16 +133,6 @@ public final class CCSignatureSettings {
                     CCInstance.getInstance().setKeystore(ks);
                     Settings.getSettings().setKeystorePath(keystoreStr);
                 }
-            }
-            switch (languageStr) {
-                case "en-US":
-                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
-                    break;
-                case "pt-PT":
-                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.Portugues);
-                    break;
-                default:
-                    Bundle.getBundle().setCurrentLocale(Bundle.Locales.English);
             }
             Settings.getSettings().setPdfVersion(pdfVersionStr);
             Settings.getSettings().setRenderImageQuality(Integer.valueOf(renderQualityStr));
