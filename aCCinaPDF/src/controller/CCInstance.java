@@ -181,7 +181,7 @@ public class CCInstance {
         } else if (SystemUtils.IS_OS_LINUX) {
             path = "/usr/local/lib/libpteidpkcs11.so";
         } else if (SystemUtils.IS_OS_MAC_OSX) {
-            path = "/usr/local/lib/pteidpkcs11.bundle";
+            path = "/usr/local/lib/pteidpkcs11.dylib";
         }
 
         if (null == path) {
